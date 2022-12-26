@@ -1,7 +1,7 @@
-import { RoleModel } from "../../data/models/role_model";
+import { Role } from "../entities/role";
 
 export interface RoleRepository {
-    getRoles(): Promise<RoleModel[]>;
-    getRole(name: String): Promise<RoleModel>;
-    enableRole(name: String, enableOrDisable: boolean): boolean;
+    getRoles(): Promise<Role[]>;
+    getRole(name: String): Promise<Role>;
+    enableRole(name: String, enableOrDisable: boolean): Promise<boolean>;
 }
