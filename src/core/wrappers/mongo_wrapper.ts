@@ -20,6 +20,49 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		this.db = dbMongo;
 	}
     
+	private async runQuery(pageIndex: number | undefined, totalItems: number | undefined, query: object, 
+		sort: [string, 1 | -1][] | undefined, result: unknown, itemsPerPage: number | undefined, startIndex: number, totalPages: number) {
+		totalItems = await this.setTotalItems(pageIndex, totalItems, query);
+		if (sort == null && pageIndex == null)
+			result = await this.runSimpleQuery(result, query);
+		if (sort != null && pageIndex == null)
+			result = await this.runSorterQuery(result, query, sort);
+		if (sort != null && pageIndex != null) {
+			const limit: number = (itemsPerPage == null ? 10 : itemsPerPage);
+			const skip: number = (pageIndex - 1) * limit;
+			result = await this.runFullQuery(result, query, sort, skip, limit);
+
+			startIndex = ((pageIndex - 1) * limit) + 1;
+			totalPages = parseInt(Math.round((totalItems == null ? 0 : totalPages) / limit).toString());
+		}
+		return { totalItems, result, startIndex, totalPages };
+	}
+
+	private async runFullQuery(result: unknown, query: object, sort: [string, 1 | -1][], skip: number, limit: number) {
+		result = await this.db.collection<Document>(this.collectionName)
+			.find(query).sort(sort).skip(skip).limit(limit).toArray();
+		return result;
+	}
+
+	private async runSorterQuery(result: unknown, query: object, sort: [string, 1 | -1][]) {
+		result = await this.db.collection<Document>(this.collectionName)
+			.find(query).sort(sort).toArray();
+		return result;
+	}
+
+	private async runSimpleQuery(result: unknown, query: object) {
+		result = await this.db.collection<Document>(this.collectionName)
+			.find(query).toArray();
+		return result;
+	}
+
+	private async setTotalItems(pageIndex: number | undefined, totalItems: number | undefined, query: object) {
+		if (pageIndex != null) {
+			totalItems = (await this.db.collection<Document>(this.collectionName).count(query));
+		}
+		return totalItems;
+	}
+
 	async getMany<T>(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ContainsMany<T> | null>{
 		let result = null;
@@ -27,35 +70,24 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		let totalPages = 0;  
 
 		let totalItems:number | undefined = undefined;
-		if(pageIndex != null){
-			totalItems = (await this.db.collection<Document>(this.collectionName).count(query));
-		}
-		if(sort == null && pageIndex == null)
-			result = await this.db.collection<Document>(this.collectionName)
-				.find(query).toArray();
-		if(sort != null && pageIndex == null)
-			result = await this.db.collection<Document>(this.collectionName)
-				.find(query).sort(sort).toArray();
-		if(sort != null && pageIndex != null)
-		{
-			const limit:number = (itemsPerPage == null ? 10 : itemsPerPage);
-			const skip:number = (pageIndex - 1) * limit;
-			result = await this.db.collection<Document>(this.collectionName)
-				.find(query).sort(sort).skip(skip).limit(limit).toArray();
-
-			startIndex = ((pageIndex - 1) * limit) + 1;
-			totalPages = parseInt(Math.round((totalItems==null ? 0 : totalPages) / limit).toString());
-		}
+		({ totalItems, result, startIndex, totalPages } = 
+			await this.runQuery(pageIndex, totalItems, query, 
+				sort, result, itemsPerPage, startIndex, totalPages));
 	
 		if(result == null) return null;
 
+		const contains_many = this.createContainsMany<T>(result, itemsPerPage, pageIndex, startIndex, totalItems, totalPages);
+
+		return contains_many;
+	}
+
+	private createContainsMany<T>(result: unknown, itemsPerPage: number | undefined, pageIndex: number | undefined, startIndex: number, totalItems: number | undefined, totalPages: number) {
 		const contains_many = new ContainsMany<T>(result as T[]);
 		contains_many.itemsPerPage = itemsPerPage;
 		contains_many.pageIndex = pageIndex;
 		contains_many.startIndex = (startIndex == 1 ? undefined : startIndex);
 		contains_many.totalItems = totalItems;
 		contains_many.totalPages = (totalPages == 0 ? undefined : totalPages);
-
 		return contains_many;
 	}
 

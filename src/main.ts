@@ -30,7 +30,7 @@ import app from './server';
 		new AddUser(userRepo), new UpdateUser(userRepo), 
 		new EnableUser(userRepo), new DeleteUser(userRepo)
 	);
-	app.use('api/v1/user', userMiddleWare);
+	app.use('/api/v1/user', userMiddleWare);
 	///Fin usuarios
     
 	app.listen(4000, () => console.log('Running on http://localhost:4000'));
