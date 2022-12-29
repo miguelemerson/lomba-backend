@@ -1,8 +1,12 @@
 export interface User {
-    id?: string;
-    name: string;
-    username: string;
+  id: string;
+  name: string;
+  username: string;
   email: string;
+  builtin: boolean;
   enabled: boolean;
-  builtIn: boolean;
+  created: Date;
+  updated?: Date;
+  deleted?: Date;
+  expires?: Date;
 }

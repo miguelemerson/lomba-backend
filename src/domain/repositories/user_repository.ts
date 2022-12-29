@@ -1,10 +1,13 @@
-import { User } from "../entities/user";
+import { ContainsMany } from '../../core/contains_many';
+import { UserModel } from '../../data/models/user_model';
+import { User } from '../entities/user';
 
 export interface UserRepository {
-    getUsers(orgaId: string): Promise<User[]>;
-    getUser(id: String): Promise<User>;
-    addUser(id: String, name: string, username: string, 
-        email: string, enabled: boolean, builtIn: boolean) : Promise<User>;
-    enableUser(userId: String, enableOrDisable: boolean): Promise<boolean>;
-    deleteUser(id: String): Promise<boolean>;
+    getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<ContainsMany<UserModel> | null>
+    getUser(id: string): Promise<UserModel | null>;
+    addUser(id: string, name: string, username: string, email: string,
+		enabled: boolean, builtIn: boolean) : Promise<UserModel | null>;
+    updateUser(id: string, user: UserModel) : Promise<UserModel | null>;
+    enableUser(id: string, enableOrDisable: boolean): Promise<boolean>;
+    deleteUser(id: string): Promise<boolean>;
 }

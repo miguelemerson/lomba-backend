@@ -1,27 +1,89 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
 import { UserDataSourceImpl} from '../../../src/data/datasources/user_data_source';
-import { UserModel } from "../../../src/data/models/user_model";
+import { UserModel } from '../../../src/data/models/user_model';
+import { MongoWrapper } from '../../../src/core/wrappers/mongo_wrapper';
 
-describe("User MongoDB DataSource", () => {
+describe('User MongoDB DataSource', () => {
 
-    let mockMongoClient: MongoClient
+	let dataSource: UserDataSourceImpl;
+	let mongoWrapper: MongoWrapper<UserModel>;
 
-    beforeAll(async () => {
-        
-        const uri = "mongodb+srv://lomba:ypgZLQkw3NHJElTx@cluster0.j0aztjy.mongodb.net/?retryWrites=true&w=majority";
-        mockMongoClient = new MongoClient
-        (uri, { serverApi: ServerApiVersion.v1 });
-    })
+	const listUsers: UserModel[] = [
+		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
+		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
+	];
 
-    beforeEach(() => {
-        jest.clearAllMocks();
-    })
+	beforeAll(async () => {
+		mongoWrapper = ({
+			getMany: jest.fn(),
+			getOne: jest.fn(),
+			add: jest.fn(),
+			update: jest.fn(),
+			enable: jest.fn(),
+			delete: jest.fn(),
+		} as unknown) as MongoWrapper<UserModel>;
 
-test("crear un usuario", async () => {
-    let dataSource = new UserDataSourceImpl(mockMongoClient);
-    const user = new UserModel("1", "miguel", "mperedo", "mp@mp.com", true, true);
-    const result = dataSource.addUser(user);
-    console.log(result);
-});
+		dataSource = new UserDataSourceImpl(mongoWrapper);
+
+	});
+
+	afterEach(()=> {
+		jest.restoreAllMocks();
+	});
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	test('conseguir muchos usuarios en una lista', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(listUsers));
+
+		//act
+		const data = await dataSource.getMany({_id: 'aaa'});
+
+		//assert
+		expect(mongoWrapper.getMany).toBeCalledTimes(1);
+		expect(data).toEqual(listUsers);
+
+	});
+
+	test('conseguir nullo al buscar muchos usuarios', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(null));
+
+		//act
+		const data = await dataSource.getMany({_id: 'aaa'});
+
+		//assert
+		expect(mongoWrapper.getMany).toBeCalledTimes(1);
+		expect(data).toEqual(null);
+
+	});
+
+	test('conseguir un usuario', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(listUsers[0]));
+
+		//act
+		const data = await dataSource.getOne('aaa');
+
+		//assert
+		expect(mongoWrapper.getOne).toBeCalledTimes(1);
+		expect(data).toEqual(listUsers[0]);
+
+	});
+
+	test('agregar un usuario', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'add').mockImplementation(() => Promise.resolve(listUsers[0]));
+
+		//act
+		const data = await dataSource.add(listUsers[0]);
+
+		//assert
+		expect(mongoWrapper.add).toBeCalledWith(listUsers[0]);
+		expect(data).toEqual(listUsers[0]);
+
+	});
 
 });

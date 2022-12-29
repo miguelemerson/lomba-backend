@@ -1,48 +1,97 @@
-import { MongoClient } from "mongodb";
-import { UserModel } from "../models/user_model";
+import { UserModel } from '../models/user_model';
+import { MongoWrapper } from '../../core/wrappers/mongo_wrapper';
+import { User } from '../../domain/entities/user';
+import { ContainsMany } from '../../core/contains_many';
+
 
 export interface UserDataSource {
-    getUsers(orgaId: string): Promise<UserModel[]>;
-    getUser(id: String): Promise<UserModel>;
-    addUser(user: UserModel) : Promise<UserModel>;
-    updateUser(id: string, user: UserModel): Promise<UserModel>;
-    enableUser(userId: String, enableOrDisable: boolean): Promise<boolean>;
-    deleteUser(id: String): Promise<boolean>;
+    getMany(query: object, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ContainsMany<UserModel> | null>;
+    getOne(id: string): Promise<UserModel | null>;
+    add(user: UserModel) : Promise<UserModel | null>;
+    update(id: string, user: UserModel): Promise<UserModel | null>;
+    enable(id: string, enableOrDisable: boolean): Promise<boolean>;
+    delete(id: string): Promise<boolean>;
 }
 
 export class UserDataSourceImpl implements UserDataSource {
-    db: any;
-    constructor(client: MongoClient){
-        this.db = client.db("USERS_DB");
-    }
+	collection: MongoWrapper<UserModel>;
 
-    async getUsers(orgaId: string): Promise<UserModel[]>{
+	constructor(dbMongo: MongoWrapper<UserModel>){
+		this.collection = dbMongo;
+	}
 
-        let users: UserModel[] = [];
+	async getMany(query: object, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ContainsMany<UserModel> | null>{
+		return await this.collection.getMany<UserModel>(query, sort, pageIndex, itemsPerPage);
+	}
+	async getOne(id: string): Promise<UserModel | null>{
+		return await this.collection.getOne(id);
+	}
+	async add(user: UserModel) : Promise<UserModel | null>{
+		return await this.collection.add(user);
+	}
+	async update(id: string, user: UserModel): Promise<UserModel | null>{
+		return await this.collection.update(id, user);
+	}
+	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
+		return await this.collection.enable(id, enableOrDisable);
+	}
+	async delete(id: string): Promise<boolean>{
+		return await this.collection.delete(id);
+	}
+	/*
+	async getMany(query: object, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<UserModel[] | null>{
+		let result = null;
+		if(sort == null && pageIndex == null)
+			result = await this.collection.collection<UserModel>('users')
+				.find(query).toArray();
+		if(sort != null && pageIndex == null)
+			result = await this.collection.collection<UserModel>('users')
+				.find(query).sort(sort).toArray();
+		if(sort != null && pageIndex != null)
+		{
+			const limit:number = (itemsPerPage == null ? 10 : itemsPerPage);
+			const skip:number = pageIndex * limit;
+			result = await this.collection.collection<UserModel>('users')
+				.find(query).sort(sort).skip(skip).limit(limit).toArray();
+		}
+		return result;
+	}
 
-        return users;
+	async getOne(id: string): Promise<UserModel | null>{
+		const result = await this.collection.collection<UserModel>('users').findOne({_id: id});
+		return result;
+	}
 
-    }
-    async getUser(id: String): Promise<UserModel>{
+	async add(user: UserModel) : Promise<UserModel | null>{
+		const result = await this.collection.collection<UserModel>('users').insertOne(user);
+		const rn = await this.getOne(result.insertedId);
+		return rn;
+	}
 
-        const result = this.db.collection("users").findMany();
-        return result;
+	async update(id: string, user: UserModel): Promise<UserModel | null>{
+		const result = await this.collection.collection<UserModel>('users').updateOne({_id: id}, user);
+		const rn = await this.getOne(result.upsertedId.toString());
+		return rn;
 
-    }
-    async addUser(user: UserModel) : Promise<UserModel>{
-        const result = this.db.collection("users").insertOne(user);
-        return result;
-    }
-    async updateUser(id: string, user: UserModel): Promise<UserModel>{
-        const result = this.db.collection("user").updateOne({_id : id}, user);
-        return result;
-    }
-    async enableUser(userId: String, enableOrDisable: boolean): Promise<boolean>{
-        return true;
-    }
-    async deleteUser(id: String): Promise<boolean>{
-        const result = this.db.collection("user").deleteOne({ _id: id });
-        return result;
-    }    
+	}
+	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
+		const result = await this.collection.collection<UserModel>('users')
+			.updateOne({_id: id}, {enabled: enableOrDisable, updated: new Date()});
+		return (result.modifiedCount > 0);
+	}
+	async delete(id: string): Promise<boolean>{
+		const rn = await this.getOne(id);
+		if(rn != null && rn instanceof UserModel){
+			rn.deleted = new Date();
+			await this.collection.collection<UserModel>('users_deleted').insertOne(rn);
+			const result = await this.collection.collection<UserModel>('users').deleteOne({_id: id});
+			return (result.deletedCount > 0);
+		}
 
+		return false;
+	}    
+*/
 }

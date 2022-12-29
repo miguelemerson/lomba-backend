@@ -1,7 +1,7 @@
-import { RoleModel } from "../models/role_model";
+import { RoleModel } from '../models/role_model';
 
 export interface RoleDataSource {
     getRoles(): Promise<RoleModel[]>;
-    getRole(name: String): Promise<RoleModel>;
-    enableRole(name: String, enableOrDisable: boolean): boolean;
+    getRole(name: string): Promise<RoleModel>;
+    enableRole(name: string, enableOrDisable: boolean): Promise<boolean>;
 }
