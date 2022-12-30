@@ -1,6 +1,7 @@
 import { UserDataSourceImpl} from '../../../src/data/datasources/user_data_source';
 import { UserModel } from '../../../src/data/models/user_model';
 import { MongoWrapper } from '../../../src/core/wrappers/mongo_wrapper';
+import { ModelContainer } from '../../../src/core/model_container';
 
 describe('User MongoDB DataSource', () => {
 
@@ -36,7 +37,7 @@ describe('User MongoDB DataSource', () => {
 
 	test('conseguir muchos usuarios en una lista', async () => {
 		//arrange
-		jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(listUsers));
+		jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listUsers)));
 
 		//act
 		const data = await dataSource.getMany({_id: 'aaa'});
@@ -62,7 +63,7 @@ describe('User MongoDB DataSource', () => {
 
 	test('conseguir un usuario', async () => {
 		//arrange
-		jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(listUsers[0]));
+		jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 
 		//act
 		const data = await dataSource.getOne('aaa');
@@ -75,14 +76,14 @@ describe('User MongoDB DataSource', () => {
 
 	test('agregar un usuario', async () => {
 		//arrange
-		jest.spyOn(mongoWrapper, 'add').mockImplementation(() => Promise.resolve(listUsers[0]));
+		jest.spyOn(mongoWrapper, 'add').mockImplementation(() => Promise.resolve(true));
 
 		//act
 		const data = await dataSource.add(listUsers[0]);
 
 		//assert
 		expect(mongoWrapper.add).toBeCalledWith(listUsers[0]);
-		expect(data).toEqual(listUsers[0]);
+		expect(data).toEqual(true);
 
 	});
 
