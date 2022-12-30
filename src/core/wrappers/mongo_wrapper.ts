@@ -1,13 +1,13 @@
 import { Db, Document } from 'mongodb';
 import {  } from '../../domain/entities/entity';
-import { ContainsMany } from '../contains_many';
+import { ModelContainer } from '../model_container';
 
 export interface NoSQLDatabaseWrapper<T>{
     getMany(query: object, sort?: [string, 1 | -1][],
-		pageIndex?: number, itemsPerPage?: number): Promise<ContainsMany<T> | null>;
-    getOne(id: string): Promise<unknown | null>;
-    add(obj: T) : Promise<unknown | null>;
-    update(id: string, obj: object): Promise<unknown | null>;
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T> | null>;
+    getOne(id: string): Promise<ModelContainer<T> | null>;
+    add(obj: T) : Promise<boolean>;
+    update(id: string, obj: object): Promise<boolean>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
 }
@@ -62,27 +62,8 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		}
 		return totalItems;
 	}
-
-	async getMany<T>(query: object, sort?: [string, 1 | -1][],
-		pageIndex?: number, itemsPerPage?: number): Promise<ContainsMany<T> | null>{
-		let result = null;
-		let startIndex = 1;
-		let totalPages = 0;  
-
-		let totalItems:number | undefined = undefined;
-		({ totalItems, result, startIndex, totalPages } = 
-			await this.runQuery(pageIndex, totalItems, query, 
-				sort, result, itemsPerPage, startIndex, totalPages));
-	
-		if(result == null) return null;
-
-		const contains_many = this.createContainsMany<T>(result, itemsPerPage, pageIndex, startIndex, totalItems, totalPages);
-
-		return contains_many;
-	}
-
-	private createContainsMany<T>(result: unknown, itemsPerPage: number | undefined, pageIndex: number | undefined, startIndex: number, totalItems: number | undefined, totalPages: number) {
-		const contains_many = new ContainsMany<T>(result as T[]);
+	private createModelContainer<T>(result: unknown, itemsPerPage: number | undefined, pageIndex: number | undefined, startIndex: number, totalItems: number | undefined, totalPages: number) {
+		const contains_many = new ModelContainer<T>(result as T[]);
 		contains_many.itemsPerPage = itemsPerPage;
 		contains_many.pageIndex = pageIndex;
 		contains_many.startIndex = (startIndex == 1 ? undefined : startIndex);
@@ -90,45 +71,59 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		contains_many.totalPages = (totalPages == 0 ? undefined : totalPages);
 		return contains_many;
 	}
+	async getMany<T>(query: object, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T> | null>{
+		let result = null;
+		let startIndex = 1;
+		let totalPages = 0;  
+		let totalItems:number | undefined = undefined;
 
-	async getOne<T>(id: string): Promise<T | null>{
-		
+		({ totalItems, result, startIndex, totalPages } = 
+			await this.runQuery(pageIndex, totalItems, query, 
+				sort, result, itemsPerPage, startIndex, totalPages));
+	
+		if(result == null) return null;
+
+		const contains_many = this.createModelContainer<T>(result, itemsPerPage, pageIndex, startIndex, totalItems, totalPages);
+
+		return contains_many;
+	}
+
+	async getOne<T>(id: string): Promise<ModelContainer<T> | null>{
 		const result = await this.db.collection<Document>(this.collectionName).findOne({'_id': id});
-		return result as T;
+		if(result == null) return result;
+		return ModelContainer.fromOneItem(result as T);
 	}
 
-	async add<T>(obj: T) : Promise<T | null>{
+	async add<T>(obj: T) : Promise<boolean>{
 		const result = await this.db.collection<Document>(this.collectionName).insertOne(obj as Document);
-		const rn = await this.getOne(result.insertedId.toString());
-		return rn as T;
+		return (result?.insertedId ? true: false);
 	}
 
-	async update<T>(id: string, obj: object): Promise<T | null>{
+	async update(id: string, obj: object): Promise<boolean>{
 		const params = (obj as {[x: string]: unknown;});
 		if(obj != null)
 			params['updated'] = new Date();
 		const result = await this.db.collection<Document>(this.collectionName).updateOne({_id: id}, {$set:params});
-		if(result.modifiedCount > 0)
-		{
-			const rn = await this.getOne(id);
-			return rn as T;
-		} else return null;
+		return (result?.modifiedCount > 0 ? true : false);
 
 	}
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		const result = await this.db.collection<Document>(this.collectionName)
 			.updateOne({_id: id}, {$set: {enabled: enableOrDisable, updated: new Date()}});
-		return (result.modifiedCount > 0);
+		return (result?.modifiedCount > 0);
 	}
-	async delete<T>(id: string): Promise<boolean>{
-		const rn = await this.update<T>(id, {'deleted': new Date()});
-		if(rn != null){
-			await this.db.collection<Document>(this.collectionName + '_deleted').insertOne(rn as Document);
-			const result = await this.db.collection<Document>(this.collectionName).deleteOne({_id: id});
-			return (result.deletedCount > 0);
+	async delete(id: string): Promise<boolean>{
+		const rn = await this.update(id, {'deleted': new Date()});
+		if(rn){
+			const i = await this.db.collection<Document>(this.collectionName).findOne({'_id': id});
+			if(i != null)
+			{
+				await this.db.collection<Document>(this.collectionName + '_deleted').insertOne(i as Document);
+				const result = await this.db.collection<Document>(this.collectionName).deleteOne({_id: id});
+				return (result.deletedCount > 0);
+			}
 		}
-
 		return false;
 	}    
-
 }

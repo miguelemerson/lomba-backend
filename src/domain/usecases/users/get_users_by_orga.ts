@@ -1,10 +1,10 @@
-import { ContainsMany } from '../../../core/contains_many';
+import { ModelContainer } from '../../../core/model_container';
 import { UserModel } from '../../../data/models/user_model';
 import { User } from '../../entities/user';
 import { UserRepository } from '../../repositories/user_repository';
 
 export interface GetUsersByOrgaIdUseCase {
-    execute(orgaId:string): Promise<ContainsMany<UserModel> | null>;
+    execute(orgaId:string): Promise<ModelContainer<UserModel> | null>;
 }
 
 export class GetUsersByOrgaId implements GetUsersByOrgaIdUseCase {
@@ -13,7 +13,7 @@ export class GetUsersByOrgaId implements GetUsersByOrgaIdUseCase {
 		this.repository = repository;
 	}
 
-	async execute(orgaId: string): Promise<ContainsMany<UserModel> | null> {
+	async execute(orgaId: string): Promise<ModelContainer<UserModel> | null> {
 		return await this.repository.getUsersByOrgaId(orgaId);
 	}
 }

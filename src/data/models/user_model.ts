@@ -30,8 +30,6 @@ export class UserModel implements User, Entity {
 
 	public toEntity(): User {
 		return {id: this.id, name: this.name, 
-			username: this.username, email: this.email, 
-			builtin: this.builtin, enabled: this.enabled, 
-			created: this.created};
+			username: this.username, email: this.email};
 	}
 }

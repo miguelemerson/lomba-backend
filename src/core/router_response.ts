@@ -1,8 +1,6 @@
 import { DatabaseException } from './errors/database_exception';
 import { NetworkException } from './errors/network_exception';
-import { isTypedArray } from 'util/types';
-import { INSPECT_MAX_BYTES } from 'buffer';
-import { ContainsMany } from './contains_many';
+import { ModelContainer } from './model_container';
 import crypto from 'crypto';
 
 export class RouterResponse{
@@ -14,7 +12,7 @@ export class RouterResponse{
 	params?: object;
 	data?:DataResponse;
 	error?:ErrorResponse;
-	constructor(apiVersion:string, response:object | null, method?:string, params?:object, context?:string){
+	constructor(apiVersion:string, response:object | string | null, method?:string, params?:object, context?:string){
 		this.apiVersion = apiVersion;
 		this.method = method;
 		this.params = params;
@@ -27,7 +25,7 @@ export class RouterResponse{
 	
 }
 
-function setDataError(response: object | null, routerResponse:RouterResponse) {
+function setDataError(response: object | string | null, routerResponse:RouterResponse) {
 	if (response instanceof DatabaseException) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.code, response.message);
@@ -60,9 +58,12 @@ function setDataError(response: object | null, routerResponse:RouterResponse) {
 	} else if (response instanceof Error) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.name, response.message);
+	} else if (typeof response === 'string') {
+		routerResponse.data = undefined;
+		routerResponse.error = new ErrorResponse(404, response);
 	} else {
 		routerResponse.error = undefined;
-		if (response instanceof ContainsMany) {
+		if (response instanceof ModelContainer) {
 			routerResponse.data = {
 				items: response.items,
 				kind: typeof (response.items).toString(),

@@ -1,4 +1,4 @@
-export class ContainsMany<T>{
+export class ModelContainer<T>{
 	items:T[];
 	currentItemCount?:number;
 	itemsPerPage?:number;
@@ -6,13 +6,13 @@ export class ContainsMany<T>{
 	totalItems?:number;
 	pageIndex?:number;
 	totalPages?:number;
-	kind?:string;    
+	kind?:string;
 	constructor(items: T[])
 	{
 		this.items = items;
 		this.currentItemCount = items.length;
 	}
-	public static fromOneItem<T>(item:T) : ContainsMany<T>{
-		return new ContainsMany<T>([item]);
+	public static fromOneItem<T>(item:T) : ModelContainer<T>{
+		return new ModelContainer<T>([item]);
 	}
 } 	

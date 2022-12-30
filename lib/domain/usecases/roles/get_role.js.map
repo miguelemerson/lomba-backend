@@ -1,0 +1,1 @@
+{"version":3,"file":"get_role.js","sourceRoot":"","sources":["../../../../src/domain/usecases/roles/get_role.ts"],"names":[],"mappings":";;;;;;;;;;;;AASA,MAAa,OAAO;IAEnB,YAAY,UAA0B;QACrC,IAAI,CAAC,UAAU,GAAG,UAAU,CAAC;IAC9B,CAAC;IAEK,OAAO,CAAC,EAAU;;YACvB,OAAO,MAAM,IAAI,CAAC,UAAU,CAAC,OAAO,CAAC,EAAE,CAAC,CAAC;QAC1C,CAAC;KAAA;CACD;AATD,0BASC"}

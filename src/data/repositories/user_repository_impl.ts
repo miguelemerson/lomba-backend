@@ -4,8 +4,7 @@ import { UserDataSource } from '../datasources/user_data_source';
 import { UserModel } from '../models/user_model';
 import { DatabaseException } from '../../core/errors/database_exception';
 import { NetworkException } from '../../core/errors/network_exception';
-import { User } from '../../domain/entities/user';
-import { ContainsMany } from '../../core/contains_many';
+import { ModelContainer } from '../../core/model_container';
 
 export class UserRepositoryImpl implements UserRepository {
 	dataSource: UserDataSource;
@@ -13,7 +12,7 @@ export class UserRepositoryImpl implements UserRepository {
 		this.dataSource = dataSource;
 	}
 
-	async getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<ContainsMany<UserModel> | null> {
+	async getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<ModelContainer<UserModel> | null> {
 		try
 		{
 			const result = await this.dataSource.getMany({'orgas.id' : orgaId}, sort);
@@ -29,7 +28,7 @@ export class UserRepositoryImpl implements UserRepository {
 		}
 		return null;
 	}
-	async getUser(id: string): Promise<UserModel | null> {
+	async getUser(id: string): Promise<ModelContainer<UserModel> | null> {
 		try
 		{
 			const result = await this.dataSource.getOne(id);
@@ -47,7 +46,7 @@ export class UserRepositoryImpl implements UserRepository {
 		return null;
 	}
 	async addUser(id: string, name: string, username: string, email: string,
-		enabled: boolean, builtIn: boolean) : Promise<UserModel | null> {
+		enabled: boolean, builtIn: boolean) : Promise<ModelContainer<UserModel> | null> {
 		try{
 			const user: UserModel = new UserModel(id, name, username, email, enabled, builtIn);
 			const result = this.dataSource.add(user);
@@ -65,7 +64,7 @@ export class UserRepositoryImpl implements UserRepository {
 		return null;
 	}
 
-	async updateUser(id: string, user: UserModel) : Promise<UserModel | null>{
+	async updateUser(id: string, user: UserModel) : Promise<ModelContainer<UserModel> | null>{
 		try{
 			const result = this.dataSource.update(id, user);
 			return result;
