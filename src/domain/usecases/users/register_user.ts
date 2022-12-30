@@ -12,6 +12,6 @@ export class RegisterUser implements RegisterUserUseCase {
 	}
 
 	async execute(userId: string, auth:Auth): Promise<boolean | null> {
-		return await this.repository.registerPassword(userId, auth);
+		return await this.repository.addPassword(userId, auth);
 	}
 }
