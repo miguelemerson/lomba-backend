@@ -2,9 +2,9 @@ import { MongoError } from 'mongodb';
 import { UserRepository } from '../../domain/repositories/user_repository';
 import { UserDataSource } from '../datasources/user_data_source';
 import { UserModel } from '../models/user_model';
-import { DatabaseException } from '../../core/errors/database_exception';
-import { NetworkException } from '../../core/errors/network_exception';
 import { ModelContainer } from '../../core/model_container';
+import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
+import { Either } from '../../core/either';
 
 export class UserRepositoryImpl implements UserRepository {
 	dataSource: UserDataSource;
@@ -12,106 +12,102 @@ export class UserRepositoryImpl implements UserRepository {
 		this.dataSource = dataSource;
 	}
 
-	async getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<ModelContainer<UserModel> | null> {
+	async getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure,ModelContainer<UserModel>>> {
 		try
 		{
 			const result = await this.dataSource
 				.getMany({'orgas.id' : orgaId}, sort);
-			return result;
+			
+			return Either.right(result);		
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 		}
-		return null;
 	}
-	async getUser(id: string): Promise<ModelContainer<UserModel> | null> {
+	async getUser(id: string): Promise<Either<Failure,ModelContainer<UserModel>>> {
 		try
 		{
 			const result = await this.dataSource.getOne(id);
-			return result;
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
-			
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 		}
-		return null;
 	}
 	async addUser(id: string, name: string, username: string, email: string,
-		enabled: boolean, builtIn: boolean) : Promise<ModelContainer<UserModel> | null> {
+		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<UserModel>>> {
 		try{
 			const user: UserModel = new UserModel(id, name, username, email, enabled, builtIn);
-			const result = this.dataSource.add(user);
-			return result;
+			const result = await this.dataSource.add(user);
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
-			
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 		}
-		return null;
 	}
 
-	async updateUser(id: string, user: UserModel) : Promise<ModelContainer<UserModel> | null>{
+	async updateUser(id: string, user: UserModel) : Promise<Either<Failure,ModelContainer<UserModel>>>{
 		try{
-			const result = this.dataSource.update(id, user);
-			return result;
+			const result = await this.dataSource.update(id, user);
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
-			
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 		}
-		return null;
 	}
 
-	async enableUser(id: string, enableOrDisable: boolean): Promise<boolean>{
+	async enableUser(id: string, enableOrDisable: boolean): Promise<Either<Failure,boolean>>{
 		try{
-			const result = this.dataSource.enable(id, enableOrDisable);
-			return result;
+			const result = await this.dataSource.enable(id, enableOrDisable);
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
-			
-		}	
-		return false;
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+		}
 	}
-	async deleteUser(id: string): Promise<boolean>{
+	async deleteUser(id: string): Promise<Either<Failure,boolean>>{
 		try{
-			const result = this.dataSource.delete(id);
-			return result;
+			const result = await this.dataSource.delete(id);
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
-			
-		}	
-		return false;		
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+		}
 	}
 }

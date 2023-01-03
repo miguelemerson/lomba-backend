@@ -1,1 +1,0 @@
-{"version":3,"file":"model_container.js","sourceRoot":"","sources":["../../src/core/model_container.ts"],"names":[],"mappings":";;;AAAA,MAAa,cAAc;IAS1B,YAAY,KAAU;QAErB,IAAI,CAAC,KAAK,GAAG,KAAK,CAAC;QACnB,IAAI,CAAC,gBAAgB,GAAG,KAAK,CAAC,MAAM,CAAC;IACtC,CAAC;IACM,MAAM,CAAC,WAAW,CAAI,IAAM;QAClC,OAAO,IAAI,cAAc,CAAI,CAAC,IAAI,CAAC,CAAC,CAAC;IACtC,CAAC;CACD;AAjBD,wCAiBC"}

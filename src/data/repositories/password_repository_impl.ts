@@ -1,6 +1,4 @@
 import { MongoError } from 'mongodb';
-import { DatabaseException } from '../../core/errors/database_exception';
-import { NetworkException } from '../../core/errors/network_exception';
 import { ModelContainer } from '../../core/model_container';
 import { PasswordRepository } from '../../domain/repositories/password_repository';
 import { Auth } from '../../domain/entities/auth';

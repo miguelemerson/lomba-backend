@@ -4,8 +4,8 @@ import { ModelContainer } from '../model_container';
 
 export interface NoSQLDatabaseWrapper<T>{
     getMany(query: object, sort?: [string, 1 | -1][],
-		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T> | null>;
-    getOne(id: string): Promise<ModelContainer<T> | null>;
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>;
+    getOne(id: string): Promise<ModelContainer<T>>;
     add(obj: T) : Promise<boolean>;
     update(id: string, obj: object): Promise<boolean>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
@@ -73,7 +73,7 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		return contains_many;
 	}
 	async getMany<T>(query: object, sort?: [string, 1 | -1][],
-		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T> | null>{
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>{
 		let result = null;
 		let startIndex = 1;
 		let totalPages = 0;  
@@ -83,16 +83,20 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 			await this.runQuery(pageIndex, totalItems, query, 
 				sort, result, itemsPerPage, startIndex, totalPages));
 	
-		if(result == null) return null;
+		if(result == null || result == undefined){
+			throw new Error('null value');
+		}
 
 		const contains_many = this.createModelContainer<T>(result, itemsPerPage, pageIndex, startIndex, totalItems, totalPages);
 
 		return contains_many;
 	}
 
-	async getOne<T>(id: string): Promise<ModelContainer<T> | null>{
+	async getOne<T>(id: string): Promise<ModelContainer<T>>{
 		const result = await this.db.collection<Document>(this.collectionName).findOne({'_id': id});
-		if(result == null) return result;
+		if(result == null || result == undefined){
+			throw new Error('null value');
+		}
 		return ModelContainer.fromOneItem(result as T);
 	}
 
