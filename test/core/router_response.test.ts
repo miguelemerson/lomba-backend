@@ -1,9 +1,8 @@
 import { UserModel } from '../../src/data/models/user_model';
-import { DatabaseException} from '../../src/core/errors/database_exception';
 import { MongoError } from 'mongodb';
 import { ErrorResponse, RouterResponse} from '../../src/core/router_response';
-import { NetworkException } from '../../src/core/errors/network_exception';
 import { ModelContainer } from '../../src/core/model_container';
+import { DatabaseFailure, GenericFailure, NetworkFailure } from '../../src/core/errors/failures';
 
 describe('Test para el router response', () => {
 
@@ -16,9 +15,9 @@ describe('Test para el router response', () => {
 		jest.clearAllMocks();
 	});
 
-	test('Un router response de DatabaseException', () => {
+	test('Un router response de DatabaseFailure', () => {
 		//arrange
-		const exc = new DatabaseException('errorname', 'message error', '099', new MongoError('mongomessage'));
+		const exc = new DatabaseFailure('errorname', 'message error', '099', new MongoError('mongomessage'));
 
 		//act
 		const result = new RouterResponse('1.0', exc, 'test', {}, 'test');
@@ -30,9 +29,22 @@ describe('Test para el router response', () => {
 		expect(result.error?.errors?.length).toBeGreaterThanOrEqual(1);
 	});
 
-	test('Un router response de NetworkException', () => {
+	test('Un router response de NetworkFailure', () => {
 		//arrange
-		const exc = new NetworkException('errorname', 'message error', '098', new Error('netmessage'));
+		const exc = new NetworkFailure('errorname', 'message error', '098', new Error('netmessage'));
+
+		//act
+		const result = new RouterResponse('1.0', exc, 'test', {}, 'test');
+
+		//assert
+		expect(result.data).toBeUndefined();
+		expect(result.error).toBeDefined();
+		expect(result.error).toBeInstanceOf(ErrorResponse);
+	});
+
+	test('Un router response de GenericFailure', () => {
+		//arrange
+		const exc = new GenericFailure('errorname', 'message error');
 
 		//act
 		const result = new RouterResponse('1.0', exc, 'test', {}, 'test');

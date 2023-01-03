@@ -1,7 +1,7 @@
 import { UserModel } from '../models/user_model';
 import { MongoWrapper } from '../../core/wrappers/mongo_wrapper';
-import { User } from '../../domain/entities/user';
 import { ModelContainer } from '../../core/model_container';
+import crypto from 'crypto';
 
 
 export interface UserDataSource {
@@ -12,6 +12,7 @@ export interface UserDataSource {
     update(id: string, user: object): Promise<ModelContainer<UserModel>>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
+	setId(obj: UserModel): UserModel;
 }
 
 export class UserDataSourceImpl implements UserDataSource {
@@ -28,13 +29,9 @@ export class UserDataSourceImpl implements UserDataSource {
 	async getOne(id: string): Promise<ModelContainer<UserModel>>{
 		return await this.collection.getOne(id);
 	}
-	async add(user: UserModel) : Promise<ModelContainer<UserModel>>{
-		if(user.id == undefined)
-		{
-			user.id = crypto.randomUUID();
-			user._id = user.id;
-		}
 
+	async add(user: UserModel) : Promise<ModelContainer<UserModel>>{
+		user = this.setId(user);
 		return await this.collection.add(user).then(() => this.getOne(user.id));
 		
 	}
@@ -47,5 +44,13 @@ export class UserDataSourceImpl implements UserDataSource {
 	async delete(id: string): Promise<boolean>{
 		return await this.collection.delete(id);
 	}
-
+	public setId(obj: UserModel): UserModel
+	{
+		if(obj.id == '')
+		{
+			obj.id = crypto.randomUUID();
+			obj._id = obj.id;
+		}
+		return obj;
+	} 
 }

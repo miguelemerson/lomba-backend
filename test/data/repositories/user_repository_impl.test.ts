@@ -1,31 +1,31 @@
 import { MongoError } from 'mongodb';
-import { DatabaseException } from '../../../src/core/errors/database_exception';
 import { ModelContainer } from '../../../src/core/model_container';
 import { UserDataSource } from '../../../src/data/datasources/user_data_source';
 import { UserModel } from '../../../src/data/models/user_model';
-import {UserRepositoryImpl} from '../../../src/data/repositories/user_repository_impl';
+import { UserRepositoryImpl } from '../../../src/data/repositories/user_repository_impl';
+import { DatabaseFailure, GenericFailure, NetworkFailure } from '../../../src/core/errors/failures';
 
 class MockUserDataSource implements UserDataSource {
-	getMany(query: object, sort?: [string, 1 | -1][],
-		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<UserModel> | null> {
+	getMany(): Promise<ModelContainer<UserModel>> {
 		throw new Error('Method not implemented.');
 	}    
 
-	getOne(id: string): Promise<ModelContainer<UserModel> | null>{
+	getOne(): Promise<ModelContainer<UserModel>>{
 		throw new Error('Method not implemented.');
 	}
-	add(user: UserModel) : Promise<ModelContainer<UserModel> | null>{
+	add() : Promise<ModelContainer<UserModel>>{
 		throw new Error('Method not implemented.');
 	}
-	update(id: string, user: object): Promise<ModelContainer<UserModel> | null>{
+	update(): Promise<ModelContainer<UserModel>>{
 		throw new Error('Method not implemented.');
 	}
-	enable(id: string, enableOrDisable: boolean): Promise<boolean>{
+	enable(): Promise<boolean>{
 		throw new Error('Method not implemented.');
 	}
-	delete(id: string): Promise<boolean>{
+	delete(): Promise<boolean>{
 		throw new Error('Method not implemented.');
 	}
+	setId():UserModel{throw new Error('Method not implemented.');}
 }
 
 describe('User Repository Implementation', () => {
@@ -51,29 +51,112 @@ describe('User Repository Implementation', () => {
 			//act
 			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
 			//assert
-			expect(result).toEqual(new ModelContainer(expectedData));
+			expect(result.isRight()).toBeTruthy();
+			expect(result.getOrThrow()).toEqual(new ModelContainer(expectedData));
 		});
-		/*
+		
 		test('deberá generar error de Database', async () => {
 			//arrange
 			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
-			//const func = userRepository.getUsersByOrgaId;
-			expect(userRepository.getUsersByOrgaId('aaa', undefined)).rejects.toThrow(DatabaseException);
-			
+			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
 			//assert
-			//expect(await func('aaa', undefined)).toBeDefined();
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
 		});
-        */
+
+		test('deberá generar error de Network', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			//act
+			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error genérico', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});				
+        
 	});
 
 	describe('getUser', () => {
 		test('debe entregar un usuario', async () => {
+			//arrange
 			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			//act
 			const result = await userRepository.getUser('aaa');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+
+			expect(result.isRight());
 			expect(mockUserDataSource.getOne).toHaveBeenCalledWith('aaa');
-			expect(result).toStrictEqual(ModelContainer.fromOneItem(listUsers[0]));
+			expect(value).toStrictEqual(ModelContainer.fromOneItem(listUsers[0]));
 		});
+
+		test('deberá generar error de Database al buscar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			//act
+			const result = await userRepository.getUser('aaa');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
+
+		test('deberá generar error de Network al buscar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.reject(new Error('neterror')));
+			//act
+			const result = await userRepository.getUser('aaa');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error genérico al buscar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await userRepository.getUser('aaa');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});	
+
 	});
 
 
@@ -83,9 +166,59 @@ describe('User Repository Implementation', () => {
 			jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 			//act
 			const result = await userRepository.addUser('aaa', 'admin', 'admin', 'mp@mp.com', true, false);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});	
+
+			//assert
+			expect(result.isRight());
 			expect(mockUserDataSource.add).toBeCalledTimes(1);
-			expect(result).toEqual(ModelContainer.fromOneItem(listUsers[0]));
+			expect(value).toEqual(ModelContainer.fromOneItem(listUsers[0]));
 		});
+
+		test('deberá generar error de Database al agregar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			//act
+			const result = await userRepository.addUser('aaa', 'admin', 'admin', 'mp@mp.com', true, false);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
+
+		test('deberá generar error de Network al agregar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.reject(new Error('neterror')));
+			//act
+			const result = await userRepository.addUser('aaa', 'admin', 'admin', 'mp@mp.com', true, false);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error genérico al agregar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await userRepository.addUser('aaa', 'admin', 'admin', 'mp@mp.com', true, false);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});	
+
 	});
 
 	describe('updateUser', () => {
@@ -94,10 +227,59 @@ describe('User Repository Implementation', () => {
 			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 			//act
 			const result = await userRepository.updateUser('uuu', listUsers[0]);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});			
 			//assert
+			expect(result.isRight());
 			expect(mockUserDataSource.update).toBeCalledTimes(1);
-			expect(result).toEqual(ModelContainer.fromOneItem(listUsers[0]));
+			expect(value).toEqual(ModelContainer.fromOneItem(listUsers[0]));
 		});
+
+		test('deberá generar error de Database al actualizar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			//act
+			const result = await userRepository.updateUser('uuu', listUsers[0]);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
+
+		test('deberá generar error de Network al actualizar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.reject(new Error('neterror')));
+			//act
+			const result = await userRepository.updateUser('uuu', listUsers[0]);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error genérico al actualizar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await userRepository.updateUser('uuu', listUsers[0]);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});	
+
+
 	});
 
 	describe('enableUser', () => {
@@ -107,9 +289,53 @@ describe('User Repository Implementation', () => {
 			//act
 			const result = await userRepository.enableUser('aaa', true);
 			//assert
+			expect(result.isRight());
 			expect(mockUserDataSource.enable).toBeCalledTimes(1);
-			expect(result).toEqual(true);
+			expect(result.getOrElse(false)).toEqual(true);
 		});
+
+		test('deberá generar error de Database al habilitar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'enable').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			//act
+			const result = await userRepository.enableUser('aaa', true);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
+
+		test('deberá generar error de Network al habilitar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'enable').mockImplementation(() => Promise.reject(new Error('neterror')));
+			//act
+			const result = await userRepository.enableUser('aaa', true);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error genérico al habilitar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'enable').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await userRepository.enableUser('aaa', true);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});	
+
 	});
 
 	describe('deleteUser', () => {
@@ -119,9 +345,52 @@ describe('User Repository Implementation', () => {
 			//act
 			const result = await userRepository.deleteUser('aaa');
 			//assert
+			expect(result.isRight());
 			expect(mockUserDataSource.delete).toBeCalledTimes(1);
-			expect(result).toEqual(true);
+			expect(result.getOrElse(false)).toEqual(true);
 		});
+
+		test('deberá generar error de Database al eliminar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'delete').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			//act
+			const result = await userRepository.deleteUser('aaa');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
+
+		test('deberá generar error de Network al eliminar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'delete').mockImplementation(() => Promise.reject(new Error('neterror')));
+			//act
+			const result = await userRepository.deleteUser('aaa');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error genérico al eliminar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'delete').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await userRepository.deleteUser('aaa');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});			
 	});
 
 
