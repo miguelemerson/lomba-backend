@@ -1,5 +1,4 @@
-import { DatabaseException } from './errors/database_exception';
-import { NetworkException } from './errors/network_exception';
+import { DatabaseFailure, GenericFailure, NetworkFailure } from './errors/failures';
 import { ModelContainer } from './model_container';
 import crypto from 'crypto';
 
@@ -21,10 +20,16 @@ export class RouterResponse{
 		this._id = this.id;
 		setDataError(response, this);
 	}
+
+	public static emptyResponse(): RouterResponse {
+		return new RouterResponse('1.0', null);
+	}
 }
 
+
+
 function setDataError(response: object | string | null, routerResponse:RouterResponse) {
-	if (response instanceof DatabaseException) {
+	if (response instanceof DatabaseFailure) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.code, response.message);
 		if (response.mongoError != null) {
@@ -43,7 +48,7 @@ function setDataError(response: object | string | null, routerResponse:RouterRes
 				});
 			}
 		}
-	} else if (response instanceof NetworkException) {
+	} else if (response instanceof NetworkFailure) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.code, response.message);
 		if (response.error != null) {
@@ -53,7 +58,16 @@ function setDataError(response: object | string | null, routerResponse:RouterRes
 				location: response.error.stack,
 			});
 		}
-	} else if (response instanceof Error) {
+	} else if (response instanceof GenericFailure) {
+		routerResponse.data = undefined;
+		routerResponse.error = new ErrorResponse(response.code, response.message);
+		if (response.error != null) {
+			routerResponse.error.addErrorItem({
+				domain: response.code?.toString(),
+				message: response.message,
+			});
+		}
+	}else if (response instanceof Error) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.name, response.message);
 	} else if (typeof response === 'string') {

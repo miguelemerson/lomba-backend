@@ -21,20 +21,20 @@ export default function UsersRouter(
 	router.get('/:id', async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
-		let toSend:RouterResponse;
+		let toSend = RouterResponse.emptyResponse();
 		try {
 			//execution
 			const user = await getUser.execute(req.params.id);
 			//evaluate
-			if(user == null)
-			{
-				code = 404;
-				toSend = new RouterResponse('1.0', 'Not found', 'get', {id: req.params.id} as object, 'user not getted');
-			} else
-			{
+			user.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error, 'get', {id: req.params.id} as object, 'not obtained');	
+			}, value => {
+				//isOK
 				code = 200;
-				toSend = new RouterResponse('1.0', user, 'get', {id: req.params.id} as object, 'geted by id');
-			}
+				toSend = new RouterResponse('1.0', value, 'get', {id: req.params.id} as object, 'geted by id');
+			});
 		} catch (err) {
 			//something wrong
 			code = 500;
@@ -47,21 +47,19 @@ export default function UsersRouter(
 	router.get('/byorga/:orgaId', async (req: Request<{orgaId:string}>, res: Response) => {
 		//definitions
 		let code = 500;
-		let toSend:RouterResponse;
+		let toSend = RouterResponse.emptyResponse();
 		try {
 			//execution
 			const users = await getUsersByOrgaId.execute(req.params.orgaId);
 			//evaluate
-			if(users == null || users.currentItemCount == 0)
-			{
-				code = 404;
-				toSend = new RouterResponse('1.0', 'Not found', 'get', {orgaId: req.params.orgaId} as object, 'users not getted');
-			}
-			else
-			{
+			users.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'get', {orgaId: req.params.orgaId} as object, 'not obtained by orga id');
+			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', users, 'get', {orgaId: req.params.orgaId} as object, 'geted by orga id');
-			}
+				toSend = new RouterResponse('1.0', value, 'get', {orgaId: req.params.orgaId} as object, 'geted by orga id');				
+			});
 		} catch (err) {
 			//something wrong
 			code = 500;
@@ -74,21 +72,19 @@ export default function UsersRouter(
 	router.post('/', async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
-		let toSend:RouterResponse;
+		let toSend = RouterResponse.emptyResponse();
 		try {
 			//execution
 			const user = await addUser.execute(req.body);
 			//evaluate
-			if(user == null)
-			{
-				code = 409;
-				toSend = new RouterResponse('1.0', 'Conflict', 'post', undefined, 'new user not added');
-			}
-			else
-			{
+			user.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'post', undefined, 'user was not added');	
+			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', user, 'post', undefined, 'new user added');
-			}
+				toSend = new RouterResponse('1.0', value, 'post', undefined, 'new user added');
+			});
 		} catch (err) {
 			//something wrong
 			code = 500;
@@ -101,21 +97,19 @@ export default function UsersRouter(
 	router.put('/:id', async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
-		let toSend:RouterResponse;		
+		let toSend = RouterResponse.emptyResponse();		
 		try {
 			//execution
 			const user = await updateUser.execute(req.params.id, req.body);
 			//evaluate
-			if(user == null)
-			{
-				code = 409;
-				toSend = new RouterResponse('1.0', 'Conflict', 'put', {id: req.params.id}, 'user not edited');
-			}
-			else
-			{
+			user.fold(error => {
+			//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'put', {id: req.params.id}, 'user was not edited');	
+			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', user, 'put', {id: req.params.id}, 'user edited');
-			}
+				toSend = new RouterResponse('1.0', value, 'put', {id: req.params.id}, 'user edited');
+			});
 		} catch (err) {
 			//something wrong
 			code = 500;
@@ -129,21 +123,19 @@ export default function UsersRouter(
 		const text = (req.query.enable === 'false' ? false : true) ? 'enabled' : 'disabled';
 		//definitions
 		let code = 500;
-		let toSend:RouterResponse;		
+		let toSend = RouterResponse.emptyResponse();		
 		try {
 			//execution
 			const result = await enableUser.execute(req.params.id, (req.query.enable === 'false' ? false : true));
 			//evaluate
-			if(result == null)
-			{
-				code = 409;
-				toSend = new RouterResponse('1.0', 'Conflict', 'put', {id: req.params.id, enable: req.query.enable}, 'user not ' + text);
-			}
-			else
-			{
+			result.fold(error => {
+			//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'put', {id: req.params.id, enable: req.query.enable}, 'user was not ' + text);	
+			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', {result}, 'put', {id: req.params.id, enable: req.query.enable}, 'user ' + text);
-			}
+				toSend = new RouterResponse('1.0', {value}, 'put', {id: req.params.id, enable: req.query.enable}, 'user ' + text);
+			});
 		} catch (err) {
 			//something wrong
 			code = 500;
@@ -151,27 +143,25 @@ export default function UsersRouter(
 		}
 		//respond cordially
 		res.status(code).send(toSend);
-
 	});
 
 	router.delete('/:id', async (req: Request<{id:string}>, res: Response) => {
 		//definitions
 		let code = 500;
-		let toSend:RouterResponse;			
+		let toSend = RouterResponse.emptyResponse();			
 		try {
 			//execution
 			const result = await deleteUser.execute(req.params.id);
 			//evaluate
-			if(result == null)
-			{
-				code = 409;
-				toSend = new RouterResponse('1.0', 'Conflict', 'delete', {id: req.params.id}, 'user not deleted');
-			}
-			else
-			{
+			result.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'delete', {id: req.params.id}, 'user was not deleted');
+			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', {result}, 'delete', {id: req.params.id}, 'user deleted');
-			}
+				toSend = new RouterResponse('1.0', {value}, 'delete', {id: req.params.id}, 'user deleted');
+			});
+
 		} catch (err) {
 			//something wrong
 			code = 500;
