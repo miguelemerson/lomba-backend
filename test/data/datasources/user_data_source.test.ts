@@ -44,11 +44,11 @@ describe('User MongoDB DataSource', () => {
 
 		//assert
 		expect(mongoWrapper.getMany).toBeCalledTimes(1);
-		expect(data).toEqual(listUsers);
+		expect(data).toEqual(new ModelContainer(listUsers));
 
 	});
 
-	test('conseguir nullo al buscar muchos usuarios', async () => {
+	test('conseguir nulo al buscar muchos usuarios', async () => {
 		//arrange
 		jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(null));
 
@@ -70,21 +70,60 @@ describe('User MongoDB DataSource', () => {
 
 		//assert
 		expect(mongoWrapper.getOne).toBeCalledTimes(1);
-		expect(data).toEqual(listUsers[0]);
+		expect(data).toEqual(ModelContainer.fromOneItem(listUsers[0]));
 
 	});
 
 	test('agregar un usuario', async () => {
 		//arrange
 		jest.spyOn(mongoWrapper, 'add').mockImplementation(() => Promise.resolve(true));
-
+		jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 		//act
 		const data = await dataSource.add(listUsers[0]);
 
 		//assert
 		expect(mongoWrapper.add).toBeCalledWith(listUsers[0]);
-		expect(data).toEqual(true);
+		expect(data).toEqual(ModelContainer.fromOneItem(listUsers[0]));
 
 	});
+
+	test('modificar un usuario', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'update').mockImplementation(() => Promise.resolve(true));
+		jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+		//act
+		const data = await dataSource.update(listUsers[0].id, listUsers[0]);
+
+		//assert
+		expect(mongoWrapper.update).toBeCalledWith(listUsers[0].id, listUsers[0]);
+		expect(data).toEqual(ModelContainer.fromOneItem(listUsers[0]));
+
+	});
+
+	test('deshabilitar un usuario', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'enable').mockImplementation(() => Promise.resolve(true));
+
+		//act
+		const data = await dataSource.enable(listUsers[0].id, false);
+
+		//assert
+		expect(mongoWrapper.enable).toBeCalledWith(listUsers[0].id, false);
+		expect(data).toEqual(true);
+
+	});	
+
+	test('delete un usuario', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'delete').mockImplementation(() => Promise.resolve(true));
+
+		//act
+		const data = await dataSource.delete(listUsers[0].id);
+
+		//assert
+		expect(mongoWrapper.delete).toBeCalledWith(listUsers[0].id);
+		expect(data).toEqual(true);
+
+	});	
 
 });

@@ -23,6 +23,7 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 	private async runQuery(pageIndex: number | undefined, totalItems: number | undefined, query: object, 
 		sort: [string, 1 | -1][] | undefined, result: unknown, itemsPerPage: number | undefined, startIndex: number, totalPages: number) {
 		totalItems = await this.setTotalItems(pageIndex, totalItems, query);
+		
 		if (sort == null && pageIndex == null)
 			result = await this.runSimpleQuery(result, query);
 		if (sort != null && pageIndex == null)

@@ -21,8 +21,6 @@ export class RouterResponse{
 		this._id = this.id;
 		setDataError(response, this);
 	}
-
-	
 }
 
 function setDataError(response: object | string | null, routerResponse:RouterResponse) {

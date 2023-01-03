@@ -11,4 +11,8 @@ export class RoleModel implements Role {
 	id:string;
 	name: string;
 	enabled: boolean;
+
+	public toEntity(): Role {
+		return {name:this.name};
+	}
 }
