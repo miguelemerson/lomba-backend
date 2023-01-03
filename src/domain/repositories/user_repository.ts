@@ -1,6 +1,5 @@
 import { ModelContainer } from '../../core/model_container';
 import { UserModel } from '../../data/models/user_model';
-import { User } from '../entities/user';
 
 export interface UserRepository {
     getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<ModelContainer<UserModel> | null>
