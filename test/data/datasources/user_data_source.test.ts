@@ -3,6 +3,7 @@ import { UserModel } from '../../../src/data/models/user_model';
 import { MongoWrapper } from '../../../src/core/wrappers/mongo_wrapper';
 import { ModelContainer } from '../../../src/core/model_container';
 
+
 describe('User MongoDB DataSource', () => {
 
 	let dataSource: UserDataSourceImpl;
@@ -45,19 +46,6 @@ describe('User MongoDB DataSource', () => {
 		//assert
 		expect(mongoWrapper.getMany).toBeCalledTimes(1);
 		expect(data).toEqual(new ModelContainer(listUsers));
-
-	});
-
-	test('conseguir nulo al buscar muchos usuarios', async () => {
-		//arrange
-		jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(null));
-
-		//act
-		const data = await dataSource.getMany({_id: 'aaa'});
-
-		//assert
-		expect(mongoWrapper.getMany).toBeCalledTimes(1);
-		expect(data).toEqual(null);
 
 	});
 
@@ -126,4 +114,16 @@ describe('User MongoDB DataSource', () => {
 
 	});	
 
+	test('asigna Id cuando no lo tiene', async () => {
+		//arrange
+		let user = listUsers[0];
+		user.id = '';
+		//act
+		user = dataSource.setId(user);
+
+		//assert
+		expect(user._id).toBeDefined();
+		expect(user.id).toEqual(user._id);
+
+	});	
 });

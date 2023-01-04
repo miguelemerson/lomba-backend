@@ -29,17 +29,20 @@ export class RouterResponse{
 
 
 function setDataError(response: object | string | null, routerResponse:RouterResponse) {
+	//DatabaseFailure
 	if (response instanceof DatabaseFailure) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.code, response.message);
 		if (response.mongoError != null) {
+			//mongoerror
 			routerResponse.error.addErrorItem({
-				domain: response.mongoError.code?.toString(),
+				domain: response.mongoError.code,
 				reason: response.mongoError.cause?.message,
 				message: response.mongoError.message,
 				location: response.mongoError.stack,
 				extendedHelp: response.mongoError.errmsg
 			});
+			//con causa (otro error)
 			if (response.mongoError.cause != null) {
 				routerResponse.error.addErrorItem({
 					domain: response.mongoError.cause.name,
@@ -48,33 +51,46 @@ function setDataError(response: object | string | null, routerResponse:RouterRes
 				});
 			}
 		}
+		//NetworkFailure
 	} else if (response instanceof NetworkFailure) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.code, response.message);
 		if (response.error != null) {
+			//con error cargado
 			routerResponse.error.addErrorItem({
-				domain: response.code?.toString(),
+				domain: response.code,
 				message: response.message,
 				location: response.error.stack,
 			});
 		}
+		//GenericFailure
 	} else if (response instanceof GenericFailure) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.code, response.message);
 		if (response.error != null) {
+			//con error cargado
 			routerResponse.error.addErrorItem({
-				domain: response.code?.toString(),
+				domain: response.code,
 				message: response.message,
 			});
 		}
+		//Error
 	}else if (response instanceof Error) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.name, response.message);
+		//null
+	} else if (response == null)
+	{
+		routerResponse.data = undefined;
+		routerResponse.error = new ErrorResponse(501, 'empty');		
+		//string
 	} else if (typeof response === 'string') {
 		routerResponse.data = undefined;
-		routerResponse.error = new ErrorResponse(404, response);
+		routerResponse.error = new ErrorResponse(406, response);
 	} else {
+		//Datas
 		routerResponse.error = undefined;
+		//ModelContainer
 		if (response instanceof ModelContainer) {
 			routerResponse.data = {
 				items: response.items,
@@ -88,10 +104,11 @@ function setDataError(response: object | string | null, routerResponse:RouterRes
 				updated: new Date(),
 			};
 		}
+		//any as object
 		else {
 			routerResponse.data = {
 				items: [response as object],
-				kind: typeof (response as object).toString(),
+				kind: typeof response,
 				currentItemCount: 1,
 				updated: new Date()
 			};
@@ -121,7 +138,7 @@ export class ErrorResponse{
 }
 
 export class ErrorItem{
-	domain?:string; 
+	domain?:string | number; 
 	reason?:string; 
 	message?:string; 
 	location?:string; 

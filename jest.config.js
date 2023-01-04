@@ -2,4 +2,9 @@
 module.exports = {
 	preset: 'ts-jest',
 	testEnvironment: 'node',
+	coveragePathIgnorePatterns: [
+		'.mock.ts',
+		'main.ts',
+		'server.ts'
+	],
 };

@@ -27,9 +27,10 @@ export class UserRepositoryImpl implements UserRepository {
 				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
 				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
-			else return Either.left(new GenericFailure('undetermined', error));
+			else return Either.left(new GenericFailure('undetermined', error));	
 		}
 	}
+
 	async getUser(id: string): Promise<Either<Failure,ModelContainer<UserModel>>> {
 		try
 		{

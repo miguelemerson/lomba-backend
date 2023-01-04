@@ -1,3 +1,4 @@
+
 type Left<L> = { kind: 'left'; leftValue: L };
 type Right<R> = { kind: 'right'; rightValue: R };
 type EitherValue<L, R> = Left<L> | Right<R>;
@@ -27,14 +28,6 @@ export class Either<L, R> {
 
 	flatMap<T>(fn: (right: R) => Either<L, T>): Either<L, T> {
 		return this.fold(leftValue => Either.left(leftValue), rightValue => fn(rightValue));
-	}
-
-	getOrThrow(errorMessage?: string): R {
-		const throwFn = () => {
-			throw Error(errorMessage ? errorMessage : 'An error has ocurred: ' + this.value);
-		};
-
-		return this.fold(() => throwFn(), rightValue => rightValue);
 	}
 
 	getOrElse(defaultValue: R): R {

@@ -4,7 +4,7 @@ import { ModelContainer } from '../../core/model_container';
 import { UserModel } from '../../data/models/user_model';
 
 export interface UserRepository {
-    getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure, ModelContainer<UserModel>>>
+    getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure, ModelContainer<UserModel>>>;
     getUser(id: string): Promise<Either<Failure, ModelContainer<UserModel>>>;
     addUser(id: string, name: string, username: string, email: string,
 		enabled: boolean, builtIn: boolean) : Promise<Either<Failure, ModelContainer<UserModel>>>;
