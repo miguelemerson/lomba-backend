@@ -4,7 +4,7 @@ import { Role } from '../../domain/entities/role';
 
 export class OrgaUserModel implements OrgaUser, Entity {
 	constructor(orgaId: string, userId: string, roles: Role[], enabled: boolean, builtin: boolean){
-		this.id = crypto.randomUUID();
+		this.id = orgaId;
 		this._id = this.id;
 		this.orgaId = orgaId;
 		this.userId = userId;
@@ -24,5 +24,10 @@ export class OrgaUserModel implements OrgaUser, Entity {
 	updated?: Date;
 	deleted?: Date;
 	expires?: Date;
+
+	public toEntity(): OrgaUser {
+		return {orgaId: this.orgaId, 
+			userId: this.userId, roles: this.roles};
+	}
 
 }

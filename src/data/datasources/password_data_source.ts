@@ -28,14 +28,7 @@ export class PasswordDataSourceImpl implements PasswordDataSource {
 		return await this.collection.getOne(id);
 	}
 	async add(password: PasswordModel) : Promise<ModelContainer<PasswordModel>>{
-		if(password.id == undefined)
-		{
-			password.id = crypto.randomUUID();
-			password._id = password.id;
-		}
-
 		return await this.collection.add(password).then(() => this.getOne(password.id));
-
 	}
 	async update(id: string, password: object): Promise<ModelContainer<PasswordModel>>{
 		return await this.collection.update(id, password).then(() => this.getOne(id));

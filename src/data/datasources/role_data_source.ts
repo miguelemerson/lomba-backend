@@ -28,14 +28,7 @@ export class RoleDataSourceImpl implements RoleDataSource {
 		return await this.collection.getOne(id);
 	}
 	async add(role: RoleModel) : Promise<ModelContainer<RoleModel>>{
-		if(role.id == undefined)
-		{
-			role.id = crypto.randomUUID();
-			role._id = role.id;
-		}
-
-		return await this.collection.add(role).then(() => this.getOne(role.id));
-		
+		return await this.collection.add(role).then(() => this.getOne(role.id));	
 	}
 	async update(id: string, role: object): Promise<ModelContainer<RoleModel>>{
 		return await this.collection.update(id, role).then(() => this.getOne(id));

@@ -1,7 +1,7 @@
 import { OrgaModel } from '../models/orga_model';
 import { MongoWrapper } from '../../core/wrappers/mongo_wrapper';
 import { ModelContainer } from '../../core/model_container';
-
+import crypto from 'crypto';
 
 export interface OrgaDataSource {
     getMany(query: object, sort?: [string, 1 | -1][],
@@ -28,14 +28,8 @@ export class OrgaDataSourceImpl implements OrgaDataSource {
 		return await this.collection.getOne(id);
 	}
 	async add(orga: OrgaModel) : Promise<ModelContainer<OrgaModel>>{
-		if(orga.id == undefined)
-		{
-			orga.id = crypto.randomUUID();
-			orga._id = orga.id;
-		}
-
+		orga = this.setId(orga);
 		return await this.collection.add(orga).then(() => this.getOne(orga.id));
-		
 	}
 	async update(id: string, orga: object): Promise<ModelContainer<OrgaModel>>{
 		return await this.collection.update(id, orga).then(() => this.getOne(id));
@@ -46,5 +40,13 @@ export class OrgaDataSourceImpl implements OrgaDataSource {
 	async delete(id: string): Promise<boolean>{
 		return await this.collection.delete(id);
 	}
-
+	public setId(obj: OrgaModel): OrgaModel
+	{
+		if(obj.id == '')
+		{
+			obj.id = crypto.randomUUID();
+			obj._id = obj.id;
+		}
+		return obj;
+	}
 }

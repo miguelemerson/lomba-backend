@@ -33,7 +33,6 @@ export class UserDataSourceImpl implements UserDataSource {
 	async add(user: UserModel) : Promise<ModelContainer<UserModel>>{
 		user = this.setId(user);
 		return await this.collection.add(user).then(() => this.getOne(user.id));
-		
 	}
 	async update(id: string, user: object): Promise<ModelContainer<UserModel>>{
 		return await this.collection.update(id, user).then(() => this.getOne(id));
