@@ -6,7 +6,7 @@ import { Auth } from '../entities/auth';
 import { Token } from '../entities/token';
 
 export interface PasswordRepository {
-    addPassword(userId:string, auth:Auth): Promise<Either<Failure,boolean>>;
-    updatePassword(userId:string, auth:Auth): Promise<boolean>;
-    getPassword(userId:string): Promise<ModelContainer<PasswordModel>>;
+    addPassword(userId:string, auth:Auth): Promise<Either<Failure, ModelContainer<PasswordModel>>>;
+    updatePassword(userId:string, auth:Auth): Promise<Either<Failure, ModelContainer<PasswordModel>>>;
+    getPassword(userId:string): Promise<Either<Failure, ModelContainer<PasswordModel>>>;
 }

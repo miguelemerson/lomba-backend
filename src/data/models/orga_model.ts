@@ -23,4 +23,9 @@ export class OrgaModel implements Orga, Entity {
 	deleted?: Date;
 	expires?: Date;
 
+	public toEntity(): Orga {
+		return {id: this.id, name: this.name, 
+			code: this.code};
+	}
+
 }
