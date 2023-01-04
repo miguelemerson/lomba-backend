@@ -9,5 +9,4 @@ export interface PasswordRepository {
     addPassword(userId:string, auth:Auth): Promise<Either<Failure,boolean>>;
     updatePassword(userId:string, auth:Auth): Promise<boolean>;
     getPassword(userId:string): Promise<ModelContainer<PasswordModel>>;
-    getAuth(auth:Auth):Promise<ModelContainer<Token>>;
 }

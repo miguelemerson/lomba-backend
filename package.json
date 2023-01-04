@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
     "mongodb": "^4.13.0",
     "swagger-express-ts": "^1.0.0",
     "swagger-jsdoc": "^6.2.7",
