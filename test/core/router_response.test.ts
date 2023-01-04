@@ -1,6 +1,6 @@
 import { UserModel } from '../../src/data/models/user_model';
 import { MongoError } from 'mongodb';
-import { ErrorResponse, RouterResponse} from '../../src/core/router_response';
+import { ErrorItem, ErrorResponse, RouterResponse} from '../../src/core/router_response';
 import { ModelContainer } from '../../src/core/model_container';
 import { DatabaseFailure, GenericFailure, NetworkFailure } from '../../src/core/errors/failures';
 
@@ -108,5 +108,41 @@ describe('Test para el router response', () => {
         
 		
 	});
+
+	test('prueba de respuesta vacía', () => {
+		//arrange
+		//act
+		const response = RouterResponse.emptyResponse();
+		//assert
+		expect(response.apiVersion).toEqual('1.0');
+		expect(response.data).toBeUndefined();
+		expect(response.error?.code).toEqual(501);
+	});
+
+	test('Un router response de DatabaseFailure con mongoerror causa', () => {
+		//arrange
+		const error = new MongoError('mongomessage');
+		error.cause = new Error('causa');
+		const exc = new DatabaseFailure('errorname', 'message error', '099', error);
+
+		//act
+		const result = new RouterResponse('1.0', exc, 'test', {}, 'test');
+
+		//assert
+		expect(result.data).toBeUndefined();
+		expect(result.error).toBeDefined();
+		expect(result.error).toBeInstanceOf(ErrorResponse);
+		expect(result.error?.errors?.length).toBeGreaterThanOrEqual(2);
+	});
+
+	test('respuesta de error con lista de errores', () => {
+		//arrange
+		//act
+		const resErr = new ErrorResponse(999, 'lista', new ErrorItem());
+		//assert
+		expect(resErr.code).toEqual(999);
+		expect(resErr.errors?.length).toBeGreaterThanOrEqual(1);
+	});
+
 
 });

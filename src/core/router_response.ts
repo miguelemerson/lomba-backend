@@ -34,7 +34,7 @@ function setDataError(response: object | string | null, routerResponse:RouterRes
 		routerResponse.error = new ErrorResponse(response.code, response.message);
 		if (response.mongoError != null) {
 			routerResponse.error.addErrorItem({
-				domain: response.mongoError.code?.toString(),
+				domain: response.mongoError.code,
 				reason: response.mongoError.cause?.message,
 				message: response.mongoError.message,
 				location: response.mongoError.stack,
@@ -53,7 +53,7 @@ function setDataError(response: object | string | null, routerResponse:RouterRes
 		routerResponse.error = new ErrorResponse(response.code, response.message);
 		if (response.error != null) {
 			routerResponse.error.addErrorItem({
-				domain: response.code?.toString(),
+				domain: response.code,
 				message: response.message,
 				location: response.error.stack,
 			});
@@ -63,16 +63,20 @@ function setDataError(response: object | string | null, routerResponse:RouterRes
 		routerResponse.error = new ErrorResponse(response.code, response.message);
 		if (response.error != null) {
 			routerResponse.error.addErrorItem({
-				domain: response.code?.toString(),
+				domain: response.code,
 				message: response.message,
 			});
 		}
 	}else if (response instanceof Error) {
 		routerResponse.data = undefined;
 		routerResponse.error = new ErrorResponse(response.name, response.message);
+	} else if (response == null)
+	{
+		routerResponse.data = undefined;
+		routerResponse.error = new ErrorResponse(501, 'empty');		
 	} else if (typeof response === 'string') {
 		routerResponse.data = undefined;
-		routerResponse.error = new ErrorResponse(404, response);
+		routerResponse.error = new ErrorResponse(406, response);
 	} else {
 		routerResponse.error = undefined;
 		if (response instanceof ModelContainer) {
@@ -91,7 +95,7 @@ function setDataError(response: object | string | null, routerResponse:RouterRes
 		else {
 			routerResponse.data = {
 				items: [response as object],
-				kind: typeof (response as object).toString(),
+				kind: typeof response,
 				currentItemCount: 1,
 				updated: new Date()
 			};
@@ -121,7 +125,7 @@ export class ErrorResponse{
 }
 
 export class ErrorItem{
-	domain?:string; 
+	domain?:string | number; 
 	reason?:string; 
 	message?:string; 
 	location?:string; 
