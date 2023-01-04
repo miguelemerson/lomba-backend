@@ -1,7 +1,9 @@
 import { RoleRepository } from '../../repositories/role_repository';
+import { Either } from '../../../core/either';
+import { Failure } from '../../../core/errors/failures';
 
 export interface EnableRoleUseCase {
-    execute(id:string, enableOrDisable: boolean): Promise<boolean | null>;
+    execute(id:string, enableOrDisable: boolean): Promise<Either<Failure,boolean>>;
 }
 
 export class EnableRole implements EnableRoleUseCase {
@@ -10,7 +12,7 @@ export class EnableRole implements EnableRoleUseCase {
 		this.repository = repository;
 	}
 
-	async execute(id:string, enableOrDisable: boolean): Promise<boolean> {
+	async execute(id:string, enableOrDisable: boolean): Promise<Either<Failure,boolean>> {
 		return await this.repository.enableRole(id, enableOrDisable);
 	}
 }

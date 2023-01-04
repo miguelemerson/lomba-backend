@@ -1,6 +1,5 @@
 import { UserModel } from '../models/user_model';
 import { MongoWrapper } from '../../core/wrappers/mongo_wrapper';
-import { User } from '../../domain/entities/user';
 import { ModelContainer } from '../../core/model_container';
 
 

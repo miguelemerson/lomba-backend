@@ -1,11 +1,11 @@
 import { MongoError } from 'mongodb';
-import { DatabaseException } from '../../core/errors/database_exception';
-import { NetworkException } from '../../core/errors/network_exception';
 import { ModelContainer } from '../../core/model_container';
 import { Role } from '../../domain/entities/role';
 import { OrgaUserRepository } from '../../domain/repositories/orgauser_repository';
 import { OrgaUserDataSource } from '../datasources/orgauser_data_source';
 import { OrgaUserModel } from '../models/orgauser_model';
+import { Either } from '../../core/either';
+import { DatabaseFailure, NetworkFailure, GenericFailure, Failure } from '../../core/errors/failures';
 
 export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	dataSource: OrgaUserDataSource;
@@ -13,125 +13,132 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 		this.dataSource = dataSource;
 	}
 
-	async getOrgaUsersByOrga(orgaId: string): Promise<ModelContainer<OrgaUserModel> | null> {
+	async getOrgaUsersByOrga(orgaId: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
 		try
 		{
 			const result = await this.dataSource.getOne(orgaId);
-			return result;
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 			
 		}
-		return null;
+		
 	}
 
-	async getOrgaUsersByUser(userId: string): Promise<ModelContainer<OrgaUserModel> | null> {
+	async getOrgaUsersByUser(userId: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
 		try
 		{
 			const result = await this.dataSource.getOne(userId);
-			return result;
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 			
 		}
-		return null;
+		
 	}
 
-	async getOrgaUser(id: string): Promise<ModelContainer<OrgaUserModel> | null> {
+	async getOrgaUser(id: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
 		try
 		{
 			const result = await this.dataSource.getOne(id);
-			return result;
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 			
 		}
-		return null;
+		
 	}
 	async addOrgaUser(orgaId: string, userId: string, roles: Role[],
-		enabled: boolean, builtIn: boolean) : Promise<ModelContainer<OrgaUserModel> | null> {
+		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
 		try{
 			const orgaUser: OrgaUserModel = new OrgaUserModel(orgaId, userId, roles, enabled, builtIn);
-			const result = this.dataSource.add(orgaUser);
-			return result;
+			const result = await this.dataSource.add(orgaUser);
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 			
 		}
-		return null;
+		
 	}
 
-	async updateOrgaUser(orgaId: string, userId: string, orgaUser: OrgaUserModel) : Promise<ModelContainer<OrgaUserModel> | null>{
+	async updateOrgaUser(orgaId: string, userId: string, orgaUser: OrgaUserModel) : Promise<Either<Failure,ModelContainer<OrgaUserModel>>>{
 		try{
-			const result = this.dataSource.update(orgaId, orgaUser);
-			return result;
+			const result = await this.dataSource.update(orgaId, orgaUser);
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 			
 		}
-		return null;
+		
 	}
 
-	async enableOrgaUser(orgaId: string, userId: string, enableOrDisable: boolean): Promise<boolean>{
+	async enableOrgaUser(orgaId: string, userId: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>>{
 		try{
-			const result = this.dataSource.enable(orgaId, enableOrDisable);
-			return result;
+			const result = await this.dataSource.enable(orgaId, enableOrDisable);
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 			
 		}	
-		return false;
+		
 	}
-	async deleteOrgaUser(orgaId: string): Promise<boolean>{
+	async deleteOrgaUser(orgaId: string): Promise<Either<Failure, boolean>>{
 		try{
-			const result = this.dataSource.delete(orgaId);
-			return result;
+			const result = await this.dataSource.delete(orgaId);
+			return Either.right(result);
 		}
 		catch(error)
 		{
 			if(error instanceof MongoError)
 			{
-				throw new DatabaseException(error.name, error.message, error.code, error);
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
-				throw new NetworkException(error.name, error.message, undefined, error);
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
 			
 		}	
-		return false;		
+				
 	}
 }
