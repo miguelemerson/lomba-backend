@@ -6,5 +6,5 @@ module.exports = {
 		'.mock.ts',
 		'main.ts',
 		'server.ts'
-	],
+	]
 };

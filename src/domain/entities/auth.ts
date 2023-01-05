@@ -1,4 +1,5 @@
 export interface Auth {
-    username?:string;
+    username:string;
     password?:string;
+    orgaId?:string;
 }
