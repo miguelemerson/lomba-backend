@@ -6,7 +6,7 @@ import { TokenModel } from '../../../../src/data/models/token_model';
 import { UserModel } from '../../../../src/data/models/user_model';
 import { Auth } from '../../../../src/domain/entities/auth';
 import { AuthRepository } from '../../../../src/domain/repositories/auth_repository';
-import {RegisterUser} from '../../../../src/domain/usecases/users/register_user';
+import { RegisterUser } from '../../../../src/domain/usecases/auth/register_user';
 
 export class MockAuthRepository implements AuthRepository {
 
