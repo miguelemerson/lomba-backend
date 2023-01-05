@@ -1,19 +1,21 @@
 import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
+import { ModelContainer } from '../../../core/model_container';
+import { UserModel } from '../../../data/models/user_model';
 import { Auth } from '../../entities/auth';
-import { PasswordRepository } from '../../repositories/password_repository';
+import { AuthRepository } from '../../repositories/auth_repository';
 
 export interface RegisterUserUseCase {
-    execute(userId: string, auth:Auth): Promise<Either<Failure,boolean>>;
+    execute(user:UserModel, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<UserModel>>>;
 }
 
 export class RegisterUser implements RegisterUserUseCase {
-	repository: PasswordRepository;
-	constructor(repository: PasswordRepository) {
+	repository: AuthRepository;
+	constructor(repository: AuthRepository) {
 		this.repository = repository;
 	}
 
-	async execute(userId: string, auth:Auth): Promise<Either<Failure,boolean>> {
-		return await this.repository.addPassword(userId, auth);
+	async execute(user:UserModel, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<UserModel>>> {
+		return await this.repository.registerUser(user, auth, roles);
 	}
 }

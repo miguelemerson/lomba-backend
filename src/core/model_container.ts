@@ -1,6 +1,6 @@
 export class ModelContainer<T>{
 	items:T[];
-	currentItemCount?:number;
+	currentItemCount:number;
 	itemsPerPage?:number;
 	startIndex?:number;
 	totalItems?:number;

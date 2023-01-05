@@ -1,0 +1,26 @@
+{
+    "roles":[
+        {"name" : "super","enabled":true},
+        {"name" : "admin","enabled":true},
+        {"name" : "reviewer","enabled":true},
+        {"name" : "user","enabled":true},
+        {"name" : "anonymous","enabled":true}
+    ],
+    "users":[
+        {"id":"00000001-0001-0001-0001-000000000001", "name":"Súper", "username":"super", "email":"super@mp.com", "builtin":true, "enabled":true},
+        {"id":"00000002-0002-0002-0002-000000000002", "name":"Admin", "username":"admin", "email":"admin@mp.com", "builtin":true, "enabled":true},
+        {"id":"00000003-0003-0003-0003-000000000003", "name":"Reviewer 1", "username":"rev1", "email":"rev1@mp.com", "builtin":false, "enabled":true},
+        {"id":"00000004-0004-0004-0004-000000000004", "name":"Reviewer 2", "username":"rev2", "email":"rev2@mp.com", "builtin":false, "enabled":false},        
+        {"id":"00000005-0005-0005-0005-000000000005", "name":"User 1", "username":"user1", "email":"user1@mp.com", "builtin":false, "enabled":true},
+        {"id":"00000006-0006-0006-0006-000000000006", "name":"User 2", "username":"user2", "email":"user2@mp.com", "builtin":false, "enabled":true},
+        {"id":"00000007-0007-0007-0007-000000000007", "name":"User 3", "username":"user3", "email":"user3@mp.com", "builtin":false, "enabled":false}
+    ],
+    "orgas":[
+        {"id":"00000100-0100-0100-0100-000000000100", "name":"System", "code":"sys", "builtin":true, "enabled":true},
+        {"id":"00000200-0200-0200-0200-000000000200", "name":"Default", "code":"def", "builtin":true, "enabled":true}
+    ],
+    "orgausers":[
+        {"id":"A0000001-0000-0000-1000-000000000000", "orgaId":"00000100-0100-0100-0100-000000000100", "userId":"00000001-0001-0001-0001-000000000001", "roles":["super"]},
+        {"id":"A0000002-0000-0000-1000-000000000000", "orgaId":"00000200-0200-0200-0200-000000000200", "userId":"00000002-0002-0002-0002-000000000002", "roles":["admin"]}
+    ]
+}
