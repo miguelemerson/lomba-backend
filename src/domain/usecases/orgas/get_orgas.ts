@@ -5,11 +5,11 @@ import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
 
 
-export interface GetOrgaUseCase {
+export interface GetOrgasUseCase {
     execute(id:string): Promise<Either<Failure,ModelContainer<OrgaModel>>>;
 }
 
-export class GetOrga implements GetOrgaUseCase {
+export class GetOrgas implements GetOrgasUseCase {
 	repository: OrgaRepository;
 	constructor(repository: OrgaRepository) {
 		this.repository = repository;

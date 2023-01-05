@@ -5,11 +5,11 @@ import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
 
 
-export interface GetRoleUseCase {
+export interface GetRolesUseCase {
     execute(id:string): Promise<Either<Failure,ModelContainer<RoleModel>>>;
 }
 
-export class GetRole implements GetRoleUseCase {
+export class GetRoles implements GetRolesUseCase {
 	repository: RoleRepository;
 	constructor(repository: RoleRepository) {
 		this.repository = repository;

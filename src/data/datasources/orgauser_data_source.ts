@@ -28,14 +28,7 @@ export class OrgaUserDataSourceImpl implements OrgaUserDataSource {
 		return await this.collection.getOne(id);
 	}
 	async add(orgaOrgaUser: OrgaUserModel) : Promise<ModelContainer<OrgaUserModel>>{
-		if(orgaOrgaUser.id == undefined)
-		{
-			orgaOrgaUser.id = crypto.randomUUID();
-			orgaOrgaUser._id = orgaOrgaUser.id;
-		}
-
 		return await this.collection.add(orgaOrgaUser).then(() => this.getOne(orgaOrgaUser.id));
-
 	}
 	async update(id: string, orgaOrgaUser: object): Promise<ModelContainer<OrgaUserModel>>{
 		return await this.collection.update(id, orgaOrgaUser).then(() => this.getOne(id));

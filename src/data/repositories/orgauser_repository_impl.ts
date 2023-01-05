@@ -16,7 +16,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	async getOrgaUsersByOrga(orgaId: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
 		try
 		{
-			const result = await this.dataSource.getOne(orgaId);
+			const result = await this.dataSource.getMany({'orgaId': orgaId});
 			return Either.right(result);
 		}
 		catch(error)
@@ -35,7 +35,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	async getOrgaUsersByUser(userId: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
 		try
 		{
-			const result = await this.dataSource.getOne(userId);
+			const result = await this.dataSource.getMany({'userId': userId});
 			return Either.right(result);
 		}
 		catch(error)
