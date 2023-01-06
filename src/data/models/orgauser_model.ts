@@ -1,10 +1,11 @@
 import { Entity } from '../../domain/entities/entity';
 import { OrgaUser } from '../../domain/entities/orgauser';
 import { Role } from '../../domain/entities/role';
+import crypto from 'crypto';
 
 export class OrgaUserModel implements OrgaUser, Entity {
 	constructor(orgaId: string, userId: string, roles: Role[], enabled: boolean, builtin: boolean){
-		this.id = orgaId;
+		this.id = crypto.randomUUID();
 		this._id = this.id;
 		this.orgaId = orgaId;
 		this.userId = userId;

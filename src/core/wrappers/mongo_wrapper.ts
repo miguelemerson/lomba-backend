@@ -79,6 +79,8 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		let totalPages = 0;  
 		let totalItems:number | undefined = undefined;
 
+		console.log(query);
+
 		({ totalItems, result, startIndex, totalPages } = 
 			await this.runQuery(pageIndex, totalItems, query, 
 				sort, result, itemsPerPage, startIndex, totalPages));
@@ -95,7 +97,7 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 	async getOne<T>(id: string): Promise<ModelContainer<T>>{
 		const result = await this.db.collection<Document>(this.collectionName).findOne({'_id': id});
 		if(result == null || result == undefined){
-			throw new Error('null value');
+			return new ModelContainer([]);
 		}
 		return ModelContainer.fromOneItem(result as T);
 	}
@@ -115,17 +117,21 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 	}
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		const result = await this.db.collection<Document>(this.collectionName)
-			.updateOne({_id: id}, {$set: {enabled: enableOrDisable, updated: new Date()}});
+			.updateOne({_id: id, builtin:false}, {$set: {enabled: enableOrDisable, updated: new Date()}});
 		return (result?.modifiedCount > 0);
 	}
 	async delete(id: string): Promise<boolean>{
+		const ri = await this.db.collection<Document>(this.collectionName).findOne({'_id': id, builtin:false}); 
+		if(!ri)
+			return false;
+
 		const rn = await this.update(id, {'deleted': new Date()});
 		if(rn){
-			const i = await this.db.collection<Document>(this.collectionName).findOne({'_id': id});
+			const i = await this.db.collection<Document>(this.collectionName).findOne({'_id': id, builtin:false});
 			if(i != null)
 			{
 				await this.db.collection<Document>(this.collectionName + '_deleted').insertOne(i as Document);
-				const result = await this.db.collection<Document>(this.collectionName).deleteOne({_id: id});
+				const result = await this.db.collection<Document>(this.collectionName).deleteOne({_id: id, builtin:false});
 				return (result.deletedCount > 0);
 			}
 		}

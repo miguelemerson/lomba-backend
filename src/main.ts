@@ -11,6 +11,34 @@ import { UpdateUser } from './domain/usecases/users/update_user';
 import { EnableUser } from './domain/usecases/users/enable_user';
 import { DeleteUser } from './domain/usecases/users/delete_user';
 import app from './server';
+import { RoleModel } from './data/models/role_model';
+import { PasswordModel } from './data/models/password_model';
+import { OrgaModel } from './data/models/orga_model';
+import { OrgaUserModel } from './data/models/orgauser_model';
+import { RoleDataSourceImpl } from './data/datasources/role_data_source';
+import { PasswordDataSourceImpl } from './data/datasources/password_data_source';
+import { OrgaDataSourceImpl } from './data/datasources/orga_data_source';
+import { OrgaUserDataSourceImpl } from './data/datasources/orgauser_data_source';
+import { RoleRepositoryImpl } from './data/repositories/role_repository_impl';
+import { PasswordRepositoryImpl } from './data/repositories/password_repository_impl';
+import { OrgaRepositoryImpl } from './data/repositories/orga_repository_impl';
+import { OrgaUserRepositoryImpl } from './data/repositories/orgauser_repository_impl';
+import RolesRouter from './presentation/role_router';
+import { GetRole } from './domain/usecases/roles/get_role';
+import { GetRoles } from './domain/usecases/roles/get_roles';
+import { EnableRole } from './domain/usecases/roles/enable_role';
+import OrgasRouter from './presentation/orga_router';
+import { GetOrga } from './domain/usecases/orgas/get_orga';
+import { GetOrgas } from './domain/usecases/orgas/get_orgas';
+import { AddOrga } from './domain/usecases/orgas/add_orga';
+import { UpdateOrga } from './domain/usecases/orgas/update_orga';
+import { EnableOrga } from './domain/usecases/orgas/enable_orga';
+import { DeleteOrga } from './domain/usecases/orgas/delete_orga';
+import AuthRouter from './presentation/auth_router';
+import { GetToken } from './domain/usecases/auth/get_token';
+import { AuthRepositoryImpl } from './data/repositories/auth_repository_impl';
+import { RegisterUser } from './domain/usecases/users/register_user';
+import { checkData01 } from './core/builtindata/load_data_01';
 
 (async () => {
 
@@ -20,17 +48,50 @@ import app from './server';
 	await client.connect();
 	const db = client.db('LOGIN_DB');
     
-	///Usuarios
+	///wrappers
+	const roleMongo = new MongoWrapper<RoleModel>('roles', db);
 	const userMongo = new MongoWrapper<UserModel>('users', db);
+	const passMongo = new MongoWrapper<PasswordModel>('passes', db);
+	const orgaMongo = new MongoWrapper<OrgaModel>('orgas', db);
+	const orgaUserMongo = new MongoWrapper<OrgaUserModel>('orgasusers', db);
+
+	//datasources
+	const roleDataSource = new RoleDataSourceImpl(roleMongo);
 	const userDataSource = new UserDataSourceImpl(userMongo);
+	const passDataSource = new PasswordDataSourceImpl(passMongo);
+	const orgaDataSource = new OrgaDataSourceImpl(orgaMongo);
+	const orgaUserDataSource = new OrgaUserDataSourceImpl(orgaUserMongo);
+
+	//repositorios
+	const roleRepo = new RoleRepositoryImpl(roleDataSource);
 	const userRepo = new UserRepositoryImpl(userDataSource);
+	const passRepo = new PasswordRepositoryImpl(passDataSource);
+	const orgaRepo = new OrgaRepositoryImpl(orgaDataSource);
+	const orgaUserRepo = new OrgaUserRepositoryImpl(orgaUserDataSource);
+	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource);
+
+	//revisa que los datos estén cargados.
+	checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
+
+	//routers
+	const roleMiddleWare = RolesRouter(new GetRole(roleRepo), new GetRoles(roleRepo), new EnableRole(roleRepo));
 
 	const userMiddleWare = UsersRouter(
 		new GetUser(userRepo), new GetUsersByOrgaId(userRepo), 
 		new AddUser(userRepo), new UpdateUser(userRepo), 
 		new EnableUser(userRepo), new DeleteUser(userRepo)
 	);
+
+	const orgaMiddleWare = OrgasRouter(new GetOrga(orgaRepo), new GetOrgas(orgaRepo), new AddOrga(orgaRepo), new UpdateOrga(orgaRepo), new EnableOrga(orgaRepo), new DeleteOrga(orgaRepo));
+
+	const authMiddleWare = AuthRouter(new GetToken(authRepo), new RegisterUser(authRepo));
+
 	app.use('/api/v1/user', userMiddleWare);
+	app.use('/api/v1/role', roleMiddleWare);
+	app.use('/api/v1/orga', orgaMiddleWare);
+	app.use('/api/v1/auth', authMiddleWare);
+
+
 	///Fin usuarios
     
 	app.listen(4000, () => console.log('Running on http://localhost:4000'));

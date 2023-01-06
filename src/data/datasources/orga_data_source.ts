@@ -47,6 +47,8 @@ export class OrgaDataSourceImpl implements OrgaDataSource {
 			obj.id = crypto.randomUUID();
 			obj._id = obj.id;
 		}
+		else
+			obj._id = obj.id;
 		return obj;
 	}
 }
