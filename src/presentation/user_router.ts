@@ -7,6 +7,7 @@ import { GetUserUseCase } from '../domain/usecases/users/get_user';
 import { GetUsersByOrgaIdUseCase } from '../domain/usecases/users/get_users_by_orga';
 import { UpdateUserUseCase } from '../domain/usecases/users/update_user';
 import { RouterResponse } from '../core/router_response';
+import { isAuth } from '../core/presentation/valid_token_router';
 
 export default function UsersRouter(
 	getUser: GetUserUseCase,
@@ -18,7 +19,7 @@ export default function UsersRouter(
 ) {
 	const router = express.Router();
 
-	router.get('/:id', async (req: Request, res: Response) => {
+	router.get('/:id',[isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();

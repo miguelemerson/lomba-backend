@@ -1,5 +1,6 @@
 import { Entity } from '../../domain/entities/entity';
 import { Password } from '../../domain/entities/password';
+import crypto from 'crypto';
 
 export class PasswordModel implements Password, Entity {
 	constructor(userId: string, hash: string, salt: string, enabled: boolean, builtin: boolean){

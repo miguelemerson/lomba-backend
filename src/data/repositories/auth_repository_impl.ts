@@ -11,12 +11,11 @@ import { OrgaUserDataSource } from '../datasources/orgauser_data_source';
 import { PasswordDataSource } from '../datasources/password_data_source';
 import { UserDataSource } from '../datasources/user_data_source';
 import { OrgaModel } from '../models/orga_model';
+import { OrgaUserModel } from '../models/orgauser_model';
 import { PasswordModel } from '../models/password_model';
+import { RoleModel } from '../models/role_model';
 import { TokenModel } from '../models/token_model';
 import { UserModel } from '../models/user_model';
-import { OrgaUserModel } from '../models/orgauser_model';
-import { RoleDataSourceImpl } from '../datasources/role_data_source';
-import { RoleModel } from '../models/role_model';
 
 
 
@@ -124,9 +123,9 @@ export class AuthRepositoryImpl implements AuthRepository {
 	}
 
 	private async findUser(auth:Auth):Promise<UserModel | undefined> {
-		const userQuery = { $and:[{$or: [{username: auth.username}, {email: auth.username}]}, {enabled: true}] };
-            
-		const userResult = await this.userDataSource.getMany({userQuery});
+		const userQuery = { '$and':[{'$or': [{username: auth.username}, {email: auth.username}]}, {enabled: true}] };
+
+		const userResult = await this.userDataSource.getMany(userQuery);
 		if(userResult.currentItemCount < 1)
 		{
 			//si no lo encuentra retorna falla
@@ -161,7 +160,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 			return [];
 
 		const arrayIdOrgaUser = orgas.map(a => a.id);
-		const orgaResult = await this.orgaDataSource.getMany({id: {$in: arrayIdOrgaUser }});
+		const orgaResult = await this.orgaDataSource.getMany({id: {'$in': arrayIdOrgaUser }});
 		//tenemos las orgas
 		return orgaResult.items;
 	}
