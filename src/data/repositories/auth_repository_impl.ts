@@ -31,11 +31,6 @@ export class AuthRepositoryImpl implements AuthRepository {
 		this.orgaUserDataSource = orgaUserDataSource;
 	}
 
-	async changeOrga(auth:Auth):Promise<Either<Failure,ModelContainer<TokenModel>>>
-	{
-		return Either.left(new GenericFailure('Need password'));
-	}
-
 	async getAuth(auth:Auth):Promise<Either<Failure,ModelContainer<TokenModel>>>
 	{
 		try{
@@ -115,6 +110,49 @@ export class AuthRepositoryImpl implements AuthRepository {
 				await this.newOrgaUser(auth.orgaId, newUser._id, roles);
 			}
 			return Either.right(ModelContainer.fromOneItem(user));
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));	
+		}
+	}
+
+	async changeOrga(auth:Auth):Promise<Either<Failure,ModelContainer<TokenModel>>>
+	{
+		try
+		{
+			//si el orgaId no viene informado, entonces se rechaza la solicitud
+			if(!auth.orgaId)
+				return Either.left(new GenericFailure('Need orgaId'));
+
+			//busca usuario por username o email, debe estar habilitado.
+			const user = await this.findUser(auth);
+			//si no lo encuentra retorna falla
+			if(!user)
+				return Either.left(new GenericFailure('Not found'));
+				
+			//busca las orgas que coincidan con los id que están en el array de organizaciones de usuario.
+			const orgas = await this.findUserOrgas(user.orgas);				
+				
+			//si el auth especifica orgaId y está contenida en las organizaciones asociadas al usuario entonces:
+			const orgaId = this.resolveSpecificOrga(orgas, auth.orgaId);
+
+			//lista de roles del usuario en la organización seleccionada
+			//si la organización no está especificada entonces retorna undefined para los roles
+			const rolesString = this.findRoles(user.id, orgaId);
+
+			//nuevo token con el payload que se especifica.
+			const newToken = generateJWT({userId:user.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
+
+			//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
+			const tokenModel = new TokenModel(newToken, orgaId, orgas);
+			return Either.right(ModelContainer.fromOneItem(tokenModel));
+
 		}
 		catch(error)
 		{
