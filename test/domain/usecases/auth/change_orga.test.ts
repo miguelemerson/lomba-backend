@@ -6,7 +6,7 @@ import { TokenModel } from '../../../../src/data/models/token_model';
 import { UserModel } from '../../../../src/data/models/user_model';
 import { Auth } from '../../../../src/domain/entities/auth';
 import { AuthRepository } from '../../../../src/domain/repositories/auth_repository';
-import {RegisterUser} from '../../../../src/domain/usecases/users/register_user';
+import {ChangeOrga} from '../../../../src/domain/usecases/auth/change_orga';
 
 export class MockAuthRepository implements AuthRepository {
 
@@ -18,10 +18,10 @@ export class MockAuthRepository implements AuthRepository {
 	}
 	changeOrga():Promise<Either<Failure,ModelContainer<TokenModel>>>{
 		throw new Error('Method not implemented.');
-	}   
+	}    
 }
 
-describe('Registro de usuario - Caso de uso', () => {
+describe('Cambiar organización de usuario - Caso de uso', () => {
 	
 	let mockAuthRepository: AuthRepository;
 
@@ -30,8 +30,8 @@ describe('Registro de usuario - Caso de uso', () => {
 		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
 	];
 
-	const tokenModel = new TokenModel('token', 'a');
-	const testAuth:Auth = {username:'user', password:'pass'};
+	const tokenModel = new TokenModel('token', 'ooo');
+	const testAuth:Auth = {username:'user', password:'pass', orgaId:'ooo'};
 	const testOrgaModel = new OrgaModel('ooo', 'orga', 'o1', true, false);
 	const testRoles = 'admin';
 
@@ -40,28 +40,28 @@ describe('Registro de usuario - Caso de uso', () => {
 		mockAuthRepository = new MockAuthRepository();
 	});
 
-	test('el usecase de registro debe retornar ok', async () => {
+	test('el usecase de cambio debe retornar ok', async () => {
 		//arrange
-		jest.spyOn(mockAuthRepository, 'registerUser').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(listUsers[0]))));
+		jest.spyOn(mockAuthRepository, 'changeOrga').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(tokenModel))));
 
 		//act
-		const useCase = new RegisterUser(mockAuthRepository);
-		const result = await useCase.execute(listUsers[0], testAuth, testRoles);
+		const useCase = new ChangeOrga(mockAuthRepository);
+		const result = await useCase.execute(testAuth);
 		//assert
-		expect(mockAuthRepository.registerUser).toBeCalledTimes(1);
+		expect(mockAuthRepository.changeOrga).toBeCalledTimes(1);
 		expect(result.isRight());
-		expect(result).toEqual(Either.right(ModelContainer.fromOneItem(listUsers[0])));
+		expect(result).toEqual(Either.right(ModelContainer.fromOneItem(tokenModel)));
 	});
 
-	test('el usecase de registro de usuario debe retornar failure', async () => {
+	test('el usecase de cambio de orga de usuario debe retornar failure', async () => {
 		//arrange
-		jest.spyOn(mockAuthRepository, 'registerUser').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+		jest.spyOn(mockAuthRepository, 'changeOrga').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
 
 		//act
-		const useCase = new RegisterUser(mockAuthRepository);
-		const result = await useCase.execute(listUsers[0], testAuth, testRoles);
+		const useCase = new ChangeOrga(mockAuthRepository);
+		const result = await useCase.execute(testAuth);
 		//assert
-		expect(mockAuthRepository.registerUser).toBeCalledTimes(1);
+		expect(mockAuthRepository.changeOrga).toBeCalledTimes(1);
 		expect(result.isLeft());
 		expect(result).toEqual(Either.left(new GenericFailure('error')));
 	});

@@ -16,6 +16,9 @@ export class MockAuthRepository implements AuthRepository {
 	registerUser(): Promise<Either<Failure,ModelContainer<UserModel>>>{
 		throw new Error('Method not implemented.');
 	}
+	changeOrga():Promise<Either<Failure,ModelContainer<TokenModel>>>{
+		throw new Error('Method not implemented.');
+	}   
 }
 
 describe('Autenticar usuario - Caso de uso', () => {
