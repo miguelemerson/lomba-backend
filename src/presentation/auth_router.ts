@@ -4,10 +4,13 @@ import { UserModel } from '../data/models/user_model';
 import { Auth } from '../domain/entities/auth';
 import { GetTokenUseCase } from '../domain/usecases/auth/get_token';
 import { RegisterUserUseCase } from '../domain/usecases/auth/register_user';
+import { ChangeOrgaUseCase } from '../domain/usecases/auth/change_orga';
+import { isAuth } from '../core/presentation/valid_token_router';
 
 export default function AuthRouter(
 	getToken: GetTokenUseCase,
-	registerUser: RegisterUserUseCase
+	registerUser: RegisterUserUseCase,
+	changeOrga: ChangeOrgaUseCase
 ) {
 	const router = express.Router();
 
@@ -63,6 +66,30 @@ export default function AuthRouter(
 		res.status(code).send(toSend);
 	});
  
+	router.put('/',[isAuth], async (req: Request, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			//execution
+			const user = await changeOrga.execute(req.body);
+			//evaluate
+			user.fold(error => {
+				//something wrong
+				code = 401;
+				toSend = new RouterResponse('1.0', error as object, 'put', undefined, 'no change');	
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'put', undefined, 'change ok');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'put', undefined, 'no change');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});	
 
 	return router;
 }
