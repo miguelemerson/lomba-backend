@@ -37,7 +37,7 @@ import { DeleteOrga } from './domain/usecases/orgas/delete_orga';
 import AuthRouter from './presentation/auth_router';
 import { GetToken } from './domain/usecases/auth/get_token';
 import { AuthRepositoryImpl } from './data/repositories/auth_repository_impl';
-import { RegisterUser } from './domain/usecases/users/register_user';
+import { RegisterUser } from './domain/usecases/auth/register_user';
 import { checkData01 } from './core/builtindata/load_data_01';
 import * as dotenv from 'dotenv';
 import { configEnv } from './config_env';
