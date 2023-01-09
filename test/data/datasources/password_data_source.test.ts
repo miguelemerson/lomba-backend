@@ -36,7 +36,20 @@ describe('Password MongoDB DataSource', () => {
 		jest.clearAllMocks();
 	});
 
-	test('agregar un usuario', async () => {
+	test('obtener una password', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listPasswords)));
+
+		//act
+		const data = await dataSource.getMany({id: 'aaa'});
+
+		//assert
+		expect(mongoWrapper.getMany).toBeCalledTimes(1);
+		expect(data).toEqual(new ModelContainer(listPasswords));
+
+	});
+
+	test('agregar una password', async () => {
 		//arrange
 		jest.spyOn(mongoWrapper, 'add').mockImplementation(() => Promise.resolve(true));
 		jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
@@ -49,7 +62,7 @@ describe('Password MongoDB DataSource', () => {
 
 	});
 
-	test('modificar un usuario', async () => {
+	test('modificar una password', async () => {
 		//arrange
 		jest.spyOn(mongoWrapper, 'update').mockImplementation(() => Promise.resolve(true));
 		jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
@@ -61,4 +74,30 @@ describe('Password MongoDB DataSource', () => {
 		expect(data).toEqual(ModelContainer.fromOneItem(listPasswords[0]));
 
 	});
+
+	test('deshabilitar una password', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'enable').mockImplementation(() => Promise.resolve(true));
+
+		//act
+		const data = await dataSource.enable(listPasswords[0].id, false);
+
+		//assert
+		expect(mongoWrapper.enable).toBeCalledWith(listPasswords[0].id, false);
+		expect(data).toEqual(true);
+
+	});	
+
+	test('delete una password', async () => {
+		//arrange
+		jest.spyOn(mongoWrapper, 'delete').mockImplementation(() => Promise.resolve(true));
+
+		//act
+		const data = await dataSource.delete(listPasswords[0].id);
+
+		//assert
+		expect(mongoWrapper.delete).toBeCalledWith(listPasswords[0].id);
+		expect(data).toEqual(true);
+
+	});	
 });

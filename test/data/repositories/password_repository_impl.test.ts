@@ -110,6 +110,20 @@ describe('Password Repository Implementation', () => {
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});	
 
+		test('deberá generar error genérico al agregar un password vacío', async () => {
+			//arrange
+			jest.spyOn(mockPasswordDataSource, 'add').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await passwordRepository.addPassword('ppp', '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});	
+
 	});
 
 	describe('updatePassword', () => {
@@ -161,6 +175,20 @@ describe('Password Repository Implementation', () => {
 			jest.spyOn(mockPasswordDataSource, 'update').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await passwordRepository.updatePassword(listUsers[0].id, 'asd');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});	
+
+		test('deberá generar error genérico al actualizar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockPasswordDataSource, 'update').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await passwordRepository.updatePassword(listUsers[0].id, '');
 			let failure:unknown;
 			let value:unknown;
 
