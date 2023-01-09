@@ -67,7 +67,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 
 			//lista de roles del usuario en la organización seleccionada
 			//si la organización no está especificada entonces retorna undefined para los roles
-			const rolesString = this.findRoles(user.id, orgaId);
+			const rolesString = await this.findRoles(user.id, orgaId);
 
 			//nuevo token con el payload que se especifica.
 			const newToken = generateJWT({userId:user.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
@@ -148,15 +148,16 @@ export class AuthRepositoryImpl implements AuthRepository {
 			return undefined;
 		else
 		{
+			let passwordModelToReturn:PasswordModel|undefined = undefined;
+
 			passResult.items.forEach(pm => {
 				//convierte password en hashsalt
 				const passHashed = HashPassword.createHash(password, pm.salt);
 				//ya convertido compara con las registradas
 				if(pm.hash == passHashed.hash)
-					return pm;
-				else
-					return undefined;
+					passwordModelToReturn = pm;
 			});
+			return passwordModelToReturn;
 		}
 	}
 	private async findUserOrgas(orgas?:{id:string,code:string}[]):Promise<OrgaModel[]>
@@ -194,8 +195,10 @@ export class AuthRepositoryImpl implements AuthRepository {
 			//una vez encontrada la relación de orgas con usuario entonces recogemos los roles
 			if(orgaUserResult.currentItemCount > 0 && orgaUserResult.items[0].roles.length > 0)
 			{
+				//se trabaja con el item cero porque se asume
+				//que solo es posible una asociacion de user con orga
 				//lista de roles separados por coma que irán en el token.
-				return orgaUserResult.items[0].roles.join(','); 
+				return orgaUserResult.items[0].roles.map(r=> r.name).join(','); 
 			}
 		}
 		else return undefined;

@@ -1,7 +1,7 @@
 import express from 'express';
 import { Request, Response } from 'express';
-import { AddPasswordUseCase } from '../domain/usecases/auth/add_password';
-import { UpdatePasswordUseCase } from '../domain/usecases/auth/update_password';
+import { AddPasswordUseCase } from '../domain/usecases/password/add_password';
+import { UpdatePasswordUseCase } from '../domain/usecases/password/update_password';
 import { RouterResponse } from '../core/router_response';
 
 export default function PasswordsRouter(

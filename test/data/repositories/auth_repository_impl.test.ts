@@ -19,6 +19,10 @@ import { PasswordRepositoryImpl } from '../../../src/data/repositories/password_
 import { RoleRepositoryImpl } from '../../../src/data/repositories/role_repository_impl';
 import { UserRepositoryImpl } from '../../../src/data/repositories/user_repository_impl';
 import { Auth } from '../../../src/domain/entities/auth';
+import { TokenModel } from '../../../src/data/models/token_model';
+import { Token } from '../../../src/domain/entities/token';
+import { Role } from '../../../src/domain/entities/role';
+import { generateJWT, validJWT } from '../../../src/core/jwt';
 
 class MockUserDataSource implements UserDataSource {
 	getMany(): Promise<ModelContainer<UserModel>> {
@@ -146,6 +150,7 @@ describe('Auth Repository Implementation', () => {
 		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
 		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
 	];
+	listUsers[0].orgas = [{id:'ooo', code:'superOrga'}];
 	const listRoles: RoleModel[] = [
 		new RoleModel('fff', true),
 		new RoleModel('hhh', true),
@@ -155,18 +160,19 @@ describe('Auth Repository Implementation', () => {
 		new OrgaModel('rrr', 'Orga', 'orga', true, false),
 	];
 	const listOrgaUsers: OrgaUserModel[] = [
-		new OrgaUserModel('Súper OrgaUser', 'orgaUser', [], true, true),
+		new OrgaUserModel('Súper OrgaUser', 'orgaUser', [{name:'admin',enable:true} as Role], true, true),
 		new OrgaUserModel('OrgaUser', 'Ouser', [], true, false),
 	];
-	const testAuth:Auth = {username:'user', password:'pass'};
+	const testAuth:Auth = {username:'user', password:'4321'};
 
-	const hashPass1 = HashPassword.createHash('4321');
+	const hashPass1 = HashPassword.createHash('4321', '100');
 	const hashPass2 = HashPassword.createHash('1234');
 
 	const listPasswords: PasswordModel[] = [
-		new PasswordModel('ppp', hashPass1.hash, hashPass2.salt, true, true),
-		new PasswordModel('aaa', hashPass2.hash, hashPass1.salt, true, false),
+		new PasswordModel('ppp', hashPass1.hash, hashPass1.salt, true, true),
+		new PasswordModel('aaa', hashPass2.hash, hashPass2.salt, true, false),
 	];
+	const testToken = new TokenModel('newToken', 'orgaId', []);
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -184,20 +190,27 @@ describe('Auth Repository Implementation', () => {
 	});
 
 	describe('getAuth', () => {
-		test('debe entregar un usuario', async () => {
+		test('debe entregar un token satisfactorio', async () => {
 			//arrange
 			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
 			//act
 			const result = await authRepository.getAuth(testAuth);
-			let failure:unknown;
-			let value:unknown;
-
-			result.fold(err => {failure = err;}, val => {value = val;});
+			const value = result.getOrElse(ModelContainer.fromOneItem(testToken));
 
 			expect(result.isRight());
 			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			//expect(value).toStrictEqual(ModelContainer.fromOneItem(listUsers[0]));
+			expect(mockOrgaDataSource.getMany).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.getMany).toBeCalledTimes(1);
+			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
+			expect(value).toBeDefined();
+			expect(value?.currentItemCount).toStrictEqual(1);
+			expect(validJWT(value.items[0].value, 'lomba')).toBeDefined();
+			
 		});
+
 		/*
 		test('deberá generar error de Database al buscar un usuario', async () => {
 			//arrange
@@ -225,8 +238,8 @@ describe('Auth Repository Implementation', () => {
 			//assert
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(NetworkFailure);
-		});		
-
+		});		*/
+		/*
 		test('deberá generar error genérico al buscar un usuario', async () => {
 			//arrange
 			jest.spyOn(mockAuthDataSource, 'getOne').mockImplementation(() => Promise.reject('generic'));
