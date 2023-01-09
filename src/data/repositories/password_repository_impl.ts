@@ -14,13 +14,13 @@ export class PasswordRepositoryImpl implements PasswordRepository {
 		this.dataSource = dataSource;
 	}
 
-	async addPassword(userId:string, auth:Auth): Promise<Either<Failure,ModelContainer<PasswordModel>>>{
+	async addPassword(userId:string, password:string): Promise<Either<Failure,ModelContainer<PasswordModel>>>{
 		try{
 			//debe especificar password caso contrario retorna left
-			if(!auth.password)
+			if(password=='')
 				return Either.left(new GenericFailure('Need password'));
 
-			const passHashed = HashPassword.createHash(auth.password);
+			const passHashed = HashPassword.createHash(password);
 
 			const pass: PasswordModel = new PasswordModel(userId, passHashed.hash,passHashed.salt,true,false);
 			const result = await this.dataSource.add(pass);
@@ -37,13 +37,13 @@ export class PasswordRepositoryImpl implements PasswordRepository {
 			
 		}
 	}
-	async updatePassword(userId:string, auth:Auth): Promise<Either<Failure,ModelContainer<PasswordModel>>>{
+	async updatePassword(userId:string, password:string): Promise<Either<Failure,ModelContainer<PasswordModel>>>{
 		try{
 			//debe especificar password caso contrario retorna left
-			if(!auth.password)
+			if(password=='')
 				return Either.left(new GenericFailure('Need password'));
 
-			const passHashed = HashPassword.createHash(auth.password);
+			const passHashed = HashPassword.createHash(password);
 
 			const changes = {hash:passHashed.hash, salt:passHashed.salt, istemp:false};
 

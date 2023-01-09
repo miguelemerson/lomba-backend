@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { GetTokenUseCase } from '../../src/domain/usecases/auth/get_token';
-import { RegisterUserUseCase } from '../../src/domain/usecases/users/register_user';
+import { RegisterUserUseCase } from '../../src/domain/usecases/auth/register_user';
 import AuthRouter from '../../src/presentation/auth_router';
 import server from '../../src/server';
 import { UserModel } from '../../src/data/models/user_model';
@@ -22,7 +22,6 @@ class MockRegisterUserUseCase implements RegisterUserUseCase {
 		throw new Error('Method not implemented.');
 	}
 }
-
 
 describe('Auth Router', () => {
 

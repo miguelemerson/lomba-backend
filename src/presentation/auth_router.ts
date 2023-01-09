@@ -1,10 +1,9 @@
-import express from 'express';
-import { Request, Response } from 'express';
-import { GetTokenUseCase } from '../domain/usecases/auth/get_token';
-import { RegisterUserUseCase } from '../domain/usecases/users/register_user';
+import express, { Request, Response } from 'express';
 import { RouterResponse } from '../core/router_response';
 import { UserModel } from '../data/models/user_model';
 import { Auth } from '../domain/entities/auth';
+import { GetTokenUseCase } from '../domain/usecases/auth/get_token';
+import { RegisterUserUseCase } from '../domain/usecases/auth/register_user';
 
 export default function AuthRouter(
 	getToken: GetTokenUseCase,

@@ -24,5 +24,9 @@ export class PasswordModel implements Password, Entity {
 	created: Date;
 	updated?: Date;
 	deleted?: Date;
-	expires?: Date;    
+	expires?: Date;
+	
+	public toEntity(): Password {
+		return {userId:this.userId, hash:this.hash, salt:this.salt};
+	}
 }

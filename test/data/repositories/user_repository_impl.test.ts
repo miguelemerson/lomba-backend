@@ -8,8 +8,7 @@ import { DatabaseFailure, GenericFailure, NetworkFailure } from '../../../src/co
 class MockUserDataSource implements UserDataSource {
 	getMany(): Promise<ModelContainer<UserModel>> {
 		throw new Error('Method not implemented.');
-	}    
-
+	}
 	getOne(): Promise<ModelContainer<UserModel>>{
 		throw new Error('Method not implemented.');
 	}
