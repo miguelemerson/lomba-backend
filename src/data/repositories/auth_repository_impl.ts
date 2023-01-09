@@ -31,6 +31,11 @@ export class AuthRepositoryImpl implements AuthRepository {
 		this.orgaUserDataSource = orgaUserDataSource;
 	}
 
+	async changeOrga(auth:Auth):Promise<Either<Failure,ModelContainer<TokenModel>>>
+	{
+		return Either.left(new GenericFailure('Need password'));
+	}
+
 	async getAuth(auth:Auth):Promise<Either<Failure,ModelContainer<TokenModel>>>
 	{
 		try{

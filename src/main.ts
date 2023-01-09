@@ -39,10 +39,16 @@ import { GetToken } from './domain/usecases/auth/get_token';
 import { AuthRepositoryImpl } from './data/repositories/auth_repository_impl';
 import { RegisterUser } from './domain/usecases/users/register_user';
 import { checkData01 } from './core/builtindata/load_data_01';
+import * as dotenv from 'dotenv';
+import { configEnv } from './config_env';
 
 (async () => {
+	dotenv.config();
 
-	const uri = 'mongodb+srv://lomba:LVMVSDHqLWunzzdv@cluster0.j0aztjy.mongodb.net/?retryWrites=true&w=majority';
+	console.log('NODE_ENV: ' + configEnv().NODE_ENV);
+	console.log('PORT: ' + configEnv().PORT);
+
+	const uri = configEnv().MONGODB_URL;
 	const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 	
 	await client.connect();
@@ -93,7 +99,6 @@ import { checkData01 } from './core/builtindata/load_data_01';
 
 
 	///Fin usuarios
-    
-	app.listen(4000, () => console.log('Running on http://localhost:4000'));
+	app.listen(configEnv().PORT, () => console.log('Running on http://localhost:' + configEnv().PORT));
 
 })();

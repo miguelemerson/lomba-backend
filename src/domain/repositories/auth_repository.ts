@@ -8,4 +8,5 @@ import { Auth } from '../entities/auth';
 export interface AuthRepository {
     getAuth(auth:Auth):Promise<Either<Failure,ModelContainer<TokenModel>>>;
     registerUser(user:UserModel, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<UserModel>>>;
+    changeOrga(auth:Auth):Promise<Either<Failure,ModelContainer<TokenModel>>>;
 }
