@@ -5,7 +5,7 @@ import { HashPassword } from '../../../../src/core/password_hash';
 import { PasswordModel } from '../../../../src/data/models/password_model';
 import { UserModel } from '../../../../src/data/models/user_model';
 import { PasswordRepository } from '../../../../src/domain/repositories/password_repository';
-import { AddPassword } from '../../../../src/domain/usecases/auth/add_password';
+import { AddPassword } from '../../../../src/domain/usecases/password/add_password';
 
 export class MockPasswordRepository implements PasswordRepository {
 	addPassword() : Promise<Either<Failure, ModelContainer<PasswordModel>>> {
