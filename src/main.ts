@@ -41,6 +41,7 @@ import { RegisterUser } from './domain/usecases/auth/register_user';
 import { checkData01 } from './core/builtindata/load_data_01';
 import * as dotenv from 'dotenv';
 import { configEnv } from './config_env';
+import { ChangeOrga } from './domain/usecases/auth/change_orga';
 
 (async () => {
 	dotenv.config();
@@ -90,7 +91,7 @@ import { configEnv } from './config_env';
 
 	const orgaMiddleWare = OrgasRouter(new GetOrga(orgaRepo), new GetOrgas(orgaRepo), new AddOrga(orgaRepo), new UpdateOrga(orgaRepo), new EnableOrga(orgaRepo), new DeleteOrga(orgaRepo));
 
-	const authMiddleWare = AuthRouter(new GetToken(authRepo), new RegisterUser(authRepo));
+	const authMiddleWare = AuthRouter(new GetToken(authRepo), new RegisterUser(authRepo), new ChangeOrga(authRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);

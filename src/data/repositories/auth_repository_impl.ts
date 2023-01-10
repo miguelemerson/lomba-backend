@@ -68,7 +68,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 			const newToken = generateJWT({userId:user.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
 
 			//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
-			const tokenModel = new TokenModel(newToken, orgaId, orgas, pass.istemp);
+			const tokenModel = new TokenModel(newToken, orgaId ? orgaId : '', orgas, pass.istemp);
 			return Either.right(ModelContainer.fromOneItem(tokenModel));
 		}
 		catch(error)
@@ -150,7 +150,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 			const newToken = generateJWT({userId:user.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
 
 			//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
-			const tokenModel = new TokenModel(newToken, orgaId, orgas);
+			const tokenModel = new TokenModel(newToken, orgaId ? orgaId : '', orgas);
 			return Either.right(ModelContainer.fromOneItem(tokenModel));
 
 		}
