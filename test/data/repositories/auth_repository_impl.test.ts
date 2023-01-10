@@ -204,55 +204,76 @@ describe('Auth Repository Implementation', () => {
 			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
 			expect(mockOrgaDataSource.getMany).toBeCalledTimes(1);
 			expect(mockPasswordDataSource.getMany).toBeCalledTimes(1);
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
+			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(1);
 			expect(value).toBeDefined();
 			expect(value?.currentItemCount).toStrictEqual(1);
 			expect(validJWT(value.items[0].value, 'lomba')).toBeDefined();
 			
 		});
 
-		/*
 		test('deberá generar error de Database al buscar un usuario', async () => {
 			//arrange
-			jest.spyOn(mockAuthDataSource, 'getOne').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await authRepository.getAuth(testAuth);
 			let failure:unknown;
 			let value:unknown;
 
 			result.fold(err => {failure = err;}, val => {value = val;});
-			//assert
+			
+			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(DatabaseFailure);
 		});
 
 		test('deberá generar error de Network al buscar un usuario', async () => {
 			//arrange
-			jest.spyOn(mockAuthDataSource, 'getOne').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await authRepository.getAuth(testAuth);
 			let failure:unknown;
 			let value:unknown;
 
 			result.fold(err => {failure = err;}, val => {value = val;});
-			//assert
+
+			
+			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(NetworkFailure);
-		});		*/
-		/*
+		});
+		
 		test('deberá generar error genérico al buscar un usuario', async () => {
 			//arrange
-			jest.spyOn(mockAuthDataSource, 'getOne').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await authRepository.getAuth(testAuth);
 			let failure:unknown;
 			let value:unknown;
 
 			result.fold(err => {failure = err;}, val => {value = val;});
-			//assert
+
+			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
-		});	*/
+		});
 
 	});
 
