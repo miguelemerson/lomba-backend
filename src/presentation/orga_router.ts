@@ -20,7 +20,7 @@ export default function OrgasRouter(
 ) {
 	const router = express.Router();
 
-	router.get('/',[isAuth], async (req: Request, res: Response) => {
+	router.get('/',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();

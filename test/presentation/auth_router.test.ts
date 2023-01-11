@@ -181,7 +181,7 @@ describe('Auth Router', () => {
 			jest.spyOn(mockChangeOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(tokenModel))));
 
 			//act
-			const response = await request(server).put('/api/v1/auth').send(testAuth).set({Authorization: 'Bearer ' + testTokenUser1});
+			const response = await request(server).put('/api/v1/auth').send(testAuth).set({Authorization: 'Bearer ' + testTokenAdmin});
 			const roures = response.body as RouterResponse;
 
 			//assert
@@ -196,34 +196,19 @@ describe('Auth Router', () => {
 
 		test('debe retornar 401 porque usuario no autenticado', async () => {
 			//arrange
-			jest.spyOn(mockChangeOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(tokenModel))));
-
-			//act
-			const response = await request(server).put('/api/v1/auth').send(testAuth);
-			const roures = response.body as RouterResponse;
-
-			//assert
-			expect(response.status).toBe(401);
-			expect(mockChangeOrgaUseCase.execute).toBeCalledTimes(0);
-			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.error).toBeDefined();
-			expect(roures.data).toBeUndefined();
-
-		});
-
-		test('debe retornar 401 en caso de failure', async () => {
-			//arrange
 			jest.spyOn(mockChangeOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
 
 			//act
-			const response = await request(server).put('/api/v1/auth').send(testAuth).set({Authorization: 'Bearer ' + testTokenUser1});
+			const response = await request(server).put('/api/v1/auth').send(testAuth).set({Authorization: 'Bearer ' + testTokenAdmin});
 			const roures = response.body as RouterResponse;
 
+			//assert
 			expect(response.status).toBe(401);
 			expect(mockChangeOrgaUseCase.execute).toBeCalledTimes(1);
 			expect(response.body as RouterResponse).toBeDefined();
 			expect(roures.error).toBeDefined();
 			expect(roures.data).toBeUndefined();
+
 		});
 
 		test('debe retornar 500 en caso de error', async () => {

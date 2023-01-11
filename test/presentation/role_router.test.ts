@@ -94,10 +94,10 @@ describe('Role Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockGetRoleUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetRoleUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -112,10 +112,10 @@ describe('Role Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockGetRoleUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetRoleUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -182,11 +182,10 @@ describe('Role Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockGetRolesUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetRolesUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -201,11 +200,10 @@ describe('Role Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockGetRolesUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetRolesUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -272,10 +270,10 @@ describe('Role Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockEnableRoleUseCase.execute).toBeCalledTimes(1);
+			expect(mockEnableRoleUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -289,10 +287,10 @@ describe('Role Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockEnableRoleUseCase.execute).toBeCalledTimes(1);
+			expect(mockEnableRoleUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 

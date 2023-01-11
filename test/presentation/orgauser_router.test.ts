@@ -122,11 +122,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockGetOrgaUserByOrgasUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgaUserByOrgasUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -141,11 +140,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockGetOrgaUserByOrgasUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgaUserByOrgasUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -215,11 +213,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockGetOrgaUserByUsersUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgaUserByUsersUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -234,11 +231,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockGetOrgaUserByUsersUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgaUserByUsersUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -308,11 +304,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockAddOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockAddOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -327,11 +322,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockAddOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockAddOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -401,11 +395,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockUpdateOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockUpdateOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -420,11 +413,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockUpdateOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockUpdateOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -491,10 +483,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockEnableOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockEnableOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -508,10 +500,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockEnableOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockEnableOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -576,10 +568,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockDeleteOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockDeleteOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -593,10 +585,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockDeleteOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockDeleteOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
