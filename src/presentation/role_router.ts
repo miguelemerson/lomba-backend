@@ -4,6 +4,8 @@ import { EnableRoleUseCase } from '../domain/usecases/roles/enable_role';
 import { GetRoleUseCase } from '../domain/usecases/roles/get_role';
 import { GetRolesUseCase } from '../domain/usecases/roles/get_roles';
 import { RouterResponse } from '../core/router_response';
+import { isAuth } from '../core/presentation/valid_token_router';
+import { hasRole } from '../core/presentation/check_role_router';
 
 export default function RolesRouter(
 	getRole: GetRoleUseCase,
@@ -12,7 +14,7 @@ export default function RolesRouter(
 ) {
 	const router = express.Router();
 
-	router.get('/', async (req: Request, res: Response) => {
+	router.get('/',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
@@ -38,7 +40,7 @@ export default function RolesRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/:id', async (req: Request<{id:string}>, res: Response) => {
+	router.get('/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
@@ -63,7 +65,7 @@ export default function RolesRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.put('/enable/:id', async (req: Request<{id:string, enable:boolean}>, res: Response) => {
+	router.put('/enable/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string}>, res: Response) => {
 		const text = (req.query.enable === 'false' ? false : true) ? 'enabled' : 'disabled';
 		//definitions
 		let code = 500;
