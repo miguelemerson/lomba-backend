@@ -42,11 +42,6 @@ describe('Auth Router', () => {
 	let mockRegisterUserUseCase: RegisterUserUseCase;
 	let mockChangeOrgaUseCase: MockChangeOrgaUseCase;
 
-	const listUsers: UserModel[] = [
-		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
-		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
-	];
-
 	//carga de identificadores para las pruebas
 	const testUserIdAdmin = data_insert01.users[1].id;
 	const testUserIdUser1 = data_insert01.users[4].id;
