@@ -26,7 +26,21 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 		const result = await userSource.getOne(user.id);
 		if(result.currentItemCount < 1)
 		{
-			await userSource.add(new UserModel(user.id, user.name, user.username, user.email, user.enabled, user.builtin));
+			//filtra los orgauser del usuario y se queda solo con el orgaId
+			const orgasu = data_insert01.orgausers.filter(ou=> ou.userId == user.id).map(o => o.orgaId);
+
+			//luego obtiene todos los {id, code} de orgas solo de las
+			//orgas cargadas previamente en orgasu (arriba)
+			const orgasidcodes = data_insert01.orgas.filter(o=> orgasu.includes(o.id)).map(co => {return {id:co.id, code:co.code};});
+
+			const newUser = new UserModel(user.id, user.name, user.username, user.email, user.enabled, user.builtin);
+
+			//consigue el nuevo usuario insertado para modificarlo
+			const insertedUser = await userSource.add(newUser);
+
+			//actualiza el campo de orgas del usuario con {id, code}
+			await userSource.update(insertedUser.items[0].id, {orgas:orgasidcodes});
+			
 			await passSource.delete(user.id);
 			const hashPass = HashPassword.createHash(user.password);
 			await passSource.add(new PasswordModel(user.id, hashPass.hash, hashPass.salt, true, user.builtin));
