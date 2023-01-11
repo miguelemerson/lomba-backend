@@ -5,6 +5,8 @@ module.exports = {
 	coveragePathIgnorePatterns: [
 		'.mock.ts',
 		'main.ts',
-		'server.ts'
+		'server.ts',
+		'mongo_wrapper.ts',
+		'config_env.ts'
 	]
 };

@@ -17,8 +17,11 @@ export const isAuth = async (req: Request, res: Response, next:NextFunction) => 
 	if(!validToken)
 		return res.status(401).send(new RouterResponse('1.0', 'not authorized', 'get', {} as object, 'not authorized'));
 
+	if(validToken.orgaId == '')
+		return res.status(406).send(new RouterResponse('1.0', 'not authorized', 'get', {} as object, 'no organization'));
+
 	req.params.r_userId = validToken.userId;
-	req.params.r_orgaId = validToken.orgaId ? validToken.orgaId : '';
+	req.params.r_orgaId = validToken.orgaId;
 	req.params.r_roles = validToken.roles;
 
 	next();

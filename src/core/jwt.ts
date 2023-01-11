@@ -6,12 +6,12 @@ export const generateJWT = (payload: object, secretKey:string, secondsToExpire: 
 	return token;
 };
 
-export const validJWT = (token: string, secretKey:string): undefined | {userId: string, roles:string, orgaId?:string} =>
+export const validJWT = (token: string, secretKey:string): undefined | {userId: string, roles:string, orgaId:string} =>
 {
 	if(!isTokenExpired(token))
 	{
 		const payload = jwt.verify(token, secretKey);
-		return payload as {userId: string, roles:string, orgaId?:string};
+		return payload as {userId: string, roles:string, orgaId:string};
 	}
 	else
 		return undefined;
