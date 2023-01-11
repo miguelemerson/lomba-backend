@@ -7,6 +7,8 @@ import { GetOrgaUseCase } from '../domain/usecases/orgas/get_orga';
 import { GetOrgasUseCase } from '../domain/usecases/orgas/get_orgas';
 import { UpdateOrgaUseCase } from '../domain/usecases/orgas/update_orga';
 import { RouterResponse } from '../core/router_response';
+import { isAuth } from '../core/presentation/valid_token_router';
+import { hasRole } from '../core/presentation/check_role_router';
 
 export default function OrgasRouter(
 	getOrga: GetOrgaUseCase,
@@ -18,7 +20,7 @@ export default function OrgasRouter(
 ) {
 	const router = express.Router();
 
-	router.get('/', async (req: Request, res: Response) => {
+	router.get('/',[isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
@@ -44,7 +46,7 @@ export default function OrgasRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/:orgaId', async (req: Request<{orgaId:string}>, res: Response) => {
+	router.get('/:orgaId',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
@@ -69,7 +71,7 @@ export default function OrgasRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.post('/', async (req: Request, res: Response) => {
+	router.post('/',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
@@ -94,7 +96,7 @@ export default function OrgasRouter(
 		res.status(code).send(toSend);
 	});
 	
-	router.put('/:id', async (req: Request, res: Response) => {
+	router.put('/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();		
@@ -119,7 +121,7 @@ export default function OrgasRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.put('/enable/:id', async (req: Request<{id:string, enable:boolean}>, res: Response) => {
+	router.put('/enable/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string}>, res: Response) => {
 		const text = (req.query.enable === 'false' ? false : true) ? 'enabled' : 'disabled';
 		//definitions
 		let code = 500;
@@ -145,7 +147,7 @@ export default function OrgasRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.delete('/:id', async (req: Request<{id:string}>, res: Response) => {
+	router.delete('/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();			

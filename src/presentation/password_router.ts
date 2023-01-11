@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import { AddPasswordUseCase } from '../domain/usecases/password/add_password';
 import { UpdatePasswordUseCase } from '../domain/usecases/password/update_password';
 import { RouterResponse } from '../core/router_response';
+import { isAuth } from '../core/presentation/valid_token_router';
+import { hasRole } from '../core/presentation/check_role_router';
 
 export default function PasswordsRouter(
 	addPassword: AddPasswordUseCase,
@@ -35,7 +37,7 @@ export default function PasswordsRouter(
 		res.status(code).send(toSend);
 	});
 	
-	router.put('/:userId', async (req: Request, res: Response) => {
+	router.put('/:userId',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();		

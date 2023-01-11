@@ -144,7 +144,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 
 			//lista de roles del usuario en la organización seleccionada
 			//si la organización no está especificada entonces retorna undefined para los roles
-			const rolesString = this.findRoles(user.id, orgaId);
+			const rolesString = await this.findRoles(user.id, orgaId);
 
 			//nuevo token con el payload que se especifica.
 			const newToken = generateJWT({userId:user.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
