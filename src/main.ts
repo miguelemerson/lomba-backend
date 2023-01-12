@@ -42,6 +42,8 @@ import { checkData01 } from './core/builtindata/load_data_01';
 import * as dotenv from 'dotenv';
 import { configEnv } from './config_env';
 import { ChangeOrga } from './domain/usecases/auth/change_orga';
+import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
+import { RouterResponse } from './core/router_response';
 
 (async () => {
 	dotenv.config();
@@ -98,8 +100,7 @@ import { ChangeOrga } from './domain/usecases/auth/change_orga';
 	app.use('/api/v1/orga', orgaMiddleWare);
 	app.use('/api/v1/auth', authMiddleWare);
 
-
-	///Fin usuarios
 	app.listen(configEnv().PORT, () => console.log('Running on http://localhost:' + configEnv().PORT));
 
 })();
+

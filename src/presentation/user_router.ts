@@ -136,7 +136,7 @@ export default function UsersRouter(
 				toSend = new RouterResponse('1.0', error as object, 'put', {id: req.params.id, enable: req.query.enable}, 'user was not ' + text);	
 			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', {value}, 'put', {id: req.params.id, enable: req.query.enable}, 'user ' + text);
+				toSend = new RouterResponse('1.0', value, 'put', {id: req.params.id, enable: req.query.enable}, 'user ' + text);
 			});
 		} catch (err) {
 			//something wrong
@@ -161,7 +161,7 @@ export default function UsersRouter(
 				toSend = new RouterResponse('1.0', error as object, 'delete', {id: req.params.id}, 'user was not deleted');
 			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', {value}, 'delete', {id: req.params.id}, 'user deleted');
+				toSend = new RouterResponse('1.0', value, 'delete', {id: req.params.id}, 'user deleted');
 			});
 
 		} catch (err) {
