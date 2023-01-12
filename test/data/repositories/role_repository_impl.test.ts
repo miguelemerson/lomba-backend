@@ -111,7 +111,7 @@ describe('Role Repository Implementation', () => {
 			result.fold(err => {failure = err;}, val => {value = val;});
 
 			expect(result.isRight());
-			expect(mockRoleDataSource.getOne).toHaveBeenCalledWith('aaa');
+			expect(mockRoleDataSource.getOne).toHaveBeenCalledWith({'_id':'aaa'});
 			expect(value).toStrictEqual(ModelContainer.fromOneItem(listRoles[0]));
 		});
 

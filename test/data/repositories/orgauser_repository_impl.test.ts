@@ -160,14 +160,14 @@ describe('OrgaUser Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
 			//act
-			const result = await orgauserRepository.getOrgaUser('OrgaUser');
+			const result = await orgauserRepository.getOrgaUser('OrgaUser','orgaUser');
 			let failure:unknown;
 			let value:unknown;
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
 			expect(result.isRight());
-			expect(mockOrgaUserDataSource.getOne).toHaveBeenCalledWith('OrgaUser');
+			expect(mockOrgaUserDataSource.getOne).toHaveBeenCalledWith({'orgaId':'OrgaUser','userId':'orgaUser'});
 			expect(value).toStrictEqual(ModelContainer.fromOneItem(listOrgaUsers[0]));
 		});
 
@@ -175,7 +175,7 @@ describe('OrgaUser Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
-			const result = await orgauserRepository.getOrgaUser('OrgaUser');
+			const result = await orgauserRepository.getOrgaUser('OrgaUser','orgaUser');
 			let failure:unknown;
 			let value:unknown;
 
@@ -189,7 +189,7 @@ describe('OrgaUser Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
-			const result = await orgauserRepository.getOrgaUser('OrgaUser');
+			const result = await orgauserRepository.getOrgaUser('OrgaUser','orgaUser');
 			let failure:unknown;
 			let value:unknown;
 
@@ -203,7 +203,7 @@ describe('OrgaUser Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.reject('generic'));
 			//act
-			const result = await orgauserRepository.getOrgaUser('OrgaUser');
+			const result = await orgauserRepository.getOrgaUser('OrgaUser','orgaUser');
 			let failure:unknown;
 			let value:unknown;
 

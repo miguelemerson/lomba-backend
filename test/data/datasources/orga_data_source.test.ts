@@ -54,7 +54,7 @@ describe('Orga MongoDB DataSource', () => {
 		jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
 
 		//act
-		const data = await dataSource.getOne('ooo');
+		const data = await dataSource.getOne({_id: 'ooo'});
 
 		//assert
 		expect(mongoWrapper.getOne).toBeCalledTimes(1);
