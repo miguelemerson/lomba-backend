@@ -3,7 +3,6 @@ import { Either } from '../../core/either';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
 import { HashPassword } from '../../core/password_hash';
-import { Auth } from '../../domain/entities/auth';
 import { PasswordRepository } from '../../domain/repositories/password_repository';
 import { PasswordDataSource } from '../datasources/password_data_source';
 import { PasswordModel } from '../models/password_model';

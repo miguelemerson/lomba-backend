@@ -6,7 +6,7 @@ import { ModelContainer } from '../../core/model_container';
 export interface RoleDataSource {
     getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<RoleModel>>;
-    getOne(id: string): Promise<ModelContainer<RoleModel>>;
+    getOne(query: object): Promise<ModelContainer<RoleModel>>;
     add(role: RoleModel) : Promise<ModelContainer<RoleModel>>;
     update(id: string, role: object): Promise<ModelContainer<RoleModel>>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
@@ -24,14 +24,14 @@ export class RoleDataSourceImpl implements RoleDataSource {
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<RoleModel>>{
 		return await this.collection.getMany<RoleModel>(query, sort, pageIndex, itemsPerPage);
 	}
-	async getOne(id: string): Promise<ModelContainer<RoleModel>>{
-		return await this.collection.getOne(id);
+	async getOne(query: object): Promise<ModelContainer<RoleModel>>{
+		return await this.collection.getOne(query);
 	}
 	async add(role: RoleModel) : Promise<ModelContainer<RoleModel>>{
-		return await this.collection.add(role).then(() => this.getOne(role.id));	
+		return await this.collection.add(role).then(() => this.getOne({'_id':role.id}));	
 	}
 	async update(id: string, role: object): Promise<ModelContainer<RoleModel>>{
-		return await this.collection.update(id, role).then(() => this.getOne(id));
+		return await this.collection.update(id, role).then(() => this.getOne({'_id':id}));
 	}
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		return await this.collection.enable(id, enableOrDisable);

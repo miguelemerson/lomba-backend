@@ -1,18 +1,19 @@
-import express from 'express';
-import { Request, Response } from 'express';
+import express, { Request, Response } from 'express';
+import { hasRole } from '../core/presentation/check_role_router';
+import { isAuth } from '../core/presentation/valid_token_router';
+import { RouterResponse } from '../core/router_response';
 import { AddOrgaUserUseCase } from '../domain/usecases/orgas/add_orgauser';
 import { DeleteOrgaUserUseCase } from '../domain/usecases/orgas/delete_orgauser';
 import { EnableOrgaUserUseCase } from '../domain/usecases/orgas/enable_orgauser';
+import { GetOrgaUserUseCase } from '../domain/usecases/orgas/get_orgauser';
 import { GetOrgaUserByOrgasUseCase } from '../domain/usecases/orgas/get_orgausers_by_orga';
 import { GetOrgaUserByUsersUseCase } from '../domain/usecases/orgas/get_orgausers_by_user';
 import { UpdateOrgaUserUseCase } from '../domain/usecases/orgas/update_orgauser';
-import { RouterResponse } from '../core/router_response';
-import { isAuth } from '../core/presentation/valid_token_router';
-import { hasRole } from '../core/presentation/check_role_router';
 
 export default function OrgaUsersRouter(
 	getOrgaUsersByOrgaId: GetOrgaUserByOrgasUseCase,
 	getOrgaUsersByUserId: GetOrgaUserByUsersUseCase,
+	getOrgaUser: GetOrgaUserUseCase,
 	addOrgaUser: AddOrgaUserUseCase,
 	updateOrgaUser: UpdateOrgaUserUseCase,
 	enableOrgaUser: EnableOrgaUserUseCase,
@@ -45,26 +46,51 @@ export default function OrgaUsersRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/byuser/:userId',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId:string}>, res: Response) => {
+	router.get('/byuser/:userId',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{userId:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
 			//execution
-			const orgausers = await getOrgaUsersByUserId.execute(req.params.orgaId);
+			const orgausers = await getOrgaUsersByUserId.execute(req.params.userId);
 			//evaluate
 			orgausers.fold(error => {
 				//something wrong
 				code = 500;
-				toSend = new RouterResponse('1.0', error as object, 'get', {orgaId: req.params.orgaId} as object, 'not obtained by orga id');
+				toSend = new RouterResponse('1.0', error as object, 'get', {userId: req.params.userId} as object, 'not obtained by orga id');
 			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', value, 'get', {orgaId: req.params.orgaId} as object, 'geted by orga id');				
+				toSend = new RouterResponse('1.0', value, 'get', {userId: req.params.userId} as object, 'geted by orga id');				
 			});
 		} catch (err) {
 			//something wrong
 			code = 500;
-			toSend = new RouterResponse('1.0', err as object, 'get', {orgaId: req.params.orgaId} as object, 'not obtained by orga id');
+			toSend = new RouterResponse('1.0', err as object, 'get', {userId: req.params.userId} as object, 'not obtained by orga id');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.get('/:orgaId/:userId',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId:string, userId:string}>, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			//execution
+			const orgausers = await getOrgaUser.execute(req.params.orgaId, req.params.userId);
+			//evaluate
+			orgausers.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'get', {orgaId: req.params.orgaId, userId: req.params.userId} as object, 'not obtained by orga id');
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'get', {orgaId: req.params.orgaId, userId: req.params.userId} as object, 'geted by orga id');				
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get', {orgaId: req.params.orgaId, userId: req.params.userId} as object, 'not obtained by orga id');
 		}
 		//respond cordially
 		res.status(code).send(toSend);

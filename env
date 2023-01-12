@@ -1,5 +1,0 @@
-NODE_ENV=development
-PORT=4001
-MONGODB_URL="mongodb+srv://lomba:LVMVSDHqLWunzzdv@cluster0.j0aztjy.mongodb.net/?retryWrites=true&w=majority"
-SECRET_KEY="lombabcknd1102"
-TOKEN_EXP=3600

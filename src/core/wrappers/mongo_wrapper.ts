@@ -5,7 +5,7 @@ import { ModelContainer } from '../model_container';
 export interface NoSQLDatabaseWrapper<T>{
     getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>;
-    getOne(id: string): Promise<ModelContainer<T>>;
+    getOne(query: object): Promise<ModelContainer<T>>;
     add(obj: T) : Promise<boolean>;
     update(id: string, obj: object): Promise<boolean>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
@@ -94,8 +94,8 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		return contains_many;
 	}
 
-	async getOne<T>(id: string): Promise<ModelContainer<T>>{
-		const result = await this.db.collection<Document>(this.collectionName).findOne({'_id': id});
+	async getOne<T>(query: object): Promise<ModelContainer<T>>{
+		const result = await this.db.collection<Document>(this.collectionName).findOne(query);
 		if(result == null || result == undefined){
 			return new ModelContainer([]);
 		}
