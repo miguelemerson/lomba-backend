@@ -12,6 +12,9 @@ export class MockOrgaUserRepository implements OrgaUserRepository {
 	getOrgaUsersByUser(): Promise<Either<Failure, ModelContainer<OrgaUserModel>>> {
 		throw new Error('Method not implemented.');
 	}
+	getOrgaUser(): Promise<Either<Failure, ModelContainer<OrgaUserModel>>> {
+		throw new Error('Method not implemented.');
+	}
 	addOrgaUser() : Promise<Either<Failure, ModelContainer<OrgaUserModel>>> {
 		throw new Error('Method not implemented.');
 	}

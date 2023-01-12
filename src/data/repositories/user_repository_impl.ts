@@ -34,7 +34,7 @@ export class UserRepositoryImpl implements UserRepository {
 	async getUser(id: string): Promise<Either<Failure,ModelContainer<UserModel>>> {
 		try
 		{
-			const result = await this.dataSource.getOne(id);
+			const result = await this.dataSource.getOne({'_id':id});
 			return Either.right(result);
 		}
 		catch(error)

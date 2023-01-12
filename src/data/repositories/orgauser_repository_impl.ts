@@ -51,10 +51,10 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 		
 	}
 
-	async getOrgaUser(id: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
+	async getOrgaUser(orgaId: string, userId: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
 		try
 		{
-			const result = await this.dataSource.getOne(id);
+			const result = await this.dataSource.getOne({'orgaId': orgaId, 'userId': userId});
 			return Either.right(result);
 		}
 		catch(error)

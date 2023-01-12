@@ -122,8 +122,8 @@ describe('Orga Router', () => {
 			expect(response.status).toBe(401);
 			expect(mockGetOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -138,10 +138,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockGetOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -208,11 +208,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockGetOrgasUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgasUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -227,11 +226,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockGetOrgasUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgasUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -301,11 +299,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockAddOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(mockAddOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -320,11 +317,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockAddOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(mockAddOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -394,11 +390,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockUpdateOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(mockUpdateOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -413,11 +408,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockUpdateOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(mockUpdateOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -484,10 +478,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockEnableOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(mockEnableOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -501,10 +495,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockEnableOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(mockEnableOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -569,10 +563,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockDeleteOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(mockDeleteOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -586,10 +580,10 @@ describe('Orga Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockDeleteOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(mockDeleteOrgaUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 

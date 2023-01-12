@@ -16,6 +16,7 @@ import { Either } from '../../src/core/either';
 import { RouterResponse } from '../../src/core/router_response';
 import { generateJWT } from '../../src/core/jwt';
 import { data_insert01 } from '../../src/core/builtindata/load_data_01';
+import { GetOrgaUserUseCase } from '../../src/domain/usecases/orgas/get_orgauser';
 
 class MockAddOrgaUserUseCase implements AddOrgaUserUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
@@ -47,6 +48,12 @@ class MockGetOrgaUserByUsersUseCase implements GetOrgaUserByUsersUseCase {
 	}
 }
 
+class MockGetOrgaUserUseCase implements GetOrgaUserUseCase {
+	execute(): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
 class MockUpdateOrgaUserUseCase implements UpdateOrgaUserUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
 		throw new Error('Method not implemented.');
@@ -59,6 +66,7 @@ describe('OrgaUser Router', () => {
 	let mockEnableOrgaUserUseCase: EnableOrgaUserUseCase;
 	let mockGetOrgaUserByOrgasUseCase: GetOrgaUserByOrgasUseCase;
 	let mockGetOrgaUserByUsersUseCase: GetOrgaUserByUsersUseCase;
+	let mockGetOrgaUserUseCase: GetOrgaUserUseCase;
 	let mockUpdateOrgaUserUseCase: UpdateOrgaUserUseCase;
 
 	const listOrgaUsers: OrgaUserModel[] = [
@@ -80,9 +88,10 @@ describe('OrgaUser Router', () => {
 		mockEnableOrgaUserUseCase = new MockEnableOrgaUserUseCase();
 		mockGetOrgaUserByOrgasUseCase = new MockGetOrgaUserByOrgasUseCase();
 		mockGetOrgaUserByUsersUseCase = new MockGetOrgaUserByUsersUseCase();
+		mockGetOrgaUserUseCase = new MockGetOrgaUserUseCase();
 		mockUpdateOrgaUserUseCase = new MockUpdateOrgaUserUseCase();
 
-		server.use('/api/v1/orgauser', OrgaUserRouter(mockGetOrgaUserByOrgasUseCase, mockGetOrgaUserByUsersUseCase, mockAddOrgaUserUseCase, mockUpdateOrgaUserUseCase, mockEnableOrgaUserUseCase, mockDeleteOrgaUserUseCase));
+		server.use('/api/v1/orgauser', OrgaUserRouter(mockGetOrgaUserByOrgasUseCase, mockGetOrgaUserByUsersUseCase, mockGetOrgaUserUseCase, mockAddOrgaUserUseCase, mockUpdateOrgaUserUseCase, mockEnableOrgaUserUseCase, mockDeleteOrgaUserUseCase));
 	});
 
 	beforeEach(() => {
@@ -122,11 +131,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockGetOrgaUserByOrgasUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgaUserByOrgasUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -141,11 +149,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockGetOrgaUserByOrgasUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgaUserByOrgasUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -215,11 +222,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockGetOrgaUserByUsersUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgaUserByUsersUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -234,11 +240,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockGetOrgaUserByUsersUseCase.execute).toBeCalledTimes(1);
+			expect(mockGetOrgaUserByUsersUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(expectedData.length);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -269,6 +274,97 @@ describe('OrgaUser Router', () => {
 			//asserts
 			expect(response.status).toBe(500);
 			expect(mockGetOrgaUserByUsersUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+
+	//get un orgaUsuarios por orgaId y userId
+	describe('GET /:orgaId/:userId', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			const expectedData = listOrgaUsers;
+			jest.spyOn(mockGetOrgaUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaUserModel>(expectedData))));
+
+			//act
+			const response = await request(server).get('/api/v1/orgauser/OrgaUser/Ouser').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockGetOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(expectedData.length);
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 401 porque usuario no autenticado', async () => {
+			//arrange
+			const expectedData = listOrgaUsers;
+			jest.spyOn(mockGetOrgaUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaUserModel>(expectedData))));
+
+			//act
+			const response = await request(server).get('/api/v1/orgauser/OrgaUser/Ouser');
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(401);
+			expect(mockGetOrgaUserUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+
+		});
+
+		test('debe retornar 403 porque usuario no el role', async () => {
+			//arrange
+			const expectedData = listOrgaUsers;
+			jest.spyOn(mockGetOrgaUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaUserModel>(expectedData))));
+
+			//act
+			const response = await request(server).get('/api/v1/orgauser/OrgaUser/Ouser').set({Authorization: 'Bearer ' + testTokenUser1});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(403);
+			expect(mockGetOrgaUserUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+
+		});
+
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockGetOrgaUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).get('/api/v1/orgauser/OrgaUser/Ouser').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockGetOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockGetOrgaUserUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).get('/api/v1/orgauser/OrgaUser/Ouser').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockGetOrgaUserUseCase.execute).toBeCalledTimes(1);
 			expect(response.body as RouterResponse).toBeDefined();
 			expect(roures.error).toBeDefined();
 			expect(roures.data).toBeUndefined();
@@ -308,11 +404,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockAddOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockAddOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -327,11 +422,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockAddOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockAddOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -401,11 +495,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockUpdateOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockUpdateOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -420,11 +513,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockUpdateOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockUpdateOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.data?.items?.length).toEqual(1);
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -491,10 +583,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockEnableOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockEnableOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -508,10 +600,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockEnableOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockEnableOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -576,10 +668,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(401);
-			expect(mockDeleteOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockDeleteOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 
@@ -593,10 +685,10 @@ describe('OrgaUser Router', () => {
 
 			//assert
 			expect(response.status).toBe(403);
-			expect(mockDeleteOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(mockDeleteOrgaUserUseCase.execute).toBeCalledTimes(0);
 			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.data).toBeDefined();
-			expect(roures.error).toBeUndefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
 
 		});
 

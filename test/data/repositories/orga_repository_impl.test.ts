@@ -111,7 +111,7 @@ describe('Orga Repository Implementation', () => {
 			result.fold(err => {failure = err;}, val => {value = val;});
 
 			expect(result.isRight());
-			expect(mockOrgaDataSource.getOne).toHaveBeenCalledWith('ooo');
+			expect(mockOrgaDataSource.getOne).toHaveBeenCalledWith({'_id':'ooo'});
 			expect(value).toStrictEqual(ModelContainer.fromOneItem(listOrgas[0]));
 		});
 

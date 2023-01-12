@@ -110,7 +110,7 @@ describe('User Repository Implementation', () => {
 			result.fold(err => {failure = err;}, val => {value = val;});
 
 			expect(result.isRight());
-			expect(mockUserDataSource.getOne).toHaveBeenCalledWith('aaa');
+			expect(mockUserDataSource.getOne).toHaveBeenCalledWith({'_id':'aaa'});
 			expect(value).toStrictEqual(ModelContainer.fromOneItem(listUsers[0]));
 		});
 

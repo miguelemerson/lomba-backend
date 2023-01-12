@@ -3,7 +3,6 @@ import { Failure, GenericFailure } from '../../../../src/core/errors/failures';
 import { ModelContainer } from '../../../../src/core/model_container';
 import { HashPassword } from '../../../../src/core/password_hash';
 import { PasswordModel } from '../../../../src/data/models/password_model';
-import { UserModel } from '../../../../src/data/models/user_model';
 import { PasswordRepository } from '../../../../src/domain/repositories/password_repository';
 import { AddPassword } from '../../../../src/domain/usecases/password/add_password';
 
@@ -26,10 +25,6 @@ describe('Agregar usuario - Caso de uso', () => {
 	const listPasswords: PasswordModel[] = [
 		new PasswordModel('ppp', hashPass1.hash, hashPass2.salt, true, true),
 		new PasswordModel('aaa', hashPass2.hash, hashPass1.salt, true, false),
-	];
-	const listUsers: UserModel[] = [
-		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
-		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
 	];
 
 	beforeEach(() => {

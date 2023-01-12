@@ -14,7 +14,7 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 	
 	//roles
 	data_insert01.roles.forEach(async role => {
-		const result = await roleSource.getOne(role.name);
+		const result = await roleSource.getOne({'name':role.name});
 		if(result.currentItemCount < 1)
 		{
 			await roleSource.add(new RoleModel(role.name, role.enabled));
@@ -23,7 +23,7 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 
 	//usuarios y password
 	data_insert01.users.forEach(async user => {
-		const result = await userSource.getOne(user.id);
+		const result = await userSource.getOne({'_id':user.id});
 		if(result.currentItemCount < 1)
 		{
 			//filtra los orgauser del usuario y se queda solo con el orgaId
@@ -49,7 +49,7 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 	
 	//organizaciones
 	data_insert01.orgas.forEach(async orga => {
-		const result = await orgaSource.getOne(orga.id);
+		const result = await orgaSource.getOne({'_id':orga.id});
 		if(result.currentItemCount < 1)
 		{
 			await orgaSource.add(orga as OrgaModel);
@@ -58,7 +58,7 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 
 	//orgauser relación de organizaciones con usuarios
 	data_insert01.orgausers.forEach(async orgaUser => {
-		const result = await orgaUserSource.getOne(orgaUser.id);
+		const result = await orgaUserSource.getOne({'_id':orgaUser.id});
 		if(result.currentItemCount < 1)
 		{
 			const ou = new OrgaUserModel(orgaUser.orgaId, orgaUser.userId, orgaUser.roles.map(r=> new RoleModel(r, true).toEntity()), true, orgaUser.builtin);
