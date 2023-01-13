@@ -9,7 +9,7 @@ export interface GetOrgaUserByOrgasUseCase {
     execute(id:string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>>;
 }
 
-export class GetOrgaUser implements GetOrgaUserByOrgasUseCase {
+export class GetOrgaUserByOrga implements GetOrgaUserByOrgasUseCase {
 	repository: OrgaUserRepository;
 	constructor(repository: OrgaUserRepository) {
 		this.repository = repository;
