@@ -79,8 +79,6 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		let totalPages = 0;  
 		let totalItems:number | undefined = undefined;
 
-		console.log(query);
-
 		({ totalItems, result, startIndex, totalPages } = 
 			await this.runQuery(pageIndex, totalItems, query, 
 				sort, result, itemsPerPage, startIndex, totalPages));

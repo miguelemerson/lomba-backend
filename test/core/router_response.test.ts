@@ -94,6 +94,21 @@ describe('Test para el router response', () => {
 		
 	});
 
+	test('Un router response de booleando', () => {
+		//arrange
+		const data = true;
+
+		//act
+		const result = new RouterResponse('1.0', data, 'test', {}, 'test');
+		
+		//assert
+		expect(result.data).toBeDefined();
+		expect(result.error).toBeUndefined();
+		expect(result.data?.items?.length).toBeGreaterThanOrEqual(1);
+        
+		
+	});
+
 	test('Un router response de otro objeto', () => {
 		//arrange
 		const data = listUsers[0];

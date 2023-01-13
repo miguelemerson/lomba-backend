@@ -13,16 +13,16 @@ import { UserModel } from '../../../src/data/models/user_model';
 
 class MockUserDataSource implements UserDataSource {
 	getMany(): Promise<ModelContainer<UserModel>> {
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 1.');
 	}
 	getOne(): Promise<ModelContainer<UserModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 2.');
 	}
 	add() : Promise<ModelContainer<UserModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 3.');
 	}
 	update(): Promise<ModelContainer<UserModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 4.');
 	}
 	enable(): Promise<boolean>{
 		throw new Error('Method not implemented.');
@@ -38,10 +38,10 @@ class MockRoleDataSource implements RoleDataSource {
 		throw new Error('Method not implemented.');
 	}
 	getOne(): Promise<ModelContainer<RoleModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 5.');
 	}
 	add() : Promise<ModelContainer<RoleModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 6.');
 	}
 	update(): Promise<ModelContainer<RoleModel>>{
 		throw new Error('Method not implemented.');
@@ -57,13 +57,13 @@ class MockRoleDataSource implements RoleDataSource {
 
 class MockOrgaDataSource implements OrgaDataSource {
 	getMany(): Promise<ModelContainer<OrgaModel>> {
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 7.');
 	}
 	getOne(): Promise<ModelContainer<OrgaModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 8.');
 	}
 	add() : Promise<ModelContainer<OrgaModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 9.');
 	}
 	update(): Promise<ModelContainer<OrgaModel>>{
 		throw new Error('Method not implemented.');
@@ -79,13 +79,13 @@ class MockOrgaDataSource implements OrgaDataSource {
 
 class MockOrgaUserDataSource implements OrgaUserDataSource {
 	getMany(): Promise<ModelContainer<OrgaUserModel>> {
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 10.');
 	}
 	getOne(): Promise<ModelContainer<OrgaUserModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 11.');
 	}
 	add() : Promise<ModelContainer<OrgaUserModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 12.');
 	}
 	update(): Promise<ModelContainer<OrgaUserModel>>{
 		throw new Error('Method not implemented.');
@@ -100,19 +100,19 @@ class MockOrgaUserDataSource implements OrgaUserDataSource {
 }
 class MockPasswordDataSource implements PasswordDataSource {
 	getMany(): Promise<ModelContainer<PasswordModel>> {
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 13.');
 	}
 	getOne(): Promise<ModelContainer<PasswordModel>> {
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 14.');
 	}
 	enable(): Promise<boolean> {
 		throw new Error('Method not implemented.');
 	}
 	delete(): Promise<boolean> {
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 15.');
 	}
 	add() : Promise<ModelContainer<PasswordModel>>{
-		throw new Error('Method not implemented.');
+		throw new Error('Method not implemented 16.');
 	}
 	update(): Promise<ModelContainer<PasswordModel>>{
 		throw new Error('Method not implemented.');
@@ -200,6 +200,7 @@ describe('Test del load data 01', () => {
 
 	test('debe agregar roles, usuarios, orgas y orgausers', async () => {
 		//arrange
+
 		const model_con_role = ModelContainer.fromOneItem(new RoleModel(test_roles[0].name, test_roles[0].enabled));
 		const model_void_role = new ModelContainer<RoleModel>([]);
 		const model_con_user = ModelContainer.fromOneItem(new UserModel(test_users[1].id, test_users[1].name, test_users[1].username, test_users[1].email, test_users[1].enabled, test_users[1].builtin));
@@ -220,6 +221,8 @@ describe('Test del load data 01', () => {
 
 		jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_user));
 
+		jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(model_con_user));			
+
 		jest.spyOn(mockPasswordDataSource, 'delete').mockImplementation(() => Promise.resolve(true));
 
 		jest.spyOn(mockPasswordDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_pass));
@@ -232,7 +235,7 @@ describe('Test del load data 01', () => {
 
 		jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_orus));
 
-
+		
 		await checkData01(mockRoleDataSource, mockUserDataSource, mockPasswordDataSource, mockOrgaDataSource, mockOrgaUserDataSource);
 
 		expect(mockRoleDataSource.getOne).toBeCalledTimes(5);

@@ -11,7 +11,7 @@ export class RouterResponse{
 	params?: object;
 	data?:DataResponse;
 	error?:ErrorResponse;
-	constructor(apiVersion:string, response:object | string | null, method?:string, params?:object, context?:string){
+	constructor(apiVersion:string, response:object | string | boolean | null, method?:string, params?:object, context?:string){
 		this.apiVersion = apiVersion;
 		this.method = method;
 		this.params = params;
@@ -28,7 +28,7 @@ export class RouterResponse{
 
 
 
-function setDataError(response: object | string | null, routerResponse:RouterResponse) {
+function setDataError(response: object | string | boolean | null, routerResponse:RouterResponse) {
 	//DatabaseFailure
 	if (response instanceof DatabaseFailure) {
 		routerResponse.data = undefined;
@@ -102,6 +102,14 @@ function setDataError(response: object | string | null, routerResponse:RouterRes
 				pageIndex: response.pageIndex,
 				totalPages: response.totalPages,
 				updated: new Date(),
+			};
+		} else if(response instanceof Boolean)
+		{
+			routerResponse.data = {
+				items: [response],
+				kind: 'boolean',
+				currentItemCount: 1,
+				updated: new Date(),				
 			};
 		}
 		//any as object
