@@ -200,49 +200,44 @@ describe('Test del load data 01', () => {
 
 	test('debe agregar roles, usuarios, orgas y orgausers', async () => {
 		//arrange
-		try
-		{
-			const model_con_role = ModelContainer.fromOneItem(new RoleModel(test_roles[0].name, test_roles[0].enabled));
-			const model_void_role = new ModelContainer<RoleModel>([]);
-			const model_con_user = ModelContainer.fromOneItem(new UserModel(test_users[1].id, test_users[1].name, test_users[1].username, test_users[1].email, test_users[1].enabled, test_users[1].builtin));
-			const model_void_user = new ModelContainer<UserModel>([]);
-			const model_con_pass = ModelContainer.fromOneItem(new PasswordModel(model_con_user.items[0].id, 'hhh', 'sss', true, false));
-			const model_void_pass = new ModelContainer<PasswordModel>([]);
-			const model_con_orga = ModelContainer.fromOneItem(new OrgaModel(test_orgas[0].id, test_orgas[0].name, test_orgas[0].code, test_orgas[0].enabled, test_orgas[0].builtin));
-			const model_void_orga = new ModelContainer<OrgaModel>([]);
-			const model_con_orus = ModelContainer.fromOneItem(new OrgaUserModel(model_con_orga.items[0].id, model_con_user.items[0].id, [model_con_role.items[0].toEntity()], true, false));
-			const model_void_orus = new ModelContainer<OrgaUserModel>([]);
+
+		const model_con_role = ModelContainer.fromOneItem(new RoleModel(test_roles[0].name, test_roles[0].enabled));
+		const model_void_role = new ModelContainer<RoleModel>([]);
+		const model_con_user = ModelContainer.fromOneItem(new UserModel(test_users[1].id, test_users[1].name, test_users[1].username, test_users[1].email, test_users[1].enabled, test_users[1].builtin));
+		const model_void_user = new ModelContainer<UserModel>([]);
+		const model_con_pass = ModelContainer.fromOneItem(new PasswordModel(model_con_user.items[0].id, 'hhh', 'sss', true, false));
+		const model_void_pass = new ModelContainer<PasswordModel>([]);
+		const model_con_orga = ModelContainer.fromOneItem(new OrgaModel(test_orgas[0].id, test_orgas[0].name, test_orgas[0].code, test_orgas[0].enabled, test_orgas[0].builtin));
+		const model_void_orga = new ModelContainer<OrgaModel>([]);
+		const model_con_orus = ModelContainer.fromOneItem(new OrgaUserModel(model_con_orga.items[0].id, model_con_user.items[0].id, [model_con_role.items[0].toEntity()], true, false));
+		const model_void_orus = new ModelContainer<OrgaUserModel>([]);
 
 
-			jest.spyOn(mockRoleDataSource, 'getOne').mockImplementation(() => Promise.resolve(model_void_role));
+		jest.spyOn(mockRoleDataSource, 'getOne').mockImplementation(() => Promise.resolve(model_void_role));
 
-			jest.spyOn(mockRoleDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_role));
+		jest.spyOn(mockRoleDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_role));
 
-			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(model_void_user));
+		jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(model_void_user));
 
-			jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_user));
+		jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_user));
 
-			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(model_con_user));			
+		jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(model_con_user));			
 
-			jest.spyOn(mockPasswordDataSource, 'delete').mockImplementation(() => Promise.resolve(true));
+		jest.spyOn(mockPasswordDataSource, 'delete').mockImplementation(() => Promise.resolve(true));
 
-			jest.spyOn(mockPasswordDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_pass));
+		jest.spyOn(mockPasswordDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_pass));
 		
-			jest.spyOn(mockOrgaDataSource, 'getOne').mockImplementation(() => Promise.resolve(model_void_orga));
+		jest.spyOn(mockOrgaDataSource, 'getOne').mockImplementation(() => Promise.resolve(model_void_orga));
 
-			jest.spyOn(mockOrgaDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_orga));
+		jest.spyOn(mockOrgaDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_orga));
 
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(model_void_orus));
+		jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(model_void_orus));
 
-			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_orus));
+		jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_orus));
 
 		
-			await checkData01(mockRoleDataSource, mockUserDataSource, mockPasswordDataSource, mockOrgaDataSource, mockOrgaUserDataSource);
-		}
-		catch(e)
-		{
-			console.log(e);	
-		}
+		await checkData01(mockRoleDataSource, mockUserDataSource, mockPasswordDataSource, mockOrgaDataSource, mockOrgaUserDataSource);
+
 		expect(mockRoleDataSource.getOne).toBeCalledTimes(5);
 		expect(mockRoleDataSource.add).toBeCalledTimes(5);
 		expect(mockUserDataSource.getOne).toBeCalledTimes(7);

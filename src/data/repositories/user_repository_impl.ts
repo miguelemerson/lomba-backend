@@ -15,6 +15,8 @@ export class UserRepositoryImpl implements UserRepository {
 	async getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure,ModelContainer<UserModel>>> {
 		try
 		{
+			if(!sort)
+				sort = [['name', 1]];
 			const result = await this.dataSource
 				.getMany({'orgas.id' : orgaId}, sort);
 			
