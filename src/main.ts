@@ -42,6 +42,14 @@ import { checkData01 } from './core/builtindata/load_data_01';
 import * as dotenv from 'dotenv';
 import { configEnv } from './config_env';
 import { ChangeOrga } from './domain/usecases/auth/change_orga';
+import OrgaUsersRouter from './presentation/orgauser_router';
+import { GetOrgaUser } from './domain/usecases/orgas/get_orgauser';
+import { AddOrgaUser } from './domain/usecases/orgas/add_orgauser';
+import { DeleteOrgaUser } from './domain/usecases/orgas/delete_orgauser';
+import { EnableOrgaUser } from './domain/usecases/orgas/enable_orgauser';
+import { UpdateOrgaUser } from './domain/usecases/orgas/update_orgauser';
+import { GetOrgaUserByOrga } from './domain/usecases/orgas/get_orgausers_by_orga';
+import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user';
 
 (async () => {
 	dotenv.config();
@@ -91,11 +99,14 @@ import { ChangeOrga } from './domain/usecases/auth/change_orga';
 
 	const orgaMiddleWare = OrgasRouter(new GetOrga(orgaRepo), new GetOrgas(orgaRepo), new AddOrga(orgaRepo), new UpdateOrga(orgaRepo), new EnableOrga(orgaRepo), new DeleteOrga(orgaRepo));
 
+	const orgauserMiddleWare = OrgaUsersRouter(new GetOrgaUserByOrga(orgaUserRepo), new GetOrgaUserByUser(orgaUserRepo), new GetOrgaUser(orgaUserRepo), new AddOrgaUser(orgaUserRepo), new UpdateOrgaUser(orgaUserRepo), new EnableOrgaUser(orgaUserRepo), new DeleteOrgaUser(orgaUserRepo));
+
 	const authMiddleWare = AuthRouter(new GetToken(authRepo), new RegisterUser(authRepo), new ChangeOrga(authRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
 	app.use('/api/v1/orga', orgaMiddleWare);
+	app.use('/api/v1/orgauser', orgauserMiddleWare);
 	app.use('/api/v1/auth', authMiddleWare);
 
 

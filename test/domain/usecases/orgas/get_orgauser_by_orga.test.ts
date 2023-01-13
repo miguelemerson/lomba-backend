@@ -3,7 +3,7 @@ import { GenericFailure } from '../../../../src/core/errors/failures';
 import { ModelContainer } from '../../../../src/core/model_container';
 import { OrgaUserModel } from '../../../../src/data/models/orgauser_model';
 import { OrgaUserRepository } from '../../../../src/domain/repositories/orgauser_repository';
-import { GetOrgaUser } from '../../../../src/domain/usecases/orgas/get_orgausers_by_orga';
+import { GetOrgaUserByOrga } from '../../../../src/domain/usecases/orgas/get_orgausers_by_orga';
 import { MockOrgaUserRepository } from './orgauser_repository.mock';
 describe('Conseguir usuario - Caso de uso', () => {
 	
@@ -24,7 +24,7 @@ describe('Conseguir usuario - Caso de uso', () => {
 		jest.spyOn(mockOrgaUserRepository, 'getOrgaUsersByOrga').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(listOrgaUsers[0]))));
 
 		//act
-		const useCase = new GetOrgaUser(mockOrgaUserRepository);
+		const useCase = new GetOrgaUserByOrga(mockOrgaUserRepository);
 		const result = await useCase.execute(listOrgaUsers[0].orgaId);
 		//assert
 		expect(mockOrgaUserRepository.getOrgaUsersByOrga).toBeCalledTimes(1);
@@ -37,7 +37,7 @@ describe('Conseguir usuario - Caso de uso', () => {
 		jest.spyOn(mockOrgaUserRepository, 'getOrgaUsersByOrga').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
 
 		//act
-		const useCase = new GetOrgaUser(mockOrgaUserRepository);
+		const useCase = new GetOrgaUserByOrga(mockOrgaUserRepository);
 		const result = await useCase.execute(listOrgaUsers[0].orgaId);
 		//assert
 		expect(mockOrgaUserRepository.getOrgaUsersByOrga).toBeCalledTimes(1);
