@@ -61,7 +61,7 @@ import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user
 	const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 	
 	await client.connect();
-	const db = client.db('LOGIN_DB');
+	const db = client.db(configEnv().DB_NAME);
     
 	///wrappers
 	const roleMongo = new MongoWrapper<RoleModel>('roles', db);
