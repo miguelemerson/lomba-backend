@@ -80,7 +80,7 @@ export default function RolesRouter(
 				toSend = new RouterResponse('1.0', error as object, 'put', {id: req.params.id, enable: req.query.enable}, 'role was not ' + text);	
 			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', {value}, 'put', {id: req.params.id, enable: req.query.enable}, 'role ' + text);
+				toSend = new RouterResponse('1.0', value, 'put', {id: req.params.id, enable: req.query.enable}, 'role ' + text);
 			});
 		} catch (err) {
 			//something wrong
