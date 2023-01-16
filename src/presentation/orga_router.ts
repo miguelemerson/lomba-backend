@@ -136,7 +136,7 @@ export default function OrgasRouter(
 				toSend = new RouterResponse('1.0', error as object, 'put', {id: req.params.id, enable: req.query.enable}, 'orga was not ' + text);	
 			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', {value}, 'put', {id: req.params.id, enable: req.query.enable}, 'orga ' + text);
+				toSend = new RouterResponse('1.0', value, 'put', {id: req.params.id, enable: req.query.enable}, 'orga ' + text);
 			});
 		} catch (err) {
 			//something wrong
