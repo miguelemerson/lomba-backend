@@ -1,4 +1,4 @@
-import { Db, Document } from 'mongodb';
+import { Db, Document, ObjectId } from 'mongodb';
 import {  } from '../../domain/entities/entity';
 import { ModelContainer } from '../model_container';
 
@@ -109,6 +109,7 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		const params = (obj as {[x: string]: unknown;});
 		if(obj != null)
 			params['updated'] = new Date();
+
 		const result = await this.db.collection<Document>(this.collectionName).updateOne({_id: id}, {$set:params});
 		return (result?.modifiedCount > 0 ? true : false);
 
@@ -128,6 +129,7 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 			const i = await this.db.collection<Document>(this.collectionName).findOne({'_id': id, builtin:false});
 			if(i != null)
 			{
+				i._id = new ObjectId();
 				await this.db.collection<Document>(this.collectionName + '_deleted').insertOne(i as Document);
 				const result = await this.db.collection<Document>(this.collectionName).deleteOne({_id: id, builtin:false});
 				return (result.deletedCount > 0);

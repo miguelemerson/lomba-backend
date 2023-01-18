@@ -186,7 +186,7 @@ export default function OrgaUsersRouter(
 				toSend = new RouterResponse('1.0', error as object, 'delete', {orgaId: req.params.orgaId, userId: req.params.userId}, 'orgauser was not deleted');
 			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', {value}, 'delete', {orgaId: req.params.orgaId, userId: req.params.userId}, 'orgauser deleted');
+				toSend = new RouterResponse('1.0', value, 'delete', {orgaId: req.params.orgaId, userId: req.params.userId}, 'orgauser deleted');
 			});
 
 		} catch (err) {

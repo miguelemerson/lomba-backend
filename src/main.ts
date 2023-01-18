@@ -56,6 +56,7 @@ import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user
 
 	console.log('NODE_ENV: ' + configEnv().NODE_ENV);
 	console.log('PORT: ' + configEnv().PORT);
+	console.log('DB: ' + configEnv().DB_NAME);
 
 	const uri = configEnv().MONGODB_URL;
 	const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
@@ -82,7 +83,7 @@ import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user
 	const userRepo = new UserRepositoryImpl(userDataSource);
 	const passRepo = new PasswordRepositoryImpl(passDataSource);
 	const orgaRepo = new OrgaRepositoryImpl(orgaDataSource);
-	const orgaUserRepo = new OrgaUserRepositoryImpl(orgaUserDataSource);
+	const orgaUserRepo = new OrgaUserRepositoryImpl(orgaUserDataSource, userDataSource);
 	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource);
 
 	//revisa que los datos estén cargados.
