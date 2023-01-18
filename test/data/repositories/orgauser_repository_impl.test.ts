@@ -4,6 +4,8 @@ import { OrgaUserDataSource } from '../../../src/data/datasources/orgauser_data_
 import { OrgaUserModel } from '../../../src/data/models/orgauser_model';
 import { OrgaUserRepositoryImpl } from '../../../src/data/repositories/orgauser_repository_impl';
 import { DatabaseFailure, GenericFailure, NetworkFailure } from '../../../src/core/errors/failures';
+import { UserDataSource } from '../../../src/data/datasources/user_data_source';
+import { UserModel } from '../../../src/data/models/user_model';
 
 class MockOrgaUserDataSource implements OrgaUserDataSource {
 	getMany(): Promise<ModelContainer<OrgaUserModel>> {
@@ -28,19 +30,47 @@ class MockOrgaUserDataSource implements OrgaUserDataSource {
 	setId():OrgaUserModel{throw new Error('Method not implemented.');}
 }
 
+class MockUserDataSource implements UserDataSource {
+	getMany(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getOne(): Promise<ModelContainer<UserModel>>{
+		throw new Error('Method not implemented.');
+	}
+	add() : Promise<ModelContainer<UserModel>>{
+		throw new Error('Method not implemented.');
+	}
+	update(): Promise<ModelContainer<UserModel>>{
+		throw new Error('Method not implemented.');
+	}
+	enable(): Promise<boolean>{
+		throw new Error('Method not implemented.');
+	}
+	delete(): Promise<boolean>{
+		throw new Error('Method not implemented.');
+	}
+	setId():UserModel{throw new Error('Method not implemented.');}
+}
+
 describe('OrgaUser Repository Implementation', () => {
 	let mockOrgaUserDataSource: OrgaUserDataSource;
+	let mockUserDataSource: UserDataSource;
 	let orgauserRepository: OrgaUserRepositoryImpl;
 
 	const listOrgaUsers: OrgaUserModel[] = [
 		new OrgaUserModel('Súper OrgaUser', 'orgaUser', [], true, true),
 		new OrgaUserModel('OrgaUser', 'Ouser', [], true, false),
 	];
-
+	const listUsers: UserModel[] = [
+		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
+		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
+	];
+	
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockOrgaUserDataSource = new MockOrgaUserDataSource();
-		orgauserRepository = new OrgaUserRepositoryImpl(mockOrgaUserDataSource);
+		mockUserDataSource = new MockUserDataSource();
+		orgauserRepository = new OrgaUserRepositoryImpl(mockOrgaUserDataSource, mockUserDataSource);
 	});
 
 	describe('getOrgaUsersByOrga', () => {
@@ -280,6 +310,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('debe llamar a las funciones de actualzar', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));			
 			//act
 			const result = await orgauserRepository.updateOrgaUser('OrgaUser', 'Ouser', listOrgaUsers[0]);
 			let failure:unknown;
@@ -295,6 +326,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error de Database al actualizar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'update').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));			
 			//act
 			const result = await orgauserRepository.updateOrgaUser('OrgaUser', 'Ouser', listOrgaUsers[0]);
 			let failure:unknown;
@@ -309,6 +341,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error de Network al actualizar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'update').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
 			const result = await orgauserRepository.updateOrgaUser('OrgaUser', 'Ouser', listOrgaUsers[0]);
 			let failure:unknown;
@@ -323,6 +356,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error genérico al actualizar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'update').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
 			const result = await orgauserRepository.updateOrgaUser('OrgaUser', 'Ouser', listOrgaUsers[0]);
 			let failure:unknown;
@@ -397,8 +431,10 @@ describe('OrgaUser Repository Implementation', () => {
 		test('debe llamar a las funciones de elminación', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.resolve(true));
+			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
+			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));				
 			//act
-			const result = await orgauserRepository.deleteOrgaUser('OrgaUser');
+			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
 			//assert
 			expect(result.isRight());
 			expect(mockOrgaUserDataSource.delete).toBeCalledTimes(1);
@@ -408,8 +444,9 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error de Database al eliminar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
-			const result = await orgauserRepository.deleteOrgaUser('OrgaUser');
+			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
 			let failure:unknown;
 			let value:unknown;
 
@@ -422,8 +459,9 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error de Network al eliminar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
-			const result = await orgauserRepository.deleteOrgaUser('OrgaUser');
+			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
 			let failure:unknown;
 			let value:unknown;
 
@@ -436,8 +474,9 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error genérico al eliminar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
-			const result = await orgauserRepository.deleteOrgaUser('OrgaUser');
+			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
 			let failure:unknown;
 			let value:unknown;
 
