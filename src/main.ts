@@ -50,6 +50,7 @@ import { EnableOrgaUser } from './domain/usecases/orgas/enable_orgauser';
 import { UpdateOrgaUser } from './domain/usecases/orgas/update_orgauser';
 import { GetOrgaUserByOrga } from './domain/usecases/orgas/get_orgausers_by_orga';
 import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user';
+import { GetUsersNotInOrga } from './domain/usecases/users/get_users_notin_orga';
 
 (async () => {
 	dotenv.config();
@@ -95,7 +96,7 @@ import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user
 	const userMiddleWare = UsersRouter(
 		new GetUser(userRepo), new GetUsersByOrgaId(userRepo), 
 		new AddUser(userRepo), new UpdateUser(userRepo), 
-		new EnableUser(userRepo), new DeleteUser(userRepo)
+		new EnableUser(userRepo), new DeleteUser(userRepo), new GetUsersNotInOrga(userRepo)
 	);
 
 	const orgaMiddleWare = OrgasRouter(new GetOrga(orgaRepo), new GetOrgas(orgaRepo), new AddOrga(orgaRepo), new UpdateOrga(orgaRepo), new EnableOrga(orgaRepo), new DeleteOrga(orgaRepo));

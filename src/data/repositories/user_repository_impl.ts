@@ -33,6 +33,28 @@ export class UserRepositoryImpl implements UserRepository {
 		}
 	}
 
+	async getUsersNotInOrga(orgaId: string, sort?: [string, 1 | -1][], pageIndex?: number, itemsPerPage?: number): Promise<Either<Failure, ModelContainer<UserModel>>>{
+		try
+		{
+			if(!sort)
+				sort = [['name', 1]];
+
+			const result = await this.dataSource
+				.getMany({'orgas.id' : {$ne: orgaId}}, sort, pageIndex, itemsPerPage);
+			
+			return Either.right(result);		
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));	
+		}
+	}
+
 	async getUser(id: string): Promise<Either<Failure,ModelContainer<UserModel>>> {
 		try
 		{

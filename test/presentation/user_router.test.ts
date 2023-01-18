@@ -16,6 +16,7 @@ import { Either } from '../../src/core/either';
 import { RouterResponse } from '../../src/core/router_response';
 import { generateJWT } from '../../src/core/jwt';
 import { data_insert01} from '../../src/core/builtindata/load_data_01';
+import { GetUsersNotInOrgaUseCase } from '../../src/domain/usecases/users/get_users_notin_orga';
 
 class MockAddUserUseCase implements AddUserUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<UserModel>>> {
@@ -52,6 +53,12 @@ class MockUpdateUserUseCase implements UpdateUserUseCase {
 	}
 }
 
+class MockGetUsersNotInOrgaUseCase implements GetUsersNotInOrgaUseCase {
+	execute(): Promise<Either<Failure,ModelContainer<UserModel>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
 describe('User Router', () => {
 	let mockAddUserUseCase: AddUserUseCase;
 	let mockDeleteUserUseCase: DeleteUserUseCase;
@@ -59,6 +66,7 @@ describe('User Router', () => {
 	let mockGetUserUseCase: GetUserUseCase;
 	let mockGetUsersByOrgaIdUseCase: GetUsersByOrgaIdUseCase;
 	let mockUpdateUserUseCase: UpdateUserUseCase;
+	let mockGetUsersNotInOrgaUseCase: GetUsersNotInOrgaUseCase;
 
 	const listUsers: UserModel[] = [
 		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
@@ -81,8 +89,9 @@ describe('User Router', () => {
 		mockGetUserUseCase = new MockGetUserUseCase();
 		mockGetUsersByOrgaIdUseCase = new MockGetUsersByOrgaIdUseCase();
 		mockUpdateUserUseCase = new MockUpdateUserUseCase();
+		mockGetUsersNotInOrgaUseCase = new MockGetUsersNotInOrgaUseCase();
 
-		server.use('/api/v1/user', UserRouter(mockGetUserUseCase, mockGetUsersByOrgaIdUseCase, mockAddUserUseCase, mockUpdateUserUseCase, mockEnableUserUseCase, mockDeleteUserUseCase));
+		server.use('/api/v1/user', UserRouter(mockGetUserUseCase, mockGetUsersByOrgaIdUseCase, mockAddUserUseCase, mockUpdateUserUseCase, mockEnableUserUseCase, mockDeleteUserUseCase, mockGetUsersNotInOrgaUseCase));
 	});
 
 	beforeEach(() => {

@@ -9,6 +9,7 @@ import { UpdateUserUseCase } from '../domain/usecases/users/update_user';
 import { RouterResponse } from '../core/router_response';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { hasRole } from '../core/presentation/check_role_router';
+import { GetUsersNotInOrgaUseCase } from '../domain/usecases/users/get_users_notin_orga';
 
 export default function UsersRouter(
 	getUser: GetUserUseCase,
@@ -16,7 +17,8 @@ export default function UsersRouter(
 	addUser: AddUserUseCase,
 	updateUser: UpdateUserUseCase,
 	enableUser: EnableUserUseCase,
-	deleteUser: DeleteUserUseCase
+	deleteUser: DeleteUserUseCase,
+	getUsersNotInOrga: GetUsersNotInOrgaUseCase
 ) {
 	const router = express.Router();
 
@@ -66,6 +68,46 @@ export default function UsersRouter(
 			//something wrong
 			code = 500;
 			toSend = new RouterResponse('1.0', err as object, 'get', {orgaId: req.params.orgaId} as object, 'not obtained by orga id');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.get('/notinorga/:orgaId',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId:string, sort?:string, pageIndex?: string, itemsPerPage?: string}>, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			
+			//parameters settings
+			let valid_sort: [string, 1 | -1][] | undefined;
+			if(req.params.sort)
+			{
+				valid_sort = JSON.parse(req.params.sort) as [string, 1 | -1][];
+			}
+			let pageIndex:number | undefined;
+			let itemsPerPage:number | undefined;
+
+			if(req.params.pageIndex)
+				pageIndex = Number(req.params.pageIndex);
+			if(req.params.itemsPerPage)
+				itemsPerPage = Number(req.params.itemsPerPage);
+
+			//execution
+			const users = await getUsersNotInOrga.execute(req.params.orgaId, valid_sort, pageIndex, itemsPerPage);
+			//evaluate
+			users.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'get', {orgaId: req.params.orgaId} as object, 'not obtained not in orga');
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'get', {orgaId: req.params.orgaId} as object, 'geted not in orga');				
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get', {orgaId: req.params.orgaId} as object, 'not obtained not in orga');
 		}
 		//respond cordially
 		res.status(code).send(toSend);
