@@ -8,7 +8,7 @@ export interface ExistsUserUseCase {
     execute(userId:string, username:string, email:string): Promise<Either<Failure,ModelContainer<UserModel>>>;
 }
 
-export class eEistsUser implements ExistsUserUseCase {
+export class ExistsUser implements ExistsUserUseCase {
 	repository: UserRepository;
 	constructor(repository: UserRepository) {
 		this.repository = repository;

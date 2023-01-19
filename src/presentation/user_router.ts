@@ -180,6 +180,7 @@ export default function UsersRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
+			console.log(req.params);
 			//execution
 			const users = await existsUser.execute(req.params.userId,req.params.username,req.params.email);
 			//evaluate
