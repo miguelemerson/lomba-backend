@@ -37,13 +37,25 @@ export default function PasswordsRouter(
 		res.status(code).send(toSend);
 	});
 	
-	router.put('/:userId/:password',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
+	router.put('/:userId',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();		
 		try {
+
+			let bodyValid: {password:string};
+			if(req.body)
+			{
+				bodyValid = req.body as {password:string};
+			}
+			else
+				throw Error('No valid password');
+
 			//execution
-			const password = await updatePassword.execute(req.params.userId, req.params.password);
+			const password = await updatePassword.execute(req.params.userId, bodyValid.password);
+
+			console.log(req.params);
+
 			//evaluate
 			password.fold(error => {
 			//something wrong

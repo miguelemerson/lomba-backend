@@ -5,5 +5,5 @@ import { PasswordModel } from '../../data/models/password_model';
 
 export interface PasswordRepository {
     addPassword(userId:string, password:string): Promise<Either<Failure, ModelContainer<PasswordModel>>>;
-    updatePassword(userId:string, password:string): Promise<Either<Failure, ModelContainer<PasswordModel>>>;
+    updatePassword(userId:string, password:string): Promise<Either<Failure, boolean>>;
 }

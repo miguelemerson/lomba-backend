@@ -30,8 +30,19 @@ export class PasswordDataSourceImpl implements PasswordDataSource {
 	async add(password: PasswordModel) : Promise<ModelContainer<PasswordModel>>{
 		return await this.collection.add(password).then(() => this.getOne({'_id':password.id}));
 	}
-	async update(id: string, password: object): Promise<ModelContainer<PasswordModel>>{
-		return await this.collection.update(id, password).then(() => this.getOne({'_id':id}));
+	async update(userId: string, password: object): Promise<ModelContainer<PasswordModel>>{
+
+		const params = (password as {[x: string]: unknown;});
+		if(password != null)
+			params['updated'] = new Date();
+
+		const result = await this.collection.db.collection<PasswordModel>(this.collection.collectionName).updateOne({'userId': userId}, {$set:params});
+		if (result?.modifiedCount > 0)
+			return this.getOne({'userId':userId});
+		else
+		{
+			return await this.collection.update(userId, password).then(() => this.getOne({'userId':userId}));
+		}
 	}
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		return await this.collection.enable(id, enableOrDisable);

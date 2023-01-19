@@ -5,7 +5,7 @@ import { PasswordModel } from '../../../data/models/password_model';
 import { PasswordRepository } from '../../repositories/password_repository';
 
 export interface UpdatePasswordUseCase {
-    execute(userId:string, password:string): Promise<Either<Failure,ModelContainer<PasswordModel>>>;
+    execute(userId:string, password:string): Promise<Either<Failure,boolean>>;
 }
 
 export class UpdatePassword implements UpdatePasswordUseCase {
@@ -14,7 +14,7 @@ export class UpdatePassword implements UpdatePasswordUseCase {
 		this.repository = repository;
 	}
 
-	async execute(userId:string, password: string): Promise<Either<Failure,ModelContainer<PasswordModel>>> {
+	async execute(userId:string, password: string): Promise<Either<Failure,boolean>> {
 		return await this.repository.updatePassword(userId, password);
 	}
 }

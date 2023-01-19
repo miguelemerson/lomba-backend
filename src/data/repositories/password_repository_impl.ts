@@ -36,7 +36,7 @@ export class PasswordRepositoryImpl implements PasswordRepository {
 			
 		}
 	}
-	async updatePassword(userId:string, password:string): Promise<Either<Failure,ModelContainer<PasswordModel>>>{
+	async updatePassword(userId:string, password:string): Promise<Either<Failure,boolean>>{
 		try{
 			//debe especificar password caso contrario retorna left
 			if(password=='')
@@ -47,7 +47,13 @@ export class PasswordRepositoryImpl implements PasswordRepository {
 			const changes = {hash:passHashed.hash, salt:passHashed.salt, istemp:false};
 
 			const result = await this.dataSource.update(userId, changes);
-			return Either.right(result);
+
+			if(result.currentItemCount > 0)
+				return Either.right(true);
+			else
+				return Either.right(false);
+
+
 		}
 		catch(error)
 		{
