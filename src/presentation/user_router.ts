@@ -175,19 +175,21 @@ export default function UsersRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.post('/exists',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
-		
+	//router.post('/exists',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
+	router.get('/exists/:userId&:username&:email',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{userId:string,username:string,email:string}>, res: Response) => {	
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			let _searchBody:{userId:string, username:string, email:string} = {userId:'', username:'', email:''};
+			console.log(req.params);
+			/*let _searchBody:{userId:string, username:string, email:string} = {userId:'', username:'', email:''};
 			if(req.body)
 			{
 				_searchBody = req.body as {userId:string, username:string, email:string};
-			}
+			}*/
 			//execution
-			const users = await existsUser.execute(_searchBody.userId, _searchBody.username, _searchBody.email);
+			const users = await existsUser.execute(req.params.userId,req.params.username,req.params.email);
+			//const users = await existsUser.execute(_searchBody.userId, _searchBody.username, _searchBody.email);
 			//evaluate
 			users.fold(error => {
 				//something wrong
