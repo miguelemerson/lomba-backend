@@ -37,13 +37,13 @@ export default function PasswordsRouter(
 		res.status(code).send(toSend);
 	});
 	
-	router.put('/:userId',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
+	router.put('/:userId/:password',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();		
 		try {
 			//execution
-			const password = await updatePassword.execute(req.params.userId, req.body);
+			const password = await updatePassword.execute(req.params.userId, req.params.password);
 			//evaluate
 			password.fold(error => {
 			//something wrong

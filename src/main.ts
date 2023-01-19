@@ -1,3 +1,5 @@
+import { UpdatePassword } from './domain/usecases/password/update_password';
+import { AddPassword } from './domain/usecases/password/add_password';
 import { MongoClient, ServerApiVersion } from 'mongodb';
 import { MongoWrapper } from './core/wrappers/mongo_wrapper';
 import { UserDataSourceImpl } from './data/datasources/user_data_source';
@@ -51,6 +53,7 @@ import { UpdateOrgaUser } from './domain/usecases/orgas/update_orgauser';
 import { GetOrgaUserByOrga } from './domain/usecases/orgas/get_orgausers_by_orga';
 import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user';
 import { GetUsersNotInOrga } from './domain/usecases/users/get_users_notin_orga';
+import PasswordsRouter from './presentation/password_router';
 
 (async () => {
 	dotenv.config();
@@ -104,13 +107,14 @@ import { GetUsersNotInOrga } from './domain/usecases/users/get_users_notin_orga'
 	const orgauserMiddleWare = OrgaUsersRouter(new GetOrgaUserByOrga(orgaUserRepo), new GetOrgaUserByUser(orgaUserRepo), new GetOrgaUser(orgaUserRepo), new AddOrgaUser(orgaUserRepo), new UpdateOrgaUser(orgaUserRepo), new EnableOrgaUser(orgaUserRepo), new DeleteOrgaUser(orgaUserRepo));
 
 	const authMiddleWare = AuthRouter(new GetToken(authRepo), new RegisterUser(authRepo), new ChangeOrga(authRepo));
+	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
 	app.use('/api/v1/orga', orgaMiddleWare);
 	app.use('/api/v1/orgauser', orgauserMiddleWare);
 	app.use('/api/v1/auth', authMiddleWare);
-
+	app.use('/api/v1/password', passMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, () => console.log('Running on http://localhost:' + configEnv().PORT));
