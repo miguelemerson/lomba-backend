@@ -118,7 +118,6 @@ export class UserRepositoryImpl implements UserRepository {
 		{
 			
 			const result = await this.dataSource.getOne({$or:[ {'username':username}, {'email':email}]});
-			console.log(result);
 			
 			return Either.right(result);
 		}
