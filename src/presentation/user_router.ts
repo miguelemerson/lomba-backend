@@ -9,6 +9,7 @@ import { UpdateUserUseCase } from '../domain/usecases/users/update_user';
 import { RouterResponse } from '../core/router_response';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { hasRole } from '../core/presentation/check_role_router';
+import { ExistsUserUseCase } from '../domain/usecases/users/exists_user';
 
 export default function UsersRouter(
 	getUser: GetUserUseCase,
@@ -16,7 +17,8 @@ export default function UsersRouter(
 	addUser: AddUserUseCase,
 	updateUser: UpdateUserUseCase,
 	enableUser: EnableUserUseCase,
-	deleteUser: DeleteUserUseCase
+	deleteUser: DeleteUserUseCase,
+	existsUser: ExistsUserUseCase
 ) {
 	const router = express.Router();
 
@@ -171,7 +173,32 @@ export default function UsersRouter(
 		}
 		//respond cordially
 		res.status(code).send(toSend);
-	});    
+	});
+
+	router.get('/exists',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{userId:string,username:string,email:string}>, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			//execution
+			const users = await existsUser.execute(req.params.userId,req.params.username,req.params.email);
+			//evaluate
+			users.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'get', {userId: req.params.userId} as object, 'not obtained by orga id');
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'get', {userId: req.params.userId} as object, 'geted by orga id');				
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get', {userId: req.params.userId} as object, 'not obtained by orga id');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
 
 	return router;
 }
