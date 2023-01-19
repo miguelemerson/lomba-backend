@@ -84,7 +84,7 @@ import { GetUsersNotInOrga } from './domain/usecases/users/get_users_notin_orga'
 	const userRepo = new UserRepositoryImpl(userDataSource);
 	const passRepo = new PasswordRepositoryImpl(passDataSource);
 	const orgaRepo = new OrgaRepositoryImpl(orgaDataSource);
-	const orgaUserRepo = new OrgaUserRepositoryImpl(orgaUserDataSource, userDataSource);
+	const orgaUserRepo = new OrgaUserRepositoryImpl(orgaUserDataSource, userDataSource, orgaDataSource);
 	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource);
 
 	//revisa que los datos estén cargados.

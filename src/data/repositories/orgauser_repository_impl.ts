@@ -7,13 +7,16 @@ import { OrgaUserModel } from '../models/orgauser_model';
 import { Either } from '../../core/either';
 import { DatabaseFailure, NetworkFailure, GenericFailure, Failure } from '../../core/errors/failures';
 import { UserDataSource } from '../datasources/user_data_source';
+import { OrgaDataSource } from '../datasources/orga_data_source';
 
 export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	dataSource: OrgaUserDataSource;
 	userDataSource: UserDataSource;
-	constructor(dataSource: OrgaUserDataSource, userDataSource: UserDataSource){
+	orgaDataSource: OrgaDataSource;
+	constructor(dataSource: OrgaUserDataSource, userDataSource: UserDataSource, orgaDataSource: OrgaDataSource){
 		this.dataSource = dataSource;
 		this.userDataSource = userDataSource;
+		this.orgaDataSource = orgaDataSource;
 	}
 
 	async getOrgaUsersByOrga(orgaId: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
@@ -76,7 +79,36 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
 		try{
 			const orgaUser: OrgaUserModel = new OrgaUserModel(orgaId, userId, roles, enabled, builtIn);
+
 			const result = await this.dataSource.add(orgaUser);
+
+			if(result.currentItemCount > 0)
+			{
+				const resultOrga = await this.orgaDataSource.getOne({'_id' : orgaId});
+
+				const orgas:{id:string, code:string}[] = [];
+
+				if(resultOrga.currentItemCount > 0)
+				{
+					orgas.push({id: resultOrga.items[0].id, code: resultOrga.items[0].code});
+				}
+
+				const resultUser = await this.userDataSource.getOne({'_id' : orgaUser.userId});
+
+				if(orgas.length > 0 && resultUser.currentItemCount > 0)
+				{
+					if(!resultUser.items[0].orgas)
+						resultUser.items[0].orgas = orgas;
+					else if(!resultUser.items[0].orgas.includes(orgas[0]))
+					{
+						resultUser.items[0].orgas.push(orgas[0]);
+					}
+					
+					await this.userDataSource.update(userId, {'orgas': resultUser.items[0].orgas});
+
+				}
+			}
+
 			return Either.right(result);
 		}
 		catch(error)
