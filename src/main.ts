@@ -54,6 +54,7 @@ import { GetOrgaUserByOrga } from './domain/usecases/orgas/get_orgausers_by_orga
 import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user';
 import { GetUsersNotInOrga } from './domain/usecases/users/get_users_notin_orga';
 import PasswordsRouter from './presentation/password_router';
+import { ExistsUser } from './domain/usecases/users/exists_user';
 
 (async () => {
 	dotenv.config();
@@ -66,7 +67,7 @@ import PasswordsRouter from './presentation/password_router';
 	const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
 	
 	await client.connect();
-	const db = client.db(configEnv().DB_NAME);
+	const db = client.db('LOGIN_DB');
     
 	///wrappers
 	const roleMongo = new MongoWrapper<RoleModel>('roles', db);
@@ -99,7 +100,9 @@ import PasswordsRouter from './presentation/password_router';
 	const userMiddleWare = UsersRouter(
 		new GetUser(userRepo), new GetUsersByOrgaId(userRepo), 
 		new AddUser(userRepo), new UpdateUser(userRepo), 
-		new EnableUser(userRepo), new DeleteUser(userRepo), new GetUsersNotInOrga(userRepo)
+		new EnableUser(userRepo), new DeleteUser(userRepo), new GetUsersNotInOrga(userRepo),
+		new EnableUser(userRepo), new DeleteUser(userRepo),
+		new ExistsUser(userRepo)
 	);
 
 	const orgaMiddleWare = OrgasRouter(new GetOrga(orgaRepo), new GetOrgas(orgaRepo), new AddOrga(orgaRepo), new UpdateOrga(orgaRepo), new EnableOrga(orgaRepo), new DeleteOrga(orgaRepo));

@@ -12,4 +12,5 @@ export interface UserRepository {
     updateUser(id: string, user: UserModel) : Promise<Either<Failure, ModelContainer<UserModel>>>;
     enableUser(id: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>>;
     deleteUser(id: string): Promise<Either<Failure,boolean>>;
+    existsUser(userId: string, username: string, email: string): Promise<Either<Failure, ModelContainer<UserModel>>>;
 }

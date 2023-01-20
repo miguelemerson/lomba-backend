@@ -108,7 +108,14 @@ export class AuthRepositoryImpl implements AuthRepository {
 			if(auth.orgaId)
 			{
 				await this.newOrgaUser(auth.orgaId, newUser._id, roles);
+
+				const orgas = await this.orgaDataSource.getOne({'_id':auth.orgaId});
+				if (orgas.currentItemCount > 0) {
+					const orgasIdCode = [{id:orgas.items[0].id,code:orgas.items[0].code}];
+					await this.userDataSource.update(newUser.id, {orgas:orgasIdCode});
+				}
 			}
+
 			return Either.right(ModelContainer.fromOneItem(user));
 		}
 		catch(error)
