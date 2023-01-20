@@ -101,7 +101,6 @@ import { ExistsUser } from './domain/usecases/users/exists_user';
 		new GetUser(userRepo), new GetUsersByOrgaId(userRepo), 
 		new AddUser(userRepo), new UpdateUser(userRepo), 
 		new EnableUser(userRepo), new DeleteUser(userRepo), new GetUsersNotInOrga(userRepo),
-		new EnableUser(userRepo), new DeleteUser(userRepo),
 		new ExistsUser(userRepo)
 	);
 
