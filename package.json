@@ -7,8 +7,8 @@
     "test": "jest --watchAll --collectCoverage",
     "jest": "jest",
     "build": "tsc",
-    "start": "nodemon ./src/main.ts",
-    "dev": "concurrently \"nodemon\" \"nodemon ./src/main.ts -x tsoa spec\"",
+    "dev": "nodemon ./src/main.ts",
+    "start": "node ./lib/main.js",
     "swagger": "tsoa spec"
   },
   "keywords": [],
