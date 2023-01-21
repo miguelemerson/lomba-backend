@@ -51,8 +51,8 @@ jobs:
     - name: Zip artifact for deployment
       run: |
         rm README.md
-        rmdir ./test
-        rmdir ./src      
+        rmd -r ./test
+        rmd -r ./src      
         zip release.zip ./* -r -m -q
 
     - name: Upload artifact for deployment job
