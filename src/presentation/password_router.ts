@@ -54,8 +54,6 @@ export default function PasswordsRouter(
 			//execution
 			const password = await updatePassword.execute(req.params.userId, bodyValid.password);
 
-			console.log(req.params);
-
 			//evaluate
 			password.fold(error => {
 			//something wrong
