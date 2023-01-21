@@ -222,7 +222,6 @@ export default function UsersRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			console.log(req.query);
 			//execution
 			const users = await existsUser.execute(
 				(req.query.userId!=undefined)?req.query.userId.toString():'',

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --watchAll --collectCoverage",
+    "jest": "jest",
     "build": "tsc",
     "start": "nodemon ./src/main.ts",
     "dev": "concurrently \"nodemon\" \"nodemon ./src/main.ts -x tsoa spec\"",
