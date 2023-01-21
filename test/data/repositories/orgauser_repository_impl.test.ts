@@ -6,6 +6,8 @@ import { OrgaUserRepositoryImpl } from '../../../src/data/repositories/orgauser_
 import { DatabaseFailure, GenericFailure, NetworkFailure } from '../../../src/core/errors/failures';
 import { UserDataSource } from '../../../src/data/datasources/user_data_source';
 import { UserModel } from '../../../src/data/models/user_model';
+import { OrgaDataSource } from '../../../src/data/datasources/orga_data_source';
+import { OrgaModel } from '../../../src/data/models/orga_model';
 
 class MockOrgaUserDataSource implements OrgaUserDataSource {
 	getMany(): Promise<ModelContainer<OrgaUserModel>> {
@@ -52,9 +54,31 @@ class MockUserDataSource implements UserDataSource {
 	setId():UserModel{throw new Error('Method not implemented.');}
 }
 
+class MockOrgaDataSource implements OrgaDataSource {
+	getMany(): Promise<ModelContainer<OrgaModel>>{
+		throw new Error('Method not implemented.');
+	}
+	getOne(): Promise<ModelContainer<OrgaModel>>{
+		throw new Error('Method not implemented.');
+	}
+	add() : Promise<ModelContainer<OrgaModel>>{
+		throw new Error('Method not implemented.');
+	}
+	update(): Promise<ModelContainer<OrgaModel>>{
+		throw new Error('Method not implemented.');
+	}
+	enable(): Promise<boolean>{
+		throw new Error('Method not implemented.');
+	}
+	delete(): Promise<boolean>{
+		throw new Error('Method not implemented.');
+	}
+}
+
 describe('OrgaUser Repository Implementation', () => {
 	let mockOrgaUserDataSource: OrgaUserDataSource;
 	let mockUserDataSource: UserDataSource;
+	let mockOrgaDataSource: OrgaDataSource;
 	let orgauserRepository: OrgaUserRepositoryImpl;
 
 	const listOrgaUsers: OrgaUserModel[] = [
@@ -65,12 +89,16 @@ describe('OrgaUser Repository Implementation', () => {
 		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
 		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
 	];
-	
+	const listOrgas: OrgaModel[] = [
+		new OrgaModel('ooo', 'Súper Orga', 'superOrga', true, true),
+		new OrgaModel('rrr', 'Orga', 'orga', true, false),
+	];
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockOrgaUserDataSource = new MockOrgaUserDataSource();
 		mockUserDataSource = new MockUserDataSource();
-		orgauserRepository = new OrgaUserRepositoryImpl(mockOrgaUserDataSource, mockUserDataSource);
+		mockOrgaDataSource = new MockOrgaDataSource();
+		orgauserRepository = new OrgaUserRepositoryImpl(mockOrgaUserDataSource, mockUserDataSource, mockOrgaDataSource);
 	});
 
 	describe('getOrgaUsersByOrga', () => {
@@ -249,8 +277,15 @@ describe('OrgaUser Repository Implementation', () => {
 		test('debe llamar a los métodos de agregar', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+
+			jest.spyOn(mockOrgaDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+
+			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+
+			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+
 			//act
-			const result = await orgauserRepository.addOrgaUser('Súper OrgaUser', 'orgaUser', [], true, true);
+			const result = await orgauserRepository.addOrgaUser(listOrgaUsers[0].orgaId, listOrgaUsers[0].userId, listOrgaUsers[0].roles, listOrgaUsers[0].enabled, listOrgaUsers[0].builtin);
 			let failure:unknown;
 			let value:unknown;
 
@@ -432,7 +467,8 @@ describe('OrgaUser Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.resolve(true));
 			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
-			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));				
+			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));	
+			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));				
 			//act
 			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
 			//assert
