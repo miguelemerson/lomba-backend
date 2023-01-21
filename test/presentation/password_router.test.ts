@@ -20,7 +20,7 @@ class MockAddPasswordUseCase implements AddPasswordUseCase {
 }
 
 class MockUpdatePasswordUseCase implements UpdatePasswordUseCase {
-	execute(): Promise<Either<Failure,ModelContainer<PasswordModel>>> {
+	execute(): Promise<Either<Failure,boolean>> {
 		throw new Error('Method not implemented.');
 	}
 }
@@ -113,7 +113,7 @@ describe('Auth Router', () => {
 
 		test('debe retornar 200 y con datos', async () => {
 			//arrange
-			jest.spyOn(mockUpdatePasswordUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(listPasswords[0]))));
+			jest.spyOn(mockUpdatePasswordUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(true)));
 
 			//act
 			const response = await request(server).put('/api/v1/password/aaa').send(testAuth).set({Authorization: 'Bearer ' + testTokenAdmin});

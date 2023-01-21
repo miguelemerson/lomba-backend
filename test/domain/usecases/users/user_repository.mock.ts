@@ -29,4 +29,8 @@ export class MockUserRepository implements UserRepository {
 		throw new Error('Method not implemented.');
 	}
 
+	existsUser(): Promise<Either<Failure, ModelContainer<UserModel>>>{
+		throw new Error('Method not implemented.');
+	}
+
 }

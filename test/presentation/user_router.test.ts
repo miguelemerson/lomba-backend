@@ -17,6 +17,7 @@ import { RouterResponse } from '../../src/core/router_response';
 import { generateJWT } from '../../src/core/jwt';
 import { data_insert01} from '../../src/core/builtindata/load_data_01';
 import { GetUsersNotInOrgaUseCase } from '../../src/domain/usecases/users/get_users_notin_orga';
+import { ExistsUserUseCase } from '../../src/domain/usecases/users/exists_user';
 
 class MockAddUserUseCase implements AddUserUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<UserModel>>> {
@@ -58,6 +59,11 @@ class MockGetUsersNotInOrgaUseCase implements GetUsersNotInOrgaUseCase {
 		throw new Error('Method not implemented.');
 	}
 }
+class MockExistsUserUseCase implements ExistsUserUseCase {
+	execute(): Promise<Either<Failure,ModelContainer<UserModel>>> {
+		throw new Error('Method not implemented.');
+	}
+}
 
 describe('User Router', () => {
 	let mockAddUserUseCase: AddUserUseCase;
@@ -67,6 +73,7 @@ describe('User Router', () => {
 	let mockGetUsersByOrgaIdUseCase: GetUsersByOrgaIdUseCase;
 	let mockUpdateUserUseCase: UpdateUserUseCase;
 	let mockGetUsersNotInOrgaUseCase: GetUsersNotInOrgaUseCase;
+	let mockExistsUserUseCase: ExistsUserUseCase;
 
 	const listUsers: UserModel[] = [
 		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
@@ -90,8 +97,9 @@ describe('User Router', () => {
 		mockGetUsersByOrgaIdUseCase = new MockGetUsersByOrgaIdUseCase();
 		mockUpdateUserUseCase = new MockUpdateUserUseCase();
 		mockGetUsersNotInOrgaUseCase = new MockGetUsersNotInOrgaUseCase();
+		mockExistsUserUseCase = new MockExistsUserUseCase();
 
-		server.use('/api/v1/user', UserRouter(mockGetUserUseCase, mockGetUsersByOrgaIdUseCase, mockAddUserUseCase, mockUpdateUserUseCase, mockEnableUserUseCase, mockDeleteUserUseCase, mockGetUsersNotInOrgaUseCase));
+		server.use('/api/v1/user', UserRouter(mockGetUserUseCase, mockGetUsersByOrgaIdUseCase, mockAddUserUseCase, mockUpdateUserUseCase, mockEnableUserUseCase, mockDeleteUserUseCase, mockGetUsersNotInOrgaUseCase, mockExistsUserUseCase));
 	});
 
 	beforeEach(() => {

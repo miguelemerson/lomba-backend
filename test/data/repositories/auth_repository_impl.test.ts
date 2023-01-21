@@ -187,7 +187,7 @@ describe('Auth Repository Implementation', () => {
 		userRepository = new UserRepositoryImpl(mockUserDataSource);
 		roleRepository = new RoleRepositoryImpl(mockRoleDataSource);
 		orgaRepository = new OrgaRepositoryImpl(mockOrgaDataSource);
-		orgaUserRepository = new OrgaUserRepositoryImpl(mockOrgaUserDataSource, mockUserDataSource);
+		orgaUserRepository = new OrgaUserRepositoryImpl(mockOrgaUserDataSource, mockUserDataSource, mockOrgaDataSource);
 		mockPasswordDataSource = new MockPasswordDataSource();
 		passwordRepository = new PasswordRepositoryImpl(mockPasswordDataSource);
 		authRepository = new AuthRepositoryImpl(mockUserDataSource,mockOrgaDataSource,mockPasswordDataSource,mockOrgaUserDataSource);
@@ -351,6 +351,10 @@ describe('Auth Repository Implementation', () => {
 			jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
 			jest.spyOn(mockPasswordDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+
+			jest.spyOn(mockOrgaDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+
+			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 			//act
 			const result = await authRepository.registerUser(listUsers[0],testAuthOrga,'admin');
 			const value = result.getOrElse(ModelContainer.fromOneItem(listUsers[1]));
@@ -501,6 +505,10 @@ describe('Auth Repository Implementation', () => {
 			jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(new ModelContainer<OrgaUserModel>([])));
 			jest.spyOn(mockPasswordDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			
+			jest.spyOn(mockOrgaDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+
+			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 			//act
 			const result = await authRepository.registerUser(listUsers[0],testAuthOrga,'admin');
 			let failure:unknown;

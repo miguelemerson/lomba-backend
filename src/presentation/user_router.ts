@@ -10,6 +10,7 @@ import { RouterResponse } from '../core/router_response';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { hasRole } from '../core/presentation/check_role_router';
 import { GetUsersNotInOrgaUseCase } from '../domain/usecases/users/get_users_notin_orga';
+import { ExistsUserUseCase } from '../domain/usecases/users/exists_user';
 
 export default function UsersRouter(
 	getUser: GetUserUseCase,
@@ -18,7 +19,8 @@ export default function UsersRouter(
 	updateUser: UpdateUserUseCase,
 	enableUser: EnableUserUseCase,
 	deleteUser: DeleteUserUseCase,
-	getUsersNotInOrga: GetUsersNotInOrgaUseCase
+	getUsersNotInOrga: GetUsersNotInOrgaUseCase,
+	existsUser: ExistsUserUseCase
 ) {
 	const router = express.Router();
 
@@ -213,7 +215,36 @@ export default function UsersRouter(
 		}
 		//respond cordially
 		res.status(code).send(toSend);
-	});    
+	});
+
+	router.get('/if/exists/',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{userId:string,username:string,email:string}>, res: Response) => {	
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			console.log(req.query);
+			//execution
+			const users = await existsUser.execute(
+				(req.query.userId!=undefined)?req.query.userId.toString():'',
+				(req.query.username!=undefined)?req.query.username.toString():'',
+				(req.query.email!=undefined)?req.query.email.toString():'');
+			//evaluate
+			users.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'get', {userId: req.params.userId} as object, 'not obtained by orga id');
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'get', {userId: req.params.userId} as object, 'geted by orga id');				
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get', {userId: req.params.userId} as object, 'not obtained by orga id');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
 
 	return router;
 }

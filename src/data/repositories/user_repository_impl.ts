@@ -135,4 +135,22 @@ export class UserRepositoryImpl implements UserRepository {
 			else return Either.left(new GenericFailure('undetermined', error));
 		}
 	}
+	async existsUser(userId: string, username: string, email: string): Promise<Either<Failure,ModelContainer<UserModel>>> {
+		try
+		{
+			
+			const result = await this.dataSource.getOne({$or:[ {'username':username}, {'email':email}]});
+			
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+		}
+	}
 }

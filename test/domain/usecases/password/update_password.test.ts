@@ -11,7 +11,7 @@ export class MockPasswordRepository implements PasswordRepository {
 	addPassword() : Promise<Either<Failure, ModelContainer<PasswordModel>>> {
 		throw new Error('Method not implemented.');
 	}
-	updatePassword() : Promise<Either<Failure, ModelContainer<PasswordModel>>> {
+	updatePassword() : Promise<Either<Failure, boolean>> {
 		throw new Error('Method not implemented.');
 	}
 }
@@ -39,7 +39,7 @@ describe('Agregar usuario - Caso de uso', () => {
 
 	test('el usecase de actualizar usuario debe retornar ok', async () => {
 		//arrange
-		jest.spyOn(mockPasswordRepository, 'updatePassword').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(listPasswords[0]))));
+		jest.spyOn(mockPasswordRepository, 'updatePassword').mockImplementation(() => Promise.resolve(Either.right(true)));
 
 		//act
 		const useCase = new UpdatePassword(mockPasswordRepository);
@@ -47,7 +47,7 @@ describe('Agregar usuario - Caso de uso', () => {
 		//assert
 		expect(mockPasswordRepository.updatePassword).toBeCalledTimes(1);
 		expect(result.isRight());
-		expect(result).toEqual(Either.right(ModelContainer.fromOneItem(listPasswords[0])));
+		expect(result).toEqual(Either.right(true));
 	});
 
 	test('el usecase de actualizar usuario debe retornar failure', async () => {

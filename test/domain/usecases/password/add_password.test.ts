@@ -10,7 +10,7 @@ export class MockPasswordRepository implements PasswordRepository {
 	addPassword() : Promise<Either<Failure, ModelContainer<PasswordModel>>> {
 		throw new Error('Method not implemented.');
 	}
-	updatePassword() : Promise<Either<Failure, ModelContainer<PasswordModel>>> {
+	updatePassword() : Promise<Either<Failure, boolean>> {
 		throw new Error('Method not implemented.');
 	}
 }
