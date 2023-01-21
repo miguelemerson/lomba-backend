@@ -53,7 +53,7 @@ jobs:
         rm README.md
         rm -r ./test
         rm -r ./src      
-        zip release.zip ./* -r -m -q
+        zip release.zip ./* -r -m
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v3
