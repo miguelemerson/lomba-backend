@@ -24,5 +24,8 @@ export class MockOrgaRepository implements OrgaRepository {
 	deleteOrga(): Promise<Either<Failure,boolean>> {
 		throw new Error('Method not implemented.');
 	}
+	existsOrga(): Promise<Either<Failure, ModelContainer<Orga>>> {
+		throw new Error('Method not implemented.');
+	}
 
 }

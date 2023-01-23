@@ -114,5 +114,23 @@ export class OrgaRepositoryImpl implements OrgaRepository {
 			
 		}	
 	}
+	async existsOrga(orgaId: string, code: string): Promise<Either<Failure,ModelContainer<Orga>>> {
+		try
+		{
+			
+			const result = await this.dataSource.getOne({'code':code});
+			
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+		}
+	}
 
 }

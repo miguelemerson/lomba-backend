@@ -1,14 +1,14 @@
-import express from 'express';
-import { Request, Response } from 'express';
+import express, { Request, Response } from 'express';
+import { hasRole } from '../core/presentation/check_role_router';
+import { isAuth } from '../core/presentation/valid_token_router';
+import { RouterResponse } from '../core/router_response';
 import { AddOrgaUseCase } from '../domain/usecases/orgas/add_orga';
 import { DeleteOrgaUseCase } from '../domain/usecases/orgas/delete_orga';
 import { EnableOrgaUseCase } from '../domain/usecases/orgas/enable_orga';
+import { ExistsOrgaUseCase } from '../domain/usecases/orgas/exists_orga';
 import { GetOrgaUseCase } from '../domain/usecases/orgas/get_orga';
 import { GetOrgasUseCase } from '../domain/usecases/orgas/get_orgas';
 import { UpdateOrgaUseCase } from '../domain/usecases/orgas/update_orga';
-import { RouterResponse } from '../core/router_response';
-import { isAuth } from '../core/presentation/valid_token_router';
-import { hasRole } from '../core/presentation/check_role_router';
 
 export default function OrgasRouter(
 	getOrga: GetOrgaUseCase,
@@ -16,7 +16,8 @@ export default function OrgasRouter(
 	addOrga: AddOrgaUseCase,
 	updateOrga: UpdateOrgaUseCase,
 	enableOrga: EnableOrgaUseCase,
-	deleteOrga: DeleteOrgaUseCase
+	deleteOrga: DeleteOrgaUseCase,
+	existsOrga: ExistsOrgaUseCase
 ) {
 	const router = express.Router();
 
@@ -171,7 +172,35 @@ export default function OrgasRouter(
 		}
 		//respond cordially
 		res.status(code).send(toSend);
-	});    
+	});   
+	
+	router.get('/if/exists/',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId:string,code:string}>, res: Response) => {	
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			//execution
+			const users = await existsOrga.execute(
+				(req.query.orgaId!=undefined)?req.query.orgaId.toString():'',
+				(req.query.code!=undefined)?req.query.code.toString():'');
+			//evaluate
+			users.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'get', {userId: req.params.orgaId} as object, 'not obtained by code');
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'get', {userId: req.params.orgaId} as object, 'geted by code');				
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get', {userId: req.params.orgaId} as object, 'not by orga code');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
 
 	return router;
 }

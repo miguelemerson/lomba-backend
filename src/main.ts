@@ -55,6 +55,7 @@ import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user
 import { GetUsersNotInOrga } from './domain/usecases/users/get_users_notin_orga';
 import PasswordsRouter from './presentation/password_router';
 import { ExistsUser } from './domain/usecases/users/exists_user';
+import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
 
 (async () => {
 	dotenv.config();
@@ -104,7 +105,7 @@ import { ExistsUser } from './domain/usecases/users/exists_user';
 		new ExistsUser(userRepo)
 	);
 
-	const orgaMiddleWare = OrgasRouter(new GetOrga(orgaRepo), new GetOrgas(orgaRepo), new AddOrga(orgaRepo), new UpdateOrga(orgaRepo), new EnableOrga(orgaRepo), new DeleteOrga(orgaRepo));
+	const orgaMiddleWare = OrgasRouter(new GetOrga(orgaRepo), new GetOrgas(orgaRepo), new AddOrga(orgaRepo), new UpdateOrga(orgaRepo), new EnableOrga(orgaRepo), new DeleteOrga(orgaRepo), new ExistsOrga(orgaRepo));
 
 	const orgauserMiddleWare = OrgaUsersRouter(new GetOrgaUserByOrga(orgaUserRepo), new GetOrgaUserByUser(orgaUserRepo), new GetOrgaUser(orgaUserRepo), new AddOrgaUser(orgaUserRepo), new UpdateOrgaUser(orgaUserRepo), new EnableOrgaUser(orgaUserRepo), new DeleteOrgaUser(orgaUserRepo));
 
