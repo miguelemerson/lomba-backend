@@ -28,6 +28,7 @@ export class PasswordDataSourceImpl implements PasswordDataSource {
 		return await this.collection.getOne(query);
 	}
 	async add(password: PasswordModel) : Promise<ModelContainer<PasswordModel>>{
+		password = this.setId(password);
 		return await this.collection.add(password).then(() => this.getOne({'_id':password.id}));
 	}
 	async update(userId: string, password: object): Promise<ModelContainer<PasswordModel>>{
@@ -50,5 +51,15 @@ export class PasswordDataSourceImpl implements PasswordDataSource {
 	async delete(id: string): Promise<boolean>{
 		return await this.collection.delete(id);
 	}
-
+	public setId(obj: PasswordModel): PasswordModel
+	{
+		if(obj.id == '')
+		{
+			obj.id = crypto.randomUUID();
+			obj._id = obj.id;
+		}
+		else
+			obj._id = obj.id;
+		return obj;
+	}
 }

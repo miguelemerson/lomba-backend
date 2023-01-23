@@ -13,6 +13,6 @@ export class RoleModel implements Role {
 	enabled: boolean;
 
 	public toEntity(): Role {
-		return {name:this.name};
+		return {id: this.id, name:this.name, enabled:this.enabled};
 	}
 }

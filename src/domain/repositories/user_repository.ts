@@ -1,16 +1,16 @@
 import { Either } from '../../core/either';
 import { Failure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
-import { UserModel } from '../../data/models/user_model';
+import { User } from '../entities/user';
 
 export interface UserRepository {
-    getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure, ModelContainer<UserModel>>>;
-    getUsersNotInOrga(orgaId: string, sort?: [string, 1 | -1][], pageIndex?: number, itemsPerPage?: number): Promise<Either<Failure, ModelContainer<UserModel>>>;
-    getUser(id: string): Promise<Either<Failure, ModelContainer<UserModel>>>;
+    getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure, ModelContainer<User>>>;
+    getUsersNotInOrga(orgaId: string, sort?: [string, 1 | -1][], pageIndex?: number, itemsPerPage?: number): Promise<Either<Failure, ModelContainer<User>>>;
+    getUser(id: string): Promise<Either<Failure, ModelContainer<User>>>;
     addUser(id: string, name: string, username: string, email: string,
-		enabled: boolean, builtIn: boolean) : Promise<Either<Failure, ModelContainer<UserModel>>>;
-    updateUser(id: string, user: UserModel) : Promise<Either<Failure, ModelContainer<UserModel>>>;
+		enabled: boolean, builtIn: boolean) : Promise<Either<Failure, ModelContainer<User>>>;
+    updateUser(id: string, user: User) : Promise<Either<Failure, ModelContainer<User>>>;
     enableUser(id: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>>;
     deleteUser(id: string): Promise<Either<Failure,boolean>>;
-    existsUser(userId: string, username: string, email: string): Promise<Either<Failure, ModelContainer<UserModel>>>;
+    existsUser(userId: string, username: string, email: string): Promise<Either<Failure, ModelContainer<User>>>;
 }

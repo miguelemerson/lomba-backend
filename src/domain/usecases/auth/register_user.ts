@@ -3,10 +3,11 @@ import { Failure } from '../../../core/errors/failures';
 import { ModelContainer } from '../../../core/model_container';
 import { UserModel } from '../../../data/models/user_model';
 import { Auth } from '../../entities/auth';
+import { User } from '../../entities/user';
 import { AuthRepository } from '../../repositories/auth_repository';
 
 export interface RegisterUserUseCase {
-    execute(user:UserModel, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<UserModel>>>;
+    execute(user:User, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<User>>>;
 }
 
 export class RegisterUser implements RegisterUserUseCase {
@@ -15,7 +16,7 @@ export class RegisterUser implements RegisterUserUseCase {
 		this.repository = repository;
 	}
 
-	async execute(user:UserModel, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<UserModel>>> {
+	async execute(user:User, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<User>>> {
 		return await this.repository.registerUser(user, auth, roles);
 	}
 }

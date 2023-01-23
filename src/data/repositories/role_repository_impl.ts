@@ -5,6 +5,7 @@ import { ModelContainer } from '../../core/model_container';
 import { RoleModel } from '../models/role_model';
 import { Failure, GenericFailure, NetworkFailure, DatabaseFailure } from '../../core/errors/failures';
 import { Either } from '../../core/either';
+import { Role } from '../../domain/entities/role';
 
 export class RoleRepositoryImpl implements RoleRepository {
 	dataSource: RoleDataSource;
@@ -12,7 +13,7 @@ export class RoleRepositoryImpl implements RoleRepository {
 		this.dataSource = dataSource;
 	}
     
-	async getRoles(): Promise<Either<Failure,ModelContainer<RoleModel>>> {
+	async getRoles(): Promise<Either<Failure,ModelContainer<Role>>> {
 		try
 		{
 			const result = await this.dataSource.getMany({});
@@ -30,7 +31,7 @@ export class RoleRepositoryImpl implements RoleRepository {
 		}
 	}
 
-	async getRole(id: string): Promise<Either<Failure,ModelContainer<RoleModel>>> {
+	async getRole(id: string): Promise<Either<Failure,ModelContainer<Role>>> {
 		try
 		{
 			const result = await this.dataSource.getOne({'_id':id});

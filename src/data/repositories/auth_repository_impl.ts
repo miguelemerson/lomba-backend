@@ -16,6 +16,7 @@ import { PasswordModel } from '../models/password_model';
 import { RoleModel } from '../models/role_model';
 import { TokenModel } from '../models/token_model';
 import { UserModel } from '../models/user_model';
+import { User } from '../../domain/entities/user';
 
 
 
@@ -82,7 +83,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 		}
 	}
 
-	async registerUser(user:UserModel, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<UserModel>>>{
+	async registerUser(user:UserModel, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<User>>>{
 		try{
 
 			//debe especificar password caso contrario retorna left
@@ -116,7 +117,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 				}
 			}
 
-			return Either.right(ModelContainer.fromOneItem(user));
+			return Either.right(ModelContainer.fromOneItem(user.toEntity()));
 		}
 		catch(error)
 		{

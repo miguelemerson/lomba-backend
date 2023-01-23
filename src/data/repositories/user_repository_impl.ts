@@ -5,6 +5,7 @@ import { UserModel } from '../models/user_model';
 import { ModelContainer } from '../../core/model_container';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
 import { Either } from '../../core/either';
+import { User } from '../../domain/entities/user';
 
 export class UserRepositoryImpl implements UserRepository {
 	dataSource: UserDataSource;
@@ -12,7 +13,7 @@ export class UserRepositoryImpl implements UserRepository {
 		this.dataSource = dataSource;
 	}
 
-	async getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure,ModelContainer<UserModel>>> {
+	async getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure,ModelContainer<User>>> {
 		try
 		{
 			if(!sort)
@@ -33,7 +34,7 @@ export class UserRepositoryImpl implements UserRepository {
 		}
 	}
 
-	async getUsersNotInOrga(orgaId: string, sort?: [string, 1 | -1][], pageIndex?: number, itemsPerPage?: number): Promise<Either<Failure, ModelContainer<UserModel>>>{
+	async getUsersNotInOrga(orgaId: string, sort?: [string, 1 | -1][], pageIndex?: number, itemsPerPage?: number): Promise<Either<Failure, ModelContainer<User>>>{
 		try
 		{
 			if(!sort)
@@ -55,7 +56,7 @@ export class UserRepositoryImpl implements UserRepository {
 		}
 	}
 
-	async getUser(id: string): Promise<Either<Failure,ModelContainer<UserModel>>> {
+	async getUser(id: string): Promise<Either<Failure,ModelContainer<User>>> {
 		try
 		{
 			const result = await this.dataSource.getOne({'_id':id});
@@ -72,7 +73,7 @@ export class UserRepositoryImpl implements UserRepository {
 		}
 	}
 	async addUser(id: string, name: string, username: string, email: string,
-		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<UserModel>>> {
+		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<User>>> {
 		try{
 			const user: UserModel = new UserModel(id, name, username, email, enabled, builtIn);
 			const result = await this.dataSource.add(user);
@@ -89,7 +90,7 @@ export class UserRepositoryImpl implements UserRepository {
 		}
 	}
 
-	async updateUser(id: string, user: UserModel) : Promise<Either<Failure,ModelContainer<UserModel>>>{
+	async updateUser(id: string, user: UserModel) : Promise<Either<Failure,ModelContainer<User>>>{
 		try{
 			const result = await this.dataSource.update(id, user);
 			return Either.right(result);
@@ -135,7 +136,7 @@ export class UserRepositoryImpl implements UserRepository {
 			else return Either.left(new GenericFailure('undetermined', error));
 		}
 	}
-	async existsUser(userId: string, username: string, email: string): Promise<Either<Failure,ModelContainer<UserModel>>> {
+	async existsUser(userId: string, username: string, email: string): Promise<Either<Failure,ModelContainer<User>>> {
 		try
 		{
 			

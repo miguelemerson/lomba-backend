@@ -1,11 +1,12 @@
 import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
 import { ModelContainer } from '../../../core/model_container';
-import { OrgaModel } from '../../../data/models/orga_model';
+import { Orga } from '../../entities/orga';
+
 import { OrgaRepository } from '../../repositories/orga_repository';
 
 export interface UpdateOrgaUseCase {
-    execute(id:string, orga: OrgaModel): Promise<Either<Failure,ModelContainer<OrgaModel>>>;
+    execute(id:string, orga: object): Promise<Either<Failure,ModelContainer<Orga>>>;
 }
 
 export class UpdateOrga implements UpdateOrgaUseCase {
@@ -14,7 +15,7 @@ export class UpdateOrga implements UpdateOrgaUseCase {
 		this.repository = repository;
 	}
 
-	async execute(id:string, orga: OrgaModel): Promise<Either<Failure,ModelContainer<OrgaModel>>> {
+	async execute(id:string, orga: object): Promise<Either<Failure,ModelContainer<Orga>>> {
 		return await this.repository.updateOrga(id, orga);
 	}
 }

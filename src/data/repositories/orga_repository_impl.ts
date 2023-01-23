@@ -4,6 +4,7 @@ import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../
 import { ModelContainer } from '../../core/model_container';
 import { OrgaRepository } from '../../domain/repositories/orga_repository';
 import { OrgaDataSource } from '../datasources/orga_data_source';
+import { Orga } from '../../domain/entities/orga';
 import { OrgaModel } from '../models/orga_model';
 
 export class OrgaRepositoryImpl implements OrgaRepository {
@@ -12,7 +13,7 @@ export class OrgaRepositoryImpl implements OrgaRepository {
 		this.dataSource = dataSource;
 	}
 
-	async getOrgas(sort?: [string, 1 | -1][]): Promise<Either<Failure,ModelContainer<OrgaModel>>> {
+	async getOrgas(sort?: [string, 1 | -1][]): Promise<Either<Failure,ModelContainer<Orga>>> {
 		try
 		{
 			const result = await this.dataSource.getMany({},sort);
@@ -30,7 +31,7 @@ export class OrgaRepositoryImpl implements OrgaRepository {
 		}
 		
 	}
-	async getOrga(id: string): Promise<Either<Failure,ModelContainer<OrgaModel>>> {
+	async getOrga(id: string): Promise<Either<Failure,ModelContainer<Orga>>> {
 		try
 		{
 			const result = await this.dataSource.getOne({'_id':id});
@@ -48,9 +49,9 @@ export class OrgaRepositoryImpl implements OrgaRepository {
 		}
 	}
 	async addOrga(id: string, name: string, code: string,
-		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<OrgaModel>>> {
+		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<Orga>>> {
 		try{
-			const orga: OrgaModel = new OrgaModel(id, name, code, enabled, builtIn);
+			const orga = new OrgaModel(id, name, code, enabled, builtIn);
 			const result = await this.dataSource.add(orga);
 			return Either.right(result);
 		}
@@ -65,7 +66,7 @@ export class OrgaRepositoryImpl implements OrgaRepository {
 			
 		}
 	}
-	async updateOrga(id: string, orga: OrgaModel) : Promise<Either<Failure,ModelContainer<OrgaModel>>>{
+	async updateOrga(id: string, orga: object) : Promise<Either<Failure,ModelContainer<Orga>>>{
 		try{
 			const result = await this.dataSource.update(id, orga);
 			return Either.right(result);

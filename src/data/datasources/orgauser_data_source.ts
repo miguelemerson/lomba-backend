@@ -28,6 +28,7 @@ export class OrgaUserDataSourceImpl implements OrgaUserDataSource {
 		return await this.collection.getOne(query);
 	}
 	async add(orgaOrgaUser: OrgaUserModel) : Promise<ModelContainer<OrgaUserModel>>{
+		orgaOrgaUser = this.setId(orgaOrgaUser);
 		return await this.collection.add(orgaOrgaUser).then(() => this.getOne({'_id':orgaOrgaUser.id}));
 	}
 	async update(id: string, orgaOrgaUser: object): Promise<ModelContainer<OrgaUserModel>>{
@@ -39,5 +40,15 @@ export class OrgaUserDataSourceImpl implements OrgaUserDataSource {
 	async delete(id: string): Promise<boolean>{
 		return await this.collection.delete(id);
 	}
-
+	public setId(obj: OrgaUserModel): OrgaUserModel
+	{
+		if(obj.id == '')
+		{
+			obj.id = crypto.randomUUID();
+			obj._id = obj.id;
+		}
+		else
+			obj._id = obj.id;
+		return obj;
+	}
 }

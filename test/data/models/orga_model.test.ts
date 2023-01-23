@@ -20,7 +20,7 @@ describe('Test de orga model', () => {
 		const result = model.toEntity();
 
 		//assert
-		expect(result).toEqual({id: model.id, name: model.name, code: model.code});
+		expect(result).toEqual({id: model.id, name: model.name, code: model.code, enabled: model.enabled, builtin: model.builtin, created: model.created});
 	});
 
 });

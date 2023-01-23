@@ -21,7 +21,7 @@ describe('Conseguir usuario - Caso de uso', () => {
 
 	test('el usecase de conseguir usuario debe retornar ok', async () => {
 		//arrange
-		jest.spyOn(mockOrgaRepository, 'getOrga').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(listOrgas[0]))));
+		jest.spyOn(mockOrgaRepository, 'getOrga').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(listOrgas[0].toEntity()))));
 
 		//act
 		const useCase = new GetOrga(mockOrgaRepository);
@@ -29,7 +29,7 @@ describe('Conseguir usuario - Caso de uso', () => {
 		//assert
 		expect(mockOrgaRepository.getOrga).toBeCalledTimes(1);
 		expect(result.isRight());
-		expect(result).toEqual(Either.right(ModelContainer.fromOneItem(listOrgas[0])));
+		expect(result).toEqual(Either.right(ModelContainer.fromOneItem(listOrgas[0].toEntity())));
 	});
 
 	test('el usecase de conseguir usuario debe retornar failure', async () => {

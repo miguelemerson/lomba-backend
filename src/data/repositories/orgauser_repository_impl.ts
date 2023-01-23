@@ -8,6 +8,7 @@ import { Either } from '../../core/either';
 import { DatabaseFailure, NetworkFailure, GenericFailure, Failure } from '../../core/errors/failures';
 import { UserDataSource } from '../datasources/user_data_source';
 import { OrgaDataSource } from '../datasources/orga_data_source';
+import { OrgaUser } from '../../domain/entities/orgauser';
 
 export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	dataSource: OrgaUserDataSource;
@@ -19,7 +20,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 		this.orgaDataSource = orgaDataSource;
 	}
 
-	async getOrgaUsersByOrga(orgaId: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
+	async getOrgaUsersByOrga(orgaId: string): Promise<Either<Failure,ModelContainer<OrgaUser>>> {
 		try
 		{
 			const result = await this.dataSource.getMany({'orgaId': orgaId});
@@ -38,7 +39,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 		
 	}
 
-	async getOrgaUsersByUser(userId: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
+	async getOrgaUsersByUser(userId: string): Promise<Either<Failure,ModelContainer<OrgaUser>>> {
 		try
 		{
 			const result = await this.dataSource.getMany({'userId': userId});
@@ -57,7 +58,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 		
 	}
 
-	async getOrgaUser(orgaId: string, userId: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
+	async getOrgaUser(orgaId: string, userId: string): Promise<Either<Failure,ModelContainer<OrgaUser>>> {
 		try
 		{
 			const result = await this.dataSource.getOne({'orgaId': orgaId, 'userId': userId});
@@ -76,7 +77,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 		
 	}
 	async addOrgaUser(orgaId: string, userId: string, roles: Role[],
-		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
+		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<OrgaUser>>> {
 		try{
 			const orgaUser: OrgaUserModel = new OrgaUserModel(orgaId, userId, roles, enabled, builtIn);
 
@@ -124,12 +125,12 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 		
 	}
 
-	async updateOrgaUser(orgaId: string, userId: string, orgaUser: OrgaUserModel) : Promise<Either<Failure,ModelContainer<OrgaUserModel>>>{
+	async updateOrgaUser(orgaId: string, userId: string, orgaUser: OrgaUserModel) : Promise<Either<Failure,ModelContainer<OrgaUser>>>{
 		try{
 			const resultOrgaUser = await this.getOrgaUser(orgaId, userId);
 			if(resultOrgaUser.isRight())
 			{
-				let lastOrgaUser:OrgaUserModel | undefined;
+				let lastOrgaUser:OrgaUser | undefined;
 
 				resultOrgaUser.fold(error => {
 					//something wrong
@@ -186,7 +187,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 			const resultOrgaUser = await this.getOrgaUser(orgaId, userId);
 			if(resultOrgaUser.isRight())
 			{
-				let lastOrgaUser:OrgaUserModel | undefined;
+				let lastOrgaUser:OrgaUser | undefined;
 
 				resultOrgaUser.fold(error => {
 					//something wrong

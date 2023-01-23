@@ -1,7 +1,6 @@
-import { Entity } from '../../domain/entities/entity';
 import { Orga } from '../../domain/entities/orga';
 
-export class OrgaModel implements Orga, Entity {
+export class OrgaModel implements Orga {
 	constructor(id: string, name: string, code: string, enabled: boolean, builtin: boolean){
 		this.id = id;
 		this._id = id;
@@ -25,7 +24,7 @@ export class OrgaModel implements Orga, Entity {
 
 	public toEntity(): Orga {
 		return {id: this.id, name: this.name, 
-			code: this.code};
+			code: this.code, enabled: this.enabled, builtin: this.builtin, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
 	}
 
 }

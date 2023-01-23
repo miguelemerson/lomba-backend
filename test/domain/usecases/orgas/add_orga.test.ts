@@ -21,7 +21,7 @@ describe('Agregar orga - Caso de uso', () => {
 
 	test('el usecase de agregar orga debe retornar ok', async () => {
 		//arrange
-		jest.spyOn(mockOrgaRepository, 'addOrga').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(listOrgas[0]))));
+		jest.spyOn(mockOrgaRepository, 'addOrga').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(listOrgas[0].toEntity()))));
 
 		//act
 		const useCase = new AddOrga(mockOrgaRepository);
@@ -29,7 +29,7 @@ describe('Agregar orga - Caso de uso', () => {
 		//assert
 		expect(mockOrgaRepository.addOrga).toBeCalledTimes(1);
 		expect(result.isRight());
-		expect(result).toEqual(Either.right(ModelContainer.fromOneItem(listOrgas[0])));
+		expect(result).toEqual(Either.right(ModelContainer.fromOneItem(listOrgas[0].toEntity())));
 	});
 
 	test('el usecase de agregar orga debe retornar failure', async () => {

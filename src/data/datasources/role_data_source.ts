@@ -28,6 +28,7 @@ export class RoleDataSourceImpl implements RoleDataSource {
 		return await this.collection.getOne(query);
 	}
 	async add(role: RoleModel) : Promise<ModelContainer<RoleModel>>{
+		role = this.setId(role);
 		return await this.collection.add(role).then(() => this.getOne({'_id':role.id}));	
 	}
 	async update(id: string, role: object): Promise<ModelContainer<RoleModel>>{
@@ -39,5 +40,15 @@ export class RoleDataSourceImpl implements RoleDataSource {
 	async delete(id: string): Promise<boolean>{
 		return await this.collection.delete(id);
 	}
-
+	public setId(obj: RoleModel): RoleModel
+	{
+		if(obj.id == '')
+		{
+			obj.id = obj.name;
+			obj._id = obj.id;
+		}
+		else
+			obj._id = obj.id;
+		return obj;
+	}
 }

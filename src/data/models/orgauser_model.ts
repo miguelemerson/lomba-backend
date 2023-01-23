@@ -1,9 +1,8 @@
-import { Entity } from '../../domain/entities/entity';
+import crypto from 'crypto';
 import { OrgaUser } from '../../domain/entities/orgauser';
 import { Role } from '../../domain/entities/role';
-import crypto from 'crypto';
 
-export class OrgaUserModel implements OrgaUser, Entity {
+export class OrgaUserModel implements OrgaUser {
 	constructor(orgaId: string, userId: string, roles: Role[], enabled: boolean, builtin: boolean){
 		this.id = crypto.randomUUID();
 		this._id = this.id;
@@ -27,8 +26,8 @@ export class OrgaUserModel implements OrgaUser, Entity {
 	expires?: Date;
 
 	public toEntity(): OrgaUser {
-		return {orgaId: this.orgaId, 
-			userId: this.userId, roles: this.roles};
+		return {id: this.id, orgaId: this.orgaId, 
+			userId: this.userId, roles: this.roles, enabled: this.enabled, builtin: this.builtin, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
 	}
 
 }

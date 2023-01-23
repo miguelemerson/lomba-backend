@@ -20,7 +20,7 @@ describe('Test de user model', () => {
 		const result = model.toEntity();
 
 		//assert
-		expect(result).toEqual({userId: model.userId, hash: model.hash, salt: model.salt});
+		expect(result).toEqual({id: model.id, userId: model.userId, hash: model.hash, salt: model.salt, enabled: model.enabled, builtin: model.builtin, created: model.created});
 	});
 
 });

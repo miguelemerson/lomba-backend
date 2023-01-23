@@ -1,8 +1,7 @@
-import { Entity } from '../../domain/entities/entity';
-import { Password } from '../../domain/entities/password';
 import crypto from 'crypto';
+import { Password } from '../../domain/entities/password';
 
-export class PasswordModel implements Password, Entity {
+export class PasswordModel implements Password {
 	constructor(userId: string, hash: string, salt: string, enabled: boolean, builtin: boolean){
 		this.id = crypto.randomUUID();
 		this._id = this.id;		
@@ -27,6 +26,6 @@ export class PasswordModel implements Password, Entity {
 	expires?: Date;
 	
 	public toEntity(): Password {
-		return {userId:this.userId, hash:this.hash, salt:this.salt};
+		return {id: this.id, userId:this.userId, hash:this.hash, salt:this.salt, enabled: this.enabled, builtin: this.builtin, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
 	}
 }

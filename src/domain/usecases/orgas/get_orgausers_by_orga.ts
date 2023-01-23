@@ -1,12 +1,12 @@
 import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
 import { ModelContainer } from '../../../core/model_container';
-import { OrgaUserModel } from '../../../data/models/orgauser_model';
+import { OrgaUser } from '../../entities/orgauser';
 import { OrgaUserRepository } from '../../repositories/orgauser_repository';
 
 
 export interface GetOrgaUserByOrgasUseCase {
-    execute(id:string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>>;
+    execute(id:string): Promise<Either<Failure,ModelContainer<OrgaUser>>>;
 }
 
 export class GetOrgaUserByOrga implements GetOrgaUserByOrgasUseCase {
@@ -15,7 +15,7 @@ export class GetOrgaUserByOrga implements GetOrgaUserByOrgasUseCase {
 		this.repository = repository;
 	}
 
-	async execute(id: string): Promise<Either<Failure,ModelContainer<OrgaUserModel>>> {
+	async execute(id: string): Promise<Either<Failure,ModelContainer<OrgaUser>>> {
 		return await this.repository.getOrgaUsersByOrga(id);
 	}
 }

@@ -162,7 +162,7 @@ describe('Auth Repository Implementation', () => {
 		new OrgaModel('rrr', 'Orga', 'orga', true, false),
 	];
 	const listOrgaUsers: OrgaUserModel[] = [
-		new OrgaUserModel('Súper OrgaUser', 'orgaUser', [{name:'admin',enable:true} as Role], true, true),
+		new OrgaUserModel('Súper OrgaUser', 'orgaUser', [{id: 'admin',name:'admin',enabled:true} as Role], true, true),
 		new OrgaUserModel('OrgaUser', 'Ouser', [], true, false),
 	];
 	const testAuth:Auth = {username:'user', password:'4321'};
@@ -363,7 +363,7 @@ describe('Auth Repository Implementation', () => {
 			expect(mockUserDataSource.add).toBeCalledTimes(1);
 			expect(mockPasswordDataSource.add).toBeCalledTimes(1);
 			expect(mockOrgaUserDataSource.add).toBeCalledTimes(1);
-			expect(value).toEqual(ModelContainer.fromOneItem(listUsers[0]));
+			expect(value).toEqual(ModelContainer.fromOneItem(listUsers[0].toEntity()));
 		});
 
 		test('deberá generar error de Database al registrar un usuario', async () => {

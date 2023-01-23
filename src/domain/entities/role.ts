@@ -1,3 +1,5 @@
 export interface Role {
-    name: string;
+	id:string;
+	name: string;
+	enabled: boolean;
 }

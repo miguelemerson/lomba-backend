@@ -20,7 +20,7 @@ describe('Test de role model', () => {
 		const result = model.toEntity();
 
 		//assert
-		expect(result).toEqual({name:model.name});
+		expect(result).toEqual({id: model.id, name:model.name, enabled: model.enabled});
 	});
 
 });

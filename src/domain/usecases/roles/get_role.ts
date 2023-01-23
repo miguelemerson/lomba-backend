@@ -1,12 +1,12 @@
-import { ModelContainer } from '../../../core/model_container';
-import { RoleModel } from '../../../data/models/role_model';
-import { RoleRepository } from '../../repositories/role_repository';
 import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
+import { ModelContainer } from '../../../core/model_container';
+import { Role } from '../../entities/role';
+import { RoleRepository } from '../../repositories/role_repository';
 
 
 export interface GetRoleUseCase {
-    execute(id:string): Promise<Either<Failure,ModelContainer<RoleModel>>>;
+    execute(id:string): Promise<Either<Failure,ModelContainer<Role>>>;
 }
 
 export class GetRole implements GetRoleUseCase {
@@ -15,7 +15,7 @@ export class GetRole implements GetRoleUseCase {
 		this.repository = repository;
 	}
 
-	async execute(id: string): Promise<Either<Failure,ModelContainer<RoleModel>>> {
+	async execute(id: string): Promise<Either<Failure,ModelContainer<Role>>> {
 		return await this.repository.getRole(id);
 	}
 }

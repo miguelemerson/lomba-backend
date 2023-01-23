@@ -6,6 +6,7 @@ import { HashPassword } from '../../core/password_hash';
 import { PasswordRepository } from '../../domain/repositories/password_repository';
 import { PasswordDataSource } from '../datasources/password_data_source';
 import { PasswordModel } from '../models/password_model';
+import { Password } from '../../domain/entities/password';
 
 export class PasswordRepositoryImpl implements PasswordRepository {
 	dataSource: PasswordDataSource;
@@ -13,7 +14,7 @@ export class PasswordRepositoryImpl implements PasswordRepository {
 		this.dataSource = dataSource;
 	}
 
-	async addPassword(userId:string, password:string): Promise<Either<Failure,ModelContainer<PasswordModel>>>{
+	async addPassword(userId:string, password:string): Promise<Either<Failure,ModelContainer<Password>>>{
 		try{
 			//debe especificar password caso contrario retorna left
 			if(password=='')
