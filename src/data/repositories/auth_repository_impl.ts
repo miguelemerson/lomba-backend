@@ -117,7 +117,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 				}
 			}
 
-			return Either.right(ModelContainer.fromOneItem(user.toEntity()));
+			return Either.right(ModelContainer.fromOneItem(user));
 		}
 		catch(error)
 		{
