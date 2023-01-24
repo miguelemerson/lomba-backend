@@ -18,6 +18,6 @@ export class AddUser implements AddUserUseCase {
 	async execute(user: UserModel): Promise<Either<Failure,ModelContainer<User>>> {
 		return await this.repository.addUser(user.id, user.name, 
 			user.username, user.email, user.enabled, 
-			user.builtin);
+			user.builtIn);
 	}
 }

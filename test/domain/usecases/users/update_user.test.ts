@@ -11,8 +11,8 @@ describe('Agregar usuario - Caso de uso', () => {
 	let mockUserRepository: UserRepository;
 
 	const listUsers: User[] = [
-		{id:'sss', name:'Súper Admin', username:'superadmin', email:'sa@mp.com', enabled:true, builtin:true, created: new Date(), orgas:[]},
-		{id:'aaa', name:'Admin', username:'admin', email:'adm@mp.com', enabled:true, builtin:false, created: new Date(), orgas:[]},
+		{id:'sss', name:'Súper Admin', username:'superadmin', email:'sa@mp.com', enabled:true, builtIn:true, created: new Date(), orgas:[]},
+		{id:'aaa', name:'Admin', username:'admin', email:'adm@mp.com', enabled:true, builtIn:false, created: new Date(), orgas:[]},
 	];
 
 	beforeEach(() => {

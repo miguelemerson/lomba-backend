@@ -18,6 +18,6 @@ export class AddOrga implements AddOrgaUseCase {
 	async execute(orga: Orga): Promise<Either<Failure,ModelContainer<Orga>>> {
 		return await this.repository.addOrga(orga.id, orga.name, 
 			orga.code, orga.enabled, 
-			orga.builtin);
+			orga.builtIn);
 	}
 }

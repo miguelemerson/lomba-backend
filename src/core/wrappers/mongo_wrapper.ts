@@ -116,22 +116,22 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 	}
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		const result = await this.db.collection<Document>(this.collectionName)
-			.updateOne({_id: id, builtin:false}, {$set: {enabled: enableOrDisable, updated: new Date()}});
+			.updateOne({_id: id, builtIn:false}, {$set: {enabled: enableOrDisable, updated: new Date()}});
 		return (result?.modifiedCount > 0);
 	}
 	async delete(id: string): Promise<boolean>{
-		const ri = await this.db.collection<Document>(this.collectionName).findOne({'_id': id, builtin:false}); 
+		const ri = await this.db.collection<Document>(this.collectionName).findOne({'_id': id, builtIn:false}); 
 		if(!ri)
 			return false;
 
 		const rn = await this.update(id, {'deleted': new Date()});
 		if(rn){
-			const i = await this.db.collection<Document>(this.collectionName).findOne({'_id': id, builtin:false});
+			const i = await this.db.collection<Document>(this.collectionName).findOne({'_id': id, builtIn:false});
 			if(i != null)
 			{
 				i._id = new ObjectId();
 				await this.db.collection<Document>(this.collectionName + '_deleted').insertOne(i as Document);
-				const result = await this.db.collection<Document>(this.collectionName).deleteOne({_id: id, builtin:false});
+				const result = await this.db.collection<Document>(this.collectionName).deleteOne({_id: id, builtIn:false});
 				return (result.deletedCount > 0);
 			}
 		}

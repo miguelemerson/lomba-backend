@@ -17,6 +17,6 @@ export class AddOrgaUser implements AddOrgaUserUseCase {
 	async execute(orgaUser: OrgaUser): Promise<Either<Failure,ModelContainer<OrgaUser>>> {
 		return await this.repository.addOrgaUser(orgaUser.orgaId, orgaUser.userId, 
 			orgaUser.roles, orgaUser.enabled, 
-			orgaUser.builtin);
+			orgaUser.builtIn);
 	}
 }

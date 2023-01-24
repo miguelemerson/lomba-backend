@@ -33,7 +33,7 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 			//orgas cargadas previamente en orgasu (arriba)
 			const orgasidcodes = data_insert01.orgas.filter(o=> orgasu.includes(o.id)).map(co => {return {id:co.id, code:co.code};});
 
-			const newUser = new UserModel(user.id, user.name, user.username, user.email, user.enabled, user.builtin);
+			const newUser = new UserModel(user.id, user.name, user.username, user.email, user.enabled, user.builtIn);
 
 			//consigue el nuevo usuario insertado para modificarlo
 			const insertedUser = await userSource.add(newUser);
@@ -43,7 +43,7 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 			
 			await passSource.delete(user.id);
 			const hashPass = HashPassword.createHash(user.password);
-			await passSource.add(new PasswordModel(user.id, hashPass.hash, hashPass.salt, true, user.builtin));
+			await passSource.add(new PasswordModel(user.id, hashPass.hash, hashPass.salt, true, user.builtIn));
 		}
 	});
 	
@@ -61,7 +61,7 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 		const result = await orgaUserSource.getOne({'_id':orgaUser.id});
 		if(result.currentItemCount < 1)
 		{
-			const ou = new OrgaUserModel(orgaUser.orgaId, orgaUser.userId, orgaUser.roles.map(r=> new RoleModel(r, true).toEntity()), true, orgaUser.builtin);
+			const ou = new OrgaUserModel(orgaUser.orgaId, orgaUser.userId, orgaUser.roles.map(r=> new RoleModel(r, true).toEntity()), true, orgaUser.builtIn);
 			ou.id = orgaUser.id;
 			ou._id = orgaUser.id;
 			await orgaUserSource.add(ou);
@@ -79,25 +79,25 @@ export const data_insert01 = {
 		{name : 'anonymous','enabled':true}
 	],
 	users:[
-		{id:'00000001-0001-0001-0001-000000000001', name:'Súper', username:'super', email:'super@mp.com', builtin:true, 'enabled':true, password: '1234'},
-		{id:'00000002-0002-0002-0002-000000000002', name:'Admin', username:'admin', email:'admin@mp.com', builtin:true, 'enabled':true, password: '1234'},
-		{id:'00000003-0003-0003-0003-000000000003', name:'Reviewer 1', username:'rev1', email:'rev1@mp.com', builtin:false, 'enabled':true, password: '1234'},
-		{id:'00000004-0004-0004-0004-000000000004', name:'Reviewer 2', username:'rev2', email:'rev2@mp.com', builtin:false, 'enabled':false, password: '1234'},        
-		{id:'00000005-0005-0005-0005-000000000005', name:'User 1', username:'user1', email:'user1@mp.com', builtin:false, 'enabled':true, password: '1234'},
-		{id:'00000006-0006-0006-0006-000000000006', name:'User 2', username:'user2', email:'user2@mp.com', builtin:false, 'enabled':true, password: '1234'},
-		{id:'00000007-0007-0007-0007-000000000007', name:'User 3', username:'user3', email:'user3@mp.com', builtin:false, 'enabled':false, password: '1234'}
+		{id:'00000001-0001-0001-0001-000000000001', name:'Súper', username:'super', email:'super@mp.com', builtIn:true, 'enabled':true, password: '1234'},
+		{id:'00000002-0002-0002-0002-000000000002', name:'Admin', username:'admin', email:'admin@mp.com', builtIn:true, 'enabled':true, password: '1234'},
+		{id:'00000003-0003-0003-0003-000000000003', name:'Reviewer 1', username:'rev1', email:'rev1@mp.com', builtIn:false, 'enabled':true, password: '1234'},
+		{id:'00000004-0004-0004-0004-000000000004', name:'Reviewer 2', username:'rev2', email:'rev2@mp.com', builtIn:false, 'enabled':false, password: '1234'},        
+		{id:'00000005-0005-0005-0005-000000000005', name:'User 1', username:'user1', email:'user1@mp.com', builtIn:false, 'enabled':true, password: '1234'},
+		{id:'00000006-0006-0006-0006-000000000006', name:'User 2', username:'user2', email:'user2@mp.com', builtIn:false, 'enabled':true, password: '1234'},
+		{id:'00000007-0007-0007-0007-000000000007', name:'User 3', username:'user3', email:'user3@mp.com', builtIn:false, 'enabled':false, password: '1234'}
 	],
 	orgas:[
-		{id:'00000100-0100-0100-0100-000000000100', name:'System', code:'sys', builtin:true, 'enabled':true},
-		{id:'00000200-0200-0200-0200-000000000200', name:'Default', code:'def', builtin:true, 'enabled':true}
+		{id:'00000100-0100-0100-0100-000000000100', name:'System', code:'sys', builtIn:true, 'enabled':true},
+		{id:'00000200-0200-0200-0200-000000000200', name:'Default', code:'def', builtIn:true, 'enabled':true}
 	],
 	orgausers: [
-		{id:'A0000001-0000-0000-1000-000000000000', orgaId:'00000100-0100-0100-0100-000000000100', userId:'00000001-0001-0001-0001-000000000001', roles:['super'], builtin:true},
-		{id:'A0000002-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000002-0002-0002-0002-000000000002', roles:['admin'], builtin:true},
-		{id:'A0000003-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000003-0003-0003-0003-000000000003', roles:['reviewer'], builtin:false},
-		{id:'A0000004-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000004-0004-0004-0004-000000000004', roles:['reviewer'], builtin:false},
-		{id:'A0000005-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000005-0005-0005-0005-000000000005', roles:['user'], builtin:false},
-		{id:'A0000006-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000006-0006-0006-0006-000000000006', roles:['user'], builtin:false},
-		{id:'A0000007-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000007-0007-0007-0007-000000000007', roles:['user'], builtin:false}
+		{id:'A0000001-0000-0000-1000-000000000000', orgaId:'00000100-0100-0100-0100-000000000100', userId:'00000001-0001-0001-0001-000000000001', roles:['super'], builtIn:true},
+		{id:'A0000002-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000002-0002-0002-0002-000000000002', roles:['admin'], builtIn:true},
+		{id:'A0000003-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000003-0003-0003-0003-000000000003', roles:['reviewer'], builtIn:false},
+		{id:'A0000004-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000004-0004-0004-0004-000000000004', roles:['reviewer'], builtIn:false},
+		{id:'A0000005-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000005-0005-0005-0005-000000000005', roles:['user'], builtIn:false},
+		{id:'A0000006-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000006-0006-0006-0006-000000000006', roles:['user'], builtIn:false},
+		{id:'A0000007-0000-0000-1000-000000000000', orgaId:'00000200-0200-0200-0200-000000000200', userId:'00000007-0007-0007-0007-000000000007', roles:['user'], builtIn:false}
 	]
 };
