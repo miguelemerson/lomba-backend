@@ -11,4 +11,5 @@ export interface AuthRepository {
     getAuth(auth:Auth):Promise<Either<Failure,ModelContainer<Token>>>;
     registerUser(user:User, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<User>>>;
     changeOrga(auth:Auth):Promise<Either<Failure,ModelContainer<Token>>>;
+    getAuthGoogle(userToAuth:User):Promise<Either<Failure,ModelContainer<Token>>>;
 }

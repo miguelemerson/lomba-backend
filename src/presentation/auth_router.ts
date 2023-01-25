@@ -6,11 +6,13 @@ import { GetTokenUseCase } from '../domain/usecases/auth/get_token';
 import { RegisterUserUseCase } from '../domain/usecases/auth/register_user';
 import { ChangeOrgaUseCase } from '../domain/usecases/auth/change_orga';
 import { isAuth } from '../core/presentation/valid_token_router';
+import { GetTokenGoogleUseCase } from '../domain/usecases/auth/get_token_google';
 
 export default function AuthRouter(
 	getToken: GetTokenUseCase,
 	registerUser: RegisterUserUseCase,
-	changeOrga: ChangeOrgaUseCase
+	changeOrga: ChangeOrgaUseCase,
+	getTokenGoogle: GetTokenGoogleUseCase
 ) {
 	const router = express.Router();
 
@@ -90,6 +92,33 @@ export default function AuthRouter(
 		//respond cordially
 		res.status(code).send(toSend);
 	});	
+
+	///autenticación con google
+	router.post('/withgoogle', async (req: Request, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			//execution
+			const user = await getTokenGoogle.execute(req.body);
+			//evaluate
+			user.fold(error => {
+				//something wrong
+				code = 401;
+				toSend = new RouterResponse('1.0', error as object, 'post', undefined, 'no access');	
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'post', undefined, 'access ok');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'post', undefined, 'no access');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
 
 	return router;
 }

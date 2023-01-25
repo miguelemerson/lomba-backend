@@ -45,7 +45,7 @@ export class UserDataSourceImpl implements UserDataSource {
 	}
 	public setId(obj: UserModel): UserModel
 	{
-		if(obj.id == '')
+		if(obj.id.trim() == '')
 		{
 			obj.id = crypto.randomUUID();
 			obj._id = obj.id;

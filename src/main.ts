@@ -56,6 +56,7 @@ import { GetUsersNotInOrga } from './domain/usecases/users/get_users_notin_orga'
 import PasswordsRouter from './presentation/password_router';
 import { ExistsUser } from './domain/usecases/users/exists_user';
 import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
+import { GetTokenGoogle } from './domain/usecases/auth/get_token_google';
 
 (async () => {
 	dotenv.config();
@@ -109,7 +110,7 @@ import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
 
 	const orgauserMiddleWare = OrgaUsersRouter(new GetOrgaUserByOrga(orgaUserRepo), new GetOrgaUserByUser(orgaUserRepo), new GetOrgaUser(orgaUserRepo), new AddOrgaUser(orgaUserRepo), new UpdateOrgaUser(orgaUserRepo), new EnableOrgaUser(orgaUserRepo), new DeleteOrgaUser(orgaUserRepo));
 
-	const authMiddleWare = AuthRouter(new GetToken(authRepo), new RegisterUser(authRepo), new ChangeOrga(authRepo));
+	const authMiddleWare = AuthRouter(new GetToken(authRepo), new RegisterUser(authRepo), new ChangeOrga(authRepo), new GetTokenGoogle(authRepo));
 	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
 
 	app.use('/api/v1/user', userMiddleWare);
