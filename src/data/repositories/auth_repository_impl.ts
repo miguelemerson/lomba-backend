@@ -19,8 +19,7 @@ import { UserModel } from '../models/user_model';
 import { User } from '../../domain/entities/user';
 import { data_insert01 } from '../../core/builtindata/load_data_01';
 import { Token } from '../../domain/entities/token';
-
-
+import { googleApp } from '../../main';
 
 export class AuthRepositoryImpl implements AuthRepository {
 	passwordDataSource: PasswordDataSource;
@@ -175,60 +174,75 @@ export class AuthRepositoryImpl implements AuthRepository {
 		}
 	}
 
-	async getAuthGoogle(userToAuth:User):Promise<Either<Failure,ModelContainer<Token>>>
+	async getAuthGoogle(userToAuth:User, googleToken:string):Promise<Either<Failure,ModelContainer<Token>>>
 	{
 		let userAuth = userToAuth;
 		try{
-			//busca usuario por username o email, debe estar habilitado.
-			const user = await this.findUser(userToAuth.username, userToAuth.email);
-			//si no lo encuentra entonces registramos usuario
-			if(!user)
+
+			try
 			{
-				const defaultOrgaId = data_insert01.orgas[1].id;
-				const defaultRole = 'user';
+				const googleVerify = await googleApp.auth().verifyIdToken(googleToken);
 
-				//id se pasa vacío para que el datasource cree uno nuevo
-				const userModel = new UserModel('', userToAuth.name, userToAuth.username, userToAuth.email, true, false);
+				if(googleVerify.id == '')
+					Either.left(new GenericFailure('No valid token'));
+				
+				//busca usuario por username o email, debe estar habilitado.
+				const user = await this.findUser(userToAuth.username, userToAuth.email);
+				//si no lo encuentra entonces registramos usuario
+				if(!user)
+				{
+					const defaultOrgaId = data_insert01.orgas[1].id;
+					const defaultRole = 'user';
 
-				const newUser = await this.newUser(userModel);
-				if(!newUser)
-					return Either.left(new GenericFailure('No user added'));
+					//id se pasa vacío para que el datasource cree uno nuevo
+					const userModel = new UserModel('', userToAuth.name, userToAuth.username, userToAuth.email, true, false);
 
-				await this.newOrgaUser(defaultOrgaId, newUser._id, defaultRole);
+					const newUser = await this.newUser(userModel);
+					if(!newUser)
+						return Either.left(new GenericFailure('No user added'));
 
-				const orgas = await this.orgaDataSource.getOne({'_id':defaultOrgaId});
-				if (orgas.currentItemCount > 0) {
-					const orgasIdCode = [{id:orgas.items[0].id,code:orgas.items[0].code}];
-					const modelContainer = await this.userDataSource.update(newUser.id, {orgas:orgasIdCode});
-					if(modelContainer.currentItemCount > 0)
-					{
-						newUser.orgas = modelContainer.items[0].orgas;
-					}
-				}				
+					await this.newOrgaUser(defaultOrgaId, newUser._id, defaultRole);
 
-				userAuth = {id: newUser.id, name: newUser.name, 
-					username: newUser.username, email: newUser.email, enabled: newUser.enabled, builtIn: newUser.builtIn, created: newUser.created, orgas: newUser.orgas, updated: newUser.updated, deleted: newUser.deleted, expires: newUser.expires};
+					const orgas = await this.orgaDataSource.getOne({'_id':defaultOrgaId});
+					if (orgas.currentItemCount > 0) {
+						const orgasIdCode = [{id:orgas.items[0].id,code:orgas.items[0].code}];
+						const modelContainer = await this.userDataSource.update(newUser.id, {orgas:orgasIdCode});
+						if(modelContainer.currentItemCount > 0)
+						{
+							newUser.orgas = modelContainer.items[0].orgas;
+						}
+					}				
+
+					userAuth = {id: newUser.id, name: newUser.name, 
+						username: newUser.username, email: newUser.email, enabled: newUser.enabled, builtIn: newUser.builtIn, created: newUser.created, orgas: newUser.orgas, updated: newUser.updated, deleted: newUser.deleted, expires: newUser.expires};
+				}
+				else
+					userAuth = {id: user.id, name: user.name, 
+						username: user.username, email: user.email, enabled: user.enabled, builtIn: user.builtIn, created: user.created, orgas: user.orgas, updated: user.updated, deleted: user.deleted, expires: user.expires};
+
+				//busca las orgas que coincidan con los id que están en el array de organizaciones de usuario.
+				const orgas = await this.findUserOrgas(userAuth.orgas);
+
+				//si el auth especifica orgaId y está contenida en las organizaciones asociadas al usuario entonces:
+				const orgaId = this.resolveSpecificOrga(orgas, undefined);
+
+				//lista de roles del usuario en la organización seleccionada
+				//si la organización no está especificada entonces retorna undefined para los roles
+				const rolesString = await this.findRoles(userAuth.id, orgaId);
+
+				//nuevo token con el payload que se especifica.
+				const newToken = generateJWT({userId:userAuth.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
+
+				//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
+				const tokenModel = new TokenModel(newToken, orgaId ? orgaId : '', orgas, false);
+				return Either.right(ModelContainer.fromOneItem(tokenModel));
+
+
+			}catch(e)
+			{
+				return Either.left(new GenericFailure('No valid google token'));
 			}
-			else
-				userAuth = {id: user.id, name: user.name, 
-					username: user.username, email: user.email, enabled: user.enabled, builtIn: user.builtIn, created: user.created, orgas: user.orgas, updated: user.updated, deleted: user.deleted, expires: user.expires};
-
-			//busca las orgas que coincidan con los id que están en el array de organizaciones de usuario.
-			const orgas = await this.findUserOrgas(userAuth.orgas);
-
-			//si el auth especifica orgaId y está contenida en las organizaciones asociadas al usuario entonces:
-			const orgaId = this.resolveSpecificOrga(orgas, undefined);
-
-			//lista de roles del usuario en la organización seleccionada
-			//si la organización no está especificada entonces retorna undefined para los roles
-			const rolesString = await this.findRoles(userAuth.id, orgaId);
-
-			//nuevo token con el payload que se especifica.
-			const newToken = generateJWT({userId:userAuth.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
-
-			//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
-			const tokenModel = new TokenModel(newToken, orgaId ? orgaId : '', orgas, false);
-			return Either.right(ModelContainer.fromOneItem(tokenModel));
+			
 		}
 		catch(error)
 		{

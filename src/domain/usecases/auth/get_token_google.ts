@@ -8,7 +8,7 @@ import { User } from '../../entities/user';
 import { AuthRepository } from '../../repositories/auth_repository';
 
 export interface GetTokenGoogleUseCase {
-    execute(user:User): Promise<Either<Failure,ModelContainer<Token>>>;
+    execute(user:User, googleToken:string): Promise<Either<Failure,ModelContainer<Token>>>;
 }
 
 export class GetTokenGoogle implements GetTokenGoogleUseCase {
@@ -17,7 +17,7 @@ export class GetTokenGoogle implements GetTokenGoogleUseCase {
 		this.repository = repository;
 	}
 
-	async execute(user:User): Promise<Either<Failure,ModelContainer<Token>>> {
-		return await this.repository.getAuthGoogle(user);
+	async execute(user:User, googleToken:string): Promise<Either<Failure,ModelContainer<Token>>> {
+		return await this.repository.getAuthGoogle(user, googleToken);
 	}
 }

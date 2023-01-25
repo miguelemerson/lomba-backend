@@ -5,6 +5,7 @@ export const configEnv = () => {
 		MONGODB_URL: process.env.MONGODB_URL ? process.env.MONGODB_URL : '', 
 		DB_NAME: process.env.DB_NAME ? process.env.DB_NAME : 'LOGIN_DB',
 		SECRET_KEY: process.env.SECRET_KEY ? process.env.SECRET_KEY : 'pawa',
-		TOKEN_EXP: process.env.TOKEN_EXP ? process.env.TOKEN_EXP : 3600
+		TOKEN_EXP: process.env.TOKEN_EXP ? process.env.TOKEN_EXP : 3600,
+		FIREBASE_CERT:process.env.FIREBASE_CERT ? process.env.FIREBASE_CERT : ''
 	};
 };

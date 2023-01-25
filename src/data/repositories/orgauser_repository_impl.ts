@@ -9,6 +9,7 @@ import { DatabaseFailure, NetworkFailure, GenericFailure, Failure } from '../../
 import { UserDataSource } from '../datasources/user_data_source';
 import { OrgaDataSource } from '../datasources/orga_data_source';
 import { OrgaUser } from '../../domain/entities/orgauser';
+import { Orga } from '../../domain/entities/orga';
 
 export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	dataSource: OrgaUserDataSource;
@@ -236,5 +237,30 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 			
 		}	
 				
+	}
+
+	async getOrgasByUserId(userId:string) : Promise<Either<Failure, ModelContainer<Orga>>>{
+		try
+		{
+			const result = await this.dataSource.getMany({'userId': userId});
+
+			if(result.currentItemCount > 0)
+			{
+				const resultOrga = await this.orgaDataSource.getMany({'_id': {$in: result.items.map((element) => element.orgaId)}});
+				return Either.right(resultOrga);
+			}
+
+			return Either.right(new ModelContainer<Orga>([]));
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+			
+		}
 	}
 }

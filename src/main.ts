@@ -57,9 +57,15 @@ import PasswordsRouter from './presentation/password_router';
 import { ExistsUser } from './domain/usecases/users/exists_user';
 import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
 import { GetTokenGoogle } from './domain/usecases/auth/get_token_google';
+import firebase, { ServiceAccount } from 'firebase-admin';
+import { GetOrgasByUser } from './domain/usecases/orgas/get_orgas_by_user';
+
+dotenv.config();
+
+export const googleApp = firebase.initializeApp({credential:firebase.credential.cert(JSON.parse(configEnv().FIREBASE_CERT) as ServiceAccount)});
 
 (async () => {
-	dotenv.config();
+	
 
 	console.log('NODE_ENV: ' + configEnv().NODE_ENV);
 	console.log('PORT: ' + configEnv().PORT);
@@ -106,7 +112,7 @@ import { GetTokenGoogle } from './domain/usecases/auth/get_token_google';
 		new ExistsUser(userRepo)
 	);
 
-	const orgaMiddleWare = OrgasRouter(new GetOrga(orgaRepo), new GetOrgas(orgaRepo), new AddOrga(orgaRepo), new UpdateOrga(orgaRepo), new EnableOrga(orgaRepo), new DeleteOrga(orgaRepo), new ExistsOrga(orgaRepo));
+	const orgaMiddleWare = OrgasRouter(new GetOrga(orgaRepo), new GetOrgas(orgaRepo), new AddOrga(orgaRepo), new UpdateOrga(orgaRepo), new EnableOrga(orgaRepo), new DeleteOrga(orgaRepo), new ExistsOrga(orgaRepo), new GetOrgasByUser(orgaUserRepo));
 
 	const orgauserMiddleWare = OrgaUsersRouter(new GetOrgaUserByOrga(orgaUserRepo), new GetOrgaUserByUser(orgaUserRepo), new GetOrgaUser(orgaUserRepo), new AddOrgaUser(orgaUserRepo), new UpdateOrgaUser(orgaUserRepo), new EnableOrgaUser(orgaUserRepo), new DeleteOrgaUser(orgaUserRepo));
 

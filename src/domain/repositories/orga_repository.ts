@@ -12,4 +12,5 @@ export interface OrgaRepository {
     enableOrga(orgaId: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>>;
     deleteOrga(id: string): Promise<Either<Failure, boolean>>;
     existsOrga(orgaId:string, code:string) : Promise<Either<Failure, ModelContainer<Orga>>>;
+    
 }

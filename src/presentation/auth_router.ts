@@ -7,6 +7,7 @@ import { RegisterUserUseCase } from '../domain/usecases/auth/register_user';
 import { ChangeOrgaUseCase } from '../domain/usecases/auth/change_orga';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { GetTokenGoogleUseCase } from '../domain/usecases/auth/get_token_google';
+import { User } from '../domain/entities/user';
 
 export default function AuthRouter(
 	getToken: GetTokenUseCase,
@@ -99,8 +100,10 @@ export default function AuthRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			//execution
-			const user = await getTokenGoogle.execute(req.body);
+
+			const bodyauth = req.body as {user:User, googleToken:string};
+
+			const user = await getTokenGoogle.execute(bodyauth.user, bodyauth.googleToken);
 			//evaluate
 			user.fold(error => {
 				//something wrong
