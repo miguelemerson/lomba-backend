@@ -17,6 +17,7 @@ import { RouterResponse } from '../../src/core/router_response';
 import { generateJWT } from '../../src/core/jwt';
 import { data_insert01} from '../../src/core/builtindata/load_data_01';
 import { ExistsOrgaUseCase } from '../../src/domain/usecases/orgas/exists_orga';
+import { GetOrgasByUserUseCase } from '../../src/domain/usecases/orgas/get_orgas_by_user';
 
 class MockAddOrgaUseCase implements AddOrgaUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<OrgaModel>>> {
@@ -58,6 +59,12 @@ class MockExistsOrgaUseCase implements ExistsOrgaUseCase {
 	}
 }
 
+class MockGetOrgasByUserUseCase implements GetOrgasByUserUseCase{
+	execute(): Promise<Either<Failure,ModelContainer<OrgaModel>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
 describe('Orga Router', () => {
 	let mockAddOrgaUseCase: AddOrgaUseCase;
 	let mockDeleteOrgaUseCase: DeleteOrgaUseCase;
@@ -66,6 +73,7 @@ describe('Orga Router', () => {
 	let mockGetOrgasUseCase: GetOrgasUseCase;
 	let mockUpdateOrgaUseCase: UpdateOrgaUseCase;
 	let mockExistsOrgaUseCase: ExistsOrgaUseCase;
+	let mockGetOrgasByUserUseCase: GetOrgasByUserUseCase;
 
 	const listOrgas: OrgaModel[] = [
 		new OrgaModel('ooo', 'Súper Orga', 'superOrga', true, true),
@@ -88,8 +96,9 @@ describe('Orga Router', () => {
 		mockGetOrgasUseCase = new MockGetOrgasUseCase();
 		mockUpdateOrgaUseCase = new MockUpdateOrgaUseCase();
 		mockExistsOrgaUseCase = new MockExistsOrgaUseCase();
+		mockGetOrgasByUserUseCase = new MockGetOrgasByUserUseCase();
 
-		server.use('/api/v1/orga', OrgaRouter(mockGetOrgaUseCase, mockGetOrgasUseCase, mockAddOrgaUseCase, mockUpdateOrgaUseCase, mockEnableOrgaUseCase, mockDeleteOrgaUseCase, mockExistsOrgaUseCase));
+		server.use('/api/v1/orga', OrgaRouter(mockGetOrgaUseCase, mockGetOrgasUseCase, mockAddOrgaUseCase, mockUpdateOrgaUseCase, mockEnableOrgaUseCase, mockDeleteOrgaUseCase, mockExistsOrgaUseCase, mockGetOrgasByUserUseCase));
 	});
 
 	beforeEach(() => {

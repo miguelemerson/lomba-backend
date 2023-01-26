@@ -13,6 +13,7 @@ import { TokenModel } from '../../src/data/models/token_model';
 import { Auth } from '../../src/domain/entities/auth';
 import { generateJWT } from '../../src/core/jwt';
 import { data_insert01} from '../../src/core/builtindata/load_data_01';
+import { GetTokenGoogleUseCase } from '../../src/domain/usecases/auth/get_token_google';
 
 class MockGetTokenUseCase implements GetTokenUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<TokenModel>>> {
@@ -32,6 +33,12 @@ class MockChangeOrgaUseCase implements ChangeOrgaUseCase {
 	}
 }
 
+class MockGetTokenGoogleUseCase implements GetTokenGoogleUseCase {
+	execute(): Promise<Either<Failure,ModelContainer<TokenModel>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
 describe('Auth Router', () => {
 
 	const tokenModel = new TokenModel('token', 'a');
@@ -41,6 +48,7 @@ describe('Auth Router', () => {
 	let mockGetTokenUseCase: GetTokenUseCase;
 	let mockRegisterUserUseCase: RegisterUserUseCase;
 	let mockChangeOrgaUseCase: MockChangeOrgaUseCase;
+	let mockGetTokenGoogleUseCase:MockGetTokenGoogleUseCase;
 
 	//carga de identificadores para las pruebas
 	const testUserIdAdmin = data_insert01.users[1].id;
@@ -54,8 +62,9 @@ describe('Auth Router', () => {
 		mockGetTokenUseCase = new MockGetTokenUseCase();
 		mockRegisterUserUseCase = new MockRegisterUserUseCase();
 		mockChangeOrgaUseCase = new MockChangeOrgaUseCase();
+		mockGetTokenGoogleUseCase = new MockGetTokenGoogleUseCase();
 
-		server.use('/api/v1/auth', AuthRouter(mockGetTokenUseCase, mockRegisterUserUseCase, mockChangeOrgaUseCase));
+		server.use('/api/v1/auth', AuthRouter(mockGetTokenUseCase, mockRegisterUserUseCase, mockChangeOrgaUseCase, mockGetTokenGoogleUseCase));
 	});
 
 	beforeEach(() => {
