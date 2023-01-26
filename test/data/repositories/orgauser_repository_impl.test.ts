@@ -285,7 +285,7 @@ describe('OrgaUser Repository Implementation', () => {
 			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 
 			//act
-			const result = await orgauserRepository.addOrgaUser(listOrgaUsers[0].orgaId, listOrgaUsers[0].userId, listOrgaUsers[0].roles, listOrgaUsers[0].enabled, listOrgaUsers[0].builtin);
+			const result = await orgauserRepository.addOrgaUser(listOrgaUsers[0].orgaId, listOrgaUsers[0].userId, listOrgaUsers[0].roles, listOrgaUsers[0].enabled, listOrgaUsers[0].builtIn);
 			let failure:unknown;
 			let value:unknown;
 

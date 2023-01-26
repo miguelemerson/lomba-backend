@@ -1,6 +1,7 @@
 import { Either } from '../../core/either';
 import { Failure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
+import { Orga } from '../entities/orga';
 import { OrgaUser } from '../entities/orgauser';
 import { Role } from '../entities/role';
 
@@ -13,5 +14,6 @@ export interface OrgaUserRepository {
     updateOrgaUser(orgaId: string, userId: string, orgaUser: object) : Promise<Either<Failure, ModelContainer<OrgaUser>>>;
     enableOrgaUser(orgaId: string, userId: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>>;
     deleteOrgaUser(orgaId: string, userId: string): Promise<Either<Failure, boolean>>;
+    getOrgasByUserId(userId:string) : Promise<Either<Failure, ModelContainer<Orga>>>;
    
 }

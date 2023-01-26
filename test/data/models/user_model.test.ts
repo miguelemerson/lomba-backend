@@ -20,7 +20,7 @@ describe('Test de user model', () => {
 		const result = model.toEntity();
 
 		//assert
-		expect(result).toEqual({id: model.id, name: model.name, username: model.username, email: model.email, enabled: model.enabled, builtin: model.builtin, created: model.created, orgas: model.orgas});
+		expect(result).toEqual({id: model.id, name: model.name, username: model.username, email: model.email, enabled: model.enabled, builtIn: model.builtIn, created: model.created, orgas: model.orgas});
 	});
 
 });

@@ -3,14 +3,14 @@ import { OrgaUser } from '../../domain/entities/orgauser';
 import { Role } from '../../domain/entities/role';
 
 export class OrgaUserModel implements OrgaUser {
-	constructor(orgaId: string, userId: string, roles: Role[], enabled: boolean, builtin: boolean){
+	constructor(orgaId: string, userId: string, roles: Role[], enabled: boolean, builtIn: boolean){
 		this.id = crypto.randomUUID();
 		this._id = this.id;
 		this.orgaId = orgaId;
 		this.userId = userId;
 		this.roles = roles;
 		this.enabled = enabled;
-		this.builtin = builtin;
+		this.builtIn = builtIn;
 		this.created = new Date();
 	}
 	_id?: string | undefined;
@@ -18,7 +18,7 @@ export class OrgaUserModel implements OrgaUser {
 	orgaId: string;
 	userId: string;
 	roles: Role[];
-	builtin: boolean;
+	builtIn: boolean;
 	enabled: boolean;
 	created: Date;
 	updated?: Date;
@@ -27,7 +27,7 @@ export class OrgaUserModel implements OrgaUser {
 
 	public toEntity(): OrgaUser {
 		return {id: this.id, orgaId: this.orgaId, 
-			userId: this.userId, roles: this.roles, enabled: this.enabled, builtin: this.builtin, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
+			userId: this.userId, roles: this.roles, enabled: this.enabled, builtIn: this.builtIn, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
 	}
 
 }

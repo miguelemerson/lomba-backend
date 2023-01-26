@@ -9,6 +9,7 @@ import { ExistsOrgaUseCase } from '../domain/usecases/orgas/exists_orga';
 import { GetOrgaUseCase } from '../domain/usecases/orgas/get_orga';
 import { GetOrgasUseCase } from '../domain/usecases/orgas/get_orgas';
 import { UpdateOrgaUseCase } from '../domain/usecases/orgas/update_orga';
+import { GetOrgasByUserUseCase } from '../domain/usecases/orgas/get_orgas_by_user';
 
 export default function OrgasRouter(
 	getOrga: GetOrgaUseCase,
@@ -17,7 +18,8 @@ export default function OrgasRouter(
 	updateOrga: UpdateOrgaUseCase,
 	enableOrga: EnableOrgaUseCase,
 	deleteOrga: DeleteOrgaUseCase,
-	existsOrga: ExistsOrgaUseCase
+	existsOrga: ExistsOrgaUseCase,
+	getOrgasByUser: GetOrgasByUserUseCase
 ) {
 	const router = express.Router();
 
@@ -201,6 +203,31 @@ export default function OrgasRouter(
 		res.status(code).send(toSend);
 	});
 
+	router.get('/byuser/:userId',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			//execution
+			const orgas = await getOrgasByUser.execute(req.params.userId);
+			//evaluate
+			orgas.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error, 'get by userid' + ' not obtained');	
+			}, value => {
+				//isOK
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'get by userid' + ' geted');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get by userid' +  ' not obtained');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
 
 	return router;
 }

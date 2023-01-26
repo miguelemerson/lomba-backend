@@ -1,7 +1,7 @@
 export interface Entity {
     _id?: string;
     id: string;
-    builtin: boolean;
+    builtIn: boolean;
     enabled: boolean;
     created: Date;
     updated?: Date;

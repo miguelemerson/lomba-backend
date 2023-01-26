@@ -2,14 +2,14 @@ import { User } from '../../domain/entities/user';
 
 export class UserModel implements User {
 	constructor(id: string, name: string, username: string, 
-		email: string, enabled: boolean, builtin: boolean){
+		email: string, enabled: boolean, builtIn: boolean){
 		this.id = id;
 		this._id = id;
 		this.name = name;
 		this.username = username;
 		this.email = email;
 		this.enabled = enabled;
-		this.builtin = builtin;
+		this.builtIn = builtIn;
 		this.created = new Date();
 	}
 	_id: string;
@@ -17,7 +17,7 @@ export class UserModel implements User {
 	name: string;
 	username: string;
 	email: string;
-	builtin: boolean;
+	builtIn: boolean;
 	enabled: boolean;
 	created: Date;
 	updated?: Date;
@@ -27,6 +27,6 @@ export class UserModel implements User {
 
 	public toEntity(): User {
 		return {id: this.id, name: this.name, 
-			username: this.username, email: this.email, enabled: this.enabled, builtin: this.builtin, created: this.created, orgas: this.orgas, updated: this.updated, deleted: this.deleted, expires: this.expires};
+			username: this.username, email: this.email, enabled: this.enabled, builtIn: this.builtIn, created: this.created, orgas: this.orgas, updated: this.updated, deleted: this.deleted, expires: this.expires};
 	}
 }

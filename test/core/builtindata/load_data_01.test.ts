@@ -160,7 +160,7 @@ describe('Test del load data 01', () => {
 		//act
 		const len = users.length;
 		const enables = users.filter(e=>e.enabled == true).length;
-		const builtins = users.filter(e=>e.builtin == true).length;
+		const builtins = users.filter(e=>e.builtIn == true).length;
 
 		//assert
 		expect(len).toEqual(7);
@@ -174,7 +174,7 @@ describe('Test del load data 01', () => {
 		//act
 		const len = orgas.length;
 		const enables = orgas.filter(e=>e.enabled == true).length;
-		const builtins = orgas.filter(e=>e.builtin == true).length;
+		const builtins = orgas.filter(e=>e.builtIn == true).length;
 
 		//assert
 		expect(len).toEqual(2);
@@ -203,11 +203,11 @@ describe('Test del load data 01', () => {
 
 		const model_con_role = ModelContainer.fromOneItem(new RoleModel(test_roles[0].name, test_roles[0].enabled));
 		const model_void_role = new ModelContainer<RoleModel>([]);
-		const model_con_user = ModelContainer.fromOneItem(new UserModel(test_users[1].id, test_users[1].name, test_users[1].username, test_users[1].email, test_users[1].enabled, test_users[1].builtin));
+		const model_con_user = ModelContainer.fromOneItem(new UserModel(test_users[1].id, test_users[1].name, test_users[1].username, test_users[1].email, test_users[1].enabled, test_users[1].builtIn));
 		const model_void_user = new ModelContainer<UserModel>([]);
 		const model_con_pass = ModelContainer.fromOneItem(new PasswordModel(model_con_user.items[0].id, 'hhh', 'sss', true, false));
 		const model_void_pass = new ModelContainer<PasswordModel>([]);
-		const model_con_orga = ModelContainer.fromOneItem(new OrgaModel(test_orgas[0].id, test_orgas[0].name, test_orgas[0].code, test_orgas[0].enabled, test_orgas[0].builtin));
+		const model_con_orga = ModelContainer.fromOneItem(new OrgaModel(test_orgas[0].id, test_orgas[0].name, test_orgas[0].code, test_orgas[0].enabled, test_orgas[0].builtIn));
 		const model_void_orga = new ModelContainer<OrgaModel>([]);
 		const model_con_orus = ModelContainer.fromOneItem(new OrgaUserModel(model_con_orga.items[0].id, model_con_user.items[0].id, [model_con_role.items[0].toEntity()], true, false));
 		const model_void_orus = new ModelContainer<OrgaUserModel>([]);

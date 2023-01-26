@@ -363,7 +363,7 @@ describe('Auth Repository Implementation', () => {
 			expect(mockUserDataSource.add).toBeCalledTimes(1);
 			expect(mockPasswordDataSource.add).toBeCalledTimes(1);
 			expect(mockOrgaUserDataSource.add).toBeCalledTimes(1);
-			expect(value).toEqual(ModelContainer.fromOneItem(listUsers[0].toEntity()));
+			expect(value).toEqual(ModelContainer.fromOneItem(listUsers[0]));
 		});
 
 		test('deberá generar error de Database al registrar un usuario', async () => {
