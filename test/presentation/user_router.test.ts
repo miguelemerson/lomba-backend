@@ -596,5 +596,202 @@ describe('User Router', () => {
 			expect(roures.error).toBeDefined();
 			expect(roures.data).toBeUndefined();
 		});
-	});    
+	});   
+	
+	//get usuarios que no están en una orgaId
+	describe('GET /notinorga/:orgaId', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			const expectedData = listUsers;
+			jest.spyOn(mockGetUsersNotInOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<UserModel>(expectedData))));
+
+			//act
+			const response = await request(server).get('/api/v1/user/notinorga/1').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockGetUsersNotInOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(expectedData.length);
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 200 y con datos con parámetros', async () => {
+			//arrange
+			const expectedData = listUsers;
+			jest.spyOn(mockGetUsersNotInOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<UserModel>(expectedData))));
+
+			//act
+			const response = await request(server).get('/api/v1/user/notinorga/1?sort=[["name", 1]]&pageIndex=1&itemsPerPage=10').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockGetUsersNotInOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(expectedData.length);
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 401 porque usuario no identificado', async () => {
+			//arrange
+			const expectedData = listUsers;
+			jest.spyOn(mockGetUsersNotInOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<UserModel>(expectedData))));
+
+			//act
+			const response = await request(server).get('/api/v1/user/notinorga/1');
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(401);
+			expect(mockGetUsersNotInOrgaUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 403 porque usuario no tiene el role', async () => {
+			//arrange
+			const expectedData = listUsers;
+			jest.spyOn(mockGetUsersNotInOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<UserModel>(expectedData))));
+
+			//act
+			const response = await request(server).get('/api/v1/user/notinorga/1').set({Authorization: 'Bearer ' + testTokenUser1});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(403);
+			expect(mockGetUsersNotInOrgaUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockGetUsersNotInOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).get('/api/v1/user/notinorga/1').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockGetUsersNotInOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockGetUsersNotInOrgaUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).get('/api/v1/user/notinorga/1').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockGetUsersNotInOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+
+	//get usuario si existe
+	describe('GET /if/exists', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			const expectedData = listUsers;
+			jest.spyOn(mockExistsUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<UserModel>(expectedData))));
+	
+			//act
+			const response = await request(server).get('/api/v1/user/if/exists/').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockExistsUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(expectedData.length);
+			expect(roures.error).toBeUndefined();
+	
+		});
+	
+		test('debe retornar 401 porque usuario no identificado', async () => {
+			//arrange
+			const expectedData = listUsers;
+			jest.spyOn(mockExistsUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<UserModel>(expectedData))));
+	
+			//act
+			const response = await request(server).get('/api/v1/user/if/exists/');
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(401);
+			expect(mockExistsUserUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	
+		test('debe retornar 403 porque usuario no tiene el role', async () => {
+			//arrange
+			const expectedData = listUsers;
+			jest.spyOn(mockExistsUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<UserModel>(expectedData))));
+	
+			//act
+			const response = await request(server).get('/api/v1/user/if/exists/').set({Authorization: 'Bearer ' + testTokenUser1});
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(403);
+			expect(mockExistsUserUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockExistsUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+	
+			//act
+			const response = await request(server).get('/api/v1/user/if/exists/').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockExistsUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockExistsUserUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+	
+			//act
+			const response = await request(server).get('/api/v1/user/if/exists/').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockExistsUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
 });

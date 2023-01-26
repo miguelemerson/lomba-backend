@@ -127,6 +127,6 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/password', passMiddleWare);
 
 	///Fin usuarios
-	app.listen(configEnv().PORT, () => console.log('Running on http://localhost:' + configEnv().PORT));
+	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));
 
 })();
