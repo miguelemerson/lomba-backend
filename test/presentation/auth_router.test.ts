@@ -14,6 +14,7 @@ import { Auth } from '../../src/domain/entities/auth';
 import { generateJWT } from '../../src/core/jwt';
 import { data_insert01} from '../../src/core/builtindata/load_data_01';
 import { GetTokenGoogleUseCase } from '../../src/domain/usecases/auth/get_token_google';
+import { User } from '../../src/domain/entities/user';
 
 class MockGetTokenUseCase implements GetTokenUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<TokenModel>>> {
@@ -44,6 +45,7 @@ describe('Auth Router', () => {
 	const tokenModel = new TokenModel('token', 'a');
 	const testAuth:Auth = {username:'user', password:'pass'};
 	const testUser =new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false);
+	const testBodyAuthGoogle: {user:User, googleToken:string} = {user:testUser, googleToken: 'aaa'};
 
 	let mockGetTokenUseCase: GetTokenUseCase;
 	let mockRegisterUserUseCase: RegisterUserUseCase;
@@ -230,5 +232,59 @@ describe('Auth Router', () => {
 			expect(roures.data).toBeUndefined();
 		});
 	});
+
+	//auth de usuario vía POST con Google Auth
+	describe('POST /auth/withgoogle', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			jest.spyOn(mockGetTokenGoogleUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(tokenModel))));
+
+			//act
+			const response = await request(server).post('/api/v1/auth/withgoogle').send(testBodyAuthGoogle);
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockGetTokenGoogleUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(1);
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 401 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockGetTokenGoogleUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).post('/api/v1/auth/withgoogle').send(testBodyAuthGoogle);
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(401);
+			expect(mockGetTokenGoogleUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockGetTokenGoogleUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).post('/api/v1/auth/withgoogle').send(testBodyAuthGoogle);
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockGetTokenGoogleUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+    
+
 
 });

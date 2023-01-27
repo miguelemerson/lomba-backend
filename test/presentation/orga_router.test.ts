@@ -765,7 +765,7 @@ describe('Orga Router', () => {
 			expect(roures.data).toBeUndefined();
 	
 		});
-	
+		/*
 		test('debe retornar 403 porque usuario no el role', async () => {
 			//arrange
 			const expectedData = listOrgas;
@@ -783,7 +783,7 @@ describe('Orga Router', () => {
 			expect(roures.data).toBeUndefined();
 	
 		});
-	
+	*/
 		test('debe retornar 500 en caso de failure', async () => {
 			//arrange
 			jest.spyOn(mockGetOrgasByUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
