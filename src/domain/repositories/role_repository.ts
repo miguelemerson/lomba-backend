@@ -1,7 +1,6 @@
 import { Either } from '../../core/either';
 import { Failure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
-import { RoleModel } from '../../data/models/role_model';
 import { Role } from '../entities/role';
 
 export interface RoleRepository {
