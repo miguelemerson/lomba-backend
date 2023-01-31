@@ -1,3 +1,4 @@
+import { BuiltIn } from '../../domain/entities/builtin';
 import { User } from '../../domain/entities/user';
 
 export class UserModel implements User {
