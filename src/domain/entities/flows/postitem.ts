@@ -4,7 +4,6 @@ import { TextContent } from './textcontent';
 
 export interface PostItem extends BuiltIn, Audit {
     order: number;
-    title: string;
     content: object | TextContent;
     type: 'text';
     format: string;
