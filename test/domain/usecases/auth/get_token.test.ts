@@ -19,6 +19,7 @@ export class MockAuthRepository implements AuthRepository {
 	changeOrga():Promise<Either<Failure,ModelContainer<TokenModel>>>{
 		throw new Error('Method not implemented.');
 	}   
+	getAuthGoogle():Promise<Either<Failure,ModelContainer<TokenModel>>>{throw new Error('Method not implemented.');}
 }
 
 describe('Autenticar usuario - Caso de uso', () => {

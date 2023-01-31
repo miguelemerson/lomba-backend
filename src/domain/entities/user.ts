@@ -1,7 +1,8 @@
+import { Audit } from './audit';
+import { BuiltIn } from './builtin';
 import { Entity } from './entity';
 
-export interface User extends Entity {
-  id: string;
+export interface User extends Entity, BuiltIn, Audit {
   name: string;
   username: string;
   email: string;
