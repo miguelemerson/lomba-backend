@@ -43,14 +43,7 @@ export default function PasswordsRouter(
 		let toSend = RouterResponse.emptyResponse();		
 		try {
 
-			let bodyValid: {password:string};
-			if(req.body)
-			{
-				bodyValid = req.body as {password:string};
-			}
-			else
-				throw Error('No valid password');
-
+			const bodyValid = req.body as {password:string};
 			//execution
 			const password = await updatePassword.execute(req.params.userId, bodyValid.password);
 

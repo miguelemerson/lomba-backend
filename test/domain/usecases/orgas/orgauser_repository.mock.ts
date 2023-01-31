@@ -1,6 +1,7 @@
 import { Either } from '../../../../src/core/either';
 import { Failure } from '../../../../src/core/errors/failures';
 import { ModelContainer } from '../../../../src/core/model_container';
+import { OrgaModel } from '../../../../src/data/models/orga_model';
 import { OrgaUserModel } from '../../../../src/data/models/orgauser_model';
 import { OrgaUserRepository } from '../../../../src/domain/repositories/orgauser_repository';
 
@@ -27,5 +28,7 @@ export class MockOrgaUserRepository implements OrgaUserRepository {
 	deleteOrgaUser(): Promise<Either<Failure,boolean>> {
 		throw new Error('Method not implemented.');
 	}
-
+	getOrgasByUserId() : Promise<Either<Failure, ModelContainer<OrgaModel>>>{
+		throw new Error('Method not implemented.');
+	}
 }

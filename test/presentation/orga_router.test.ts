@@ -17,6 +17,7 @@ import { RouterResponse } from '../../src/core/router_response';
 import { generateJWT } from '../../src/core/jwt';
 import { data_insert01} from '../../src/core/builtindata/load_data_01';
 import { ExistsOrgaUseCase } from '../../src/domain/usecases/orgas/exists_orga';
+import { GetOrgasByUserUseCase } from '../../src/domain/usecases/orgas/get_orgas_by_user';
 
 class MockAddOrgaUseCase implements AddOrgaUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<OrgaModel>>> {
@@ -58,6 +59,12 @@ class MockExistsOrgaUseCase implements ExistsOrgaUseCase {
 	}
 }
 
+class MockGetOrgasByUserUseCase implements GetOrgasByUserUseCase{
+	execute(): Promise<Either<Failure,ModelContainer<OrgaModel>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
 describe('Orga Router', () => {
 	let mockAddOrgaUseCase: AddOrgaUseCase;
 	let mockDeleteOrgaUseCase: DeleteOrgaUseCase;
@@ -66,6 +73,7 @@ describe('Orga Router', () => {
 	let mockGetOrgasUseCase: GetOrgasUseCase;
 	let mockUpdateOrgaUseCase: UpdateOrgaUseCase;
 	let mockExistsOrgaUseCase: ExistsOrgaUseCase;
+	let mockGetOrgasByUserUseCase: GetOrgasByUserUseCase;
 
 	const listOrgas: OrgaModel[] = [
 		new OrgaModel('ooo', 'Súper Orga', 'superOrga', true, true),
@@ -88,8 +96,9 @@ describe('Orga Router', () => {
 		mockGetOrgasUseCase = new MockGetOrgasUseCase();
 		mockUpdateOrgaUseCase = new MockUpdateOrgaUseCase();
 		mockExistsOrgaUseCase = new MockExistsOrgaUseCase();
+		mockGetOrgasByUserUseCase = new MockGetOrgasByUserUseCase();
 
-		server.use('/api/v1/orga', OrgaRouter(mockGetOrgaUseCase, mockGetOrgasUseCase, mockAddOrgaUseCase, mockUpdateOrgaUseCase, mockEnableOrgaUseCase, mockDeleteOrgaUseCase, mockExistsOrgaUseCase));
+		server.use('/api/v1/orga', OrgaRouter(mockGetOrgaUseCase, mockGetOrgasUseCase, mockAddOrgaUseCase, mockUpdateOrgaUseCase, mockEnableOrgaUseCase, mockDeleteOrgaUseCase, mockExistsOrgaUseCase, mockGetOrgasByUserUseCase));
 	});
 
 	beforeEach(() => {
@@ -625,4 +634,186 @@ describe('Orga Router', () => {
 			expect(roures.data).toBeUndefined();
 		});
 	});    
+
+	//get orga si existe
+	describe('GET /if/exists/', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			const expectedData = listOrgas;
+			jest.spyOn(mockExistsOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaModel>(expectedData))));
+		
+			//act
+			const response = await request(server).get('/api/v1/orga/if/exists/').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+		
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockExistsOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(expectedData.length);
+			expect(roures.error).toBeUndefined();
+		
+		});
+		
+		test('debe retornar 401 porque usuario no identificado', async () => {
+			//arrange
+			const expectedData = listOrgas;
+			jest.spyOn(mockExistsOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaModel>(expectedData))));
+		
+			//act
+			const response = await request(server).get('/api/v1/orga/if/exists/');
+			const roures = response.body as RouterResponse;
+		
+			//assert
+			expect(response.status).toBe(401);
+			expect(mockExistsOrgaUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		
+		});
+		
+		test('debe retornar 403 porque usuario no el role', async () => {
+			//arrange
+			const expectedData = listOrgas;
+			jest.spyOn(mockExistsOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaModel>(expectedData))));
+		
+			//act
+			const response = await request(server).get('/api/v1/orga/if/exists/').set({Authorization: 'Bearer ' + testTokenUser1});
+			const roures = response.body as RouterResponse;
+		
+			//assert
+			expect(response.status).toBe(403);
+			expect(mockExistsOrgaUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		
+		});
+		
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockExistsOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+		
+			//act
+			const response = await request(server).get('/api/v1/orga/if/exists/').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+		
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockExistsOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+		
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockExistsOrgaUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+		
+			//act
+			const response = await request(server).get('/api/v1/orga/if/exists/').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+		
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockExistsOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+
+	//get orgas por usuario
+	describe('GET /byuser/:userId/', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			const expectedData = listOrgas;
+			jest.spyOn(mockGetOrgasByUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaModel>(expectedData))));
+	
+			//act
+			const response = await request(server).get('/api/v1/orga/byuser/1').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockGetOrgasByUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(expectedData.length);
+			expect(roures.error).toBeUndefined();
+	
+		});
+	
+		test('debe retornar 401 porque usuario no identificado', async () => {
+			//arrange
+			const expectedData = listOrgas;
+			jest.spyOn(mockGetOrgasByUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaModel>(expectedData))));
+	
+			//act
+			const response = await request(server).get('/api/v1/orga/byuser/1');
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(401);
+			expect(mockGetOrgasByUserUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+	
+		});
+		/*
+		test('debe retornar 403 porque usuario no el role', async () => {
+			//arrange
+			const expectedData = listOrgas;
+			jest.spyOn(mockGetOrgasByUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaModel>(expectedData))));
+	
+			//act
+			const response = await request(server).get('/api/v1/orga/byuser/1').set({Authorization: 'Bearer ' + testTokenUser1});
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(403);
+			expect(mockGetOrgasByUserUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+	
+		});
+	*/
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockGetOrgasByUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+	
+			//act
+			const response = await request(server).get('/api/v1/orga/byuser/1').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockGetOrgasByUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockGetOrgasByUserUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+	
+			//act
+			const response = await request(server).get('/api/v1/orga/byuser/1').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//asserts
+			expect(response.status).toBe(500);
+			expect(mockGetOrgasByUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});	
 });

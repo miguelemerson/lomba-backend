@@ -80,19 +80,18 @@ export default function UsersRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			
 			//parameters settings
 			let valid_sort: [string, 1 | -1][] | undefined;
-			if(req.params.sort)
+			if(req.query.sort)
 			{
-				valid_sort = JSON.parse(req.params.sort) as [string, 1 | -1][];
+				valid_sort = req.query.sort ? JSON.parse(req.query.sort.toString()) : undefined;
 			}
 			let pageIndex:number | undefined;
 			let itemsPerPage:number | undefined;
 
-			if(req.params.pageIndex)
+			if(req.query.pageIndex)
 				pageIndex = Number(req.params.pageIndex);
-			if(req.params.itemsPerPage)
+			if(req.query.itemsPerPage)
 				itemsPerPage = Number(req.params.itemsPerPage);
 
 			//execution
