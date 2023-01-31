@@ -1,5 +1,4 @@
 import { Audit } from '../audit';
-import { Entity } from '../entity';
 
 export interface Track extends Audit {
     userId:string;
