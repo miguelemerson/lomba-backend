@@ -203,7 +203,7 @@ export default function OrgasRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/byuser/:userId',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
+	router.get('/byuser/:userId',[isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
