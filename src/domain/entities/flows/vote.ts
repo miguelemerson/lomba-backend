@@ -1,9 +1,6 @@
 import { Audit } from '../audit';
 
-export interface Vote extends Audit {
-    totalpositive: number;
-    totalnegative: number;
-    totalcount: number;  
+export interface Vote extends Audit {  
     flowId:string;
     stageId:string;
     userId:string;
