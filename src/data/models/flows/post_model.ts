@@ -6,12 +6,16 @@ import { Track } from '../../../domain/entities/flows/track';
 import { Vote } from '../../../domain/entities/flows/vote';
 
 export class PostModel implements Post {
-	constructor(id:string, postitems:(PostItem[]),
+	constructor(
+		id:string, 
+		postitems:(PostItem[]),
 		title:string,
 		orgaId:string,
 		userId:string,
 		flowId:string,
-		stageId:string, enabled: boolean, builtIn: boolean){
+		stageId:string, 
+		enabled: boolean, 
+		builtIn: boolean){
 		this.id = id;
 		this._id = id;
 		this.postitems = postitems;
