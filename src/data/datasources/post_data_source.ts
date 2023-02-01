@@ -4,7 +4,7 @@ import { ModelContainer } from '../../core/model_container';
 import crypto from 'crypto';
 
 
-export interface FlowDataSource {
+export interface PostDataSource {
     getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;
     getOne(query: object): Promise<ModelContainer<PostModel>>;
@@ -15,7 +15,7 @@ export interface FlowDataSource {
 	setId(obj: PostModel): PostModel;
 }
 
-export class FlowDataSourceImpl implements FlowDataSource {
+export class PostDataSourceImpl implements PostDataSource {
 	collection: MongoWrapper<PostModel>;
 
 	constructor(dbMongo: MongoWrapper<PostModel>){
