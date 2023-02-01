@@ -13,13 +13,10 @@ export class FlowRepositoryImpl implements FlowRepository {
 		this.dataSource = dataSource;
 	}
 
-	async getFlowsByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure,ModelContainer<Post>>> {
+	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			if(!sort)
-				sort = [['name', 1]];
-			const result = await this.dataSource
-				.getMany({'orgas.id' : orgaId}, sort);
+			const result = await this.dataSource;
 			
 			return Either.right(result);		
 		}
@@ -34,14 +31,10 @@ export class FlowRepositoryImpl implements FlowRepository {
 		}
 	}
 
-	async getFlowsNotInOrga(orgaId: string, sort?: [string, 1 | -1][], pageIndex?: number, itemsPerPage?: number): Promise<Either<Failure, ModelContainer<Post>>>{
+	async addTextPost(orgaId: string, userId: string, flowId: string, title: string, textContent: string, draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			if(!sort)
-				sort = [['name', 1]];
-
-			const result = await this.dataSource
-				.getMany({'orgas.id' : {$ne: orgaId}}, sort, pageIndex, itemsPerPage);
+			const result = await this.dataSource;
 			
 			return Either.right(result);		
 		}
@@ -56,11 +49,12 @@ export class FlowRepositoryImpl implements FlowRepository {
 		}
 	}
 
-	async getFlow(id: string): Promise<Either<Failure,ModelContainer<Post>>> {
+	async sendVote(orgaId: string, userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			const result = await this.dataSource.getOne({'_id':id});
-			return Either.right(result);
+			const result = await this.dataSource;
+			
+			return Either.right(result);		
 		}
 		catch(error)
 		{
@@ -69,89 +63,8 @@ export class FlowRepositoryImpl implements FlowRepository {
 				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
 			} else if(error instanceof Error)
 				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
-			else return Either.left(new GenericFailure('undetermined', error));
-		}
-	}
-	async addFlow(id: string, name: string, username: string, email: string,
-		enabled: boolean, builtIn: boolean) : Promise<Either<Failure,ModelContainer<Post>>> {
-		try{
-			const user: PostModel = new PostModel(id, name, username, email, enabled, builtIn);
-			const result = await this.dataSource.add(user);
-			return Either.right(result);
-		}
-		catch(error)
-		{
-			if(error instanceof MongoError)
-			{
-				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
-			} else if(error instanceof Error)
-				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
-			else return Either.left(new GenericFailure('undetermined', error));
+			else return Either.left(new GenericFailure('undetermined', error));	
 		}
 	}
 
-	async updateFlow(id: string, user: PostModel) : Promise<Either<Failure,ModelContainer<Post>>>{
-		try{
-			const result = await this.dataSource.update(id, user);
-			return Either.right(result);
-		}
-		catch(error)
-		{
-			if(error instanceof MongoError)
-			{
-				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
-			} else if(error instanceof Error)
-				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
-			else return Either.left(new GenericFailure('undetermined', error));
-		}
-	}
-
-	async enableFlow(id: string, enableOrDisable: boolean): Promise<Either<Failure,boolean>>{
-		try{
-			const result = await this.dataSource.enable(id, enableOrDisable);
-			return Either.right(result);
-		}
-		catch(error)
-		{
-			if(error instanceof MongoError)
-			{
-				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
-			} else if(error instanceof Error)
-				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
-			else return Either.left(new GenericFailure('undetermined', error));
-		}
-	}
-	async deleteFlow(id: string): Promise<Either<Failure,boolean>>{
-		try{
-			const result = await this.dataSource.delete(id);
-			return Either.right(result);
-		}
-		catch(error)
-		{
-			if(error instanceof MongoError)
-			{
-				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
-			} else if(error instanceof Error)
-				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
-			else return Either.left(new GenericFailure('undetermined', error));
-		}
-	}
-	async existsFlow(userId: string, username: string, email: string): Promise<Either<Failure,ModelContainer<Post>>> {
-		try
-		{
-			
-			const result = await this.dataSource.getOne({$or:[ {'username':username}, {'email':email}], $and:[{'id':{$ne:userId}}]});
-			
-			return Either.right(result);
-		}
-		catch(error)
-		{
-			if(error instanceof MongoError)
-			{
-				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
-			} else if(error instanceof Error)
-				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
-			else return Either.left(new GenericFailure('undetermined', error));
-		}
-	}
 }
