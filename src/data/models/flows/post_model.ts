@@ -3,14 +3,19 @@ import { PostItem } from '../../../domain/entities/flows/postitem';
 import { Stage } from '../../../domain/entities/flows/stage';
 import { Total } from '../../../domain/entities/flows/total';
 import { Track } from '../../../domain/entities/flows/track';
+import { Vote } from '../../../domain/entities/flows/vote';
 
 export class PostModel implements Post {
-	constructor(id:string, postitems:(PostItem[]),
+	constructor(
+		id:string, 
+		postitems:(PostItem[]),
 		title:string,
 		orgaId:string,
 		userId:string,
 		flowId:string,
-		stageId:string, enabled: boolean, builtIn: boolean){
+		stageId:string, 
+		enabled: boolean, 
+		builtIn: boolean){
 		this.id = id;
 		this._id = id;
 		this.postitems = postitems;
@@ -25,6 +30,7 @@ export class PostModel implements Post {
 		this.stages = [];
 		this.totals = [];
 		this.tracks = [];
+		this.votes = [];
 	}
 	_id: string;
 	id: string;
@@ -37,6 +43,7 @@ export class PostModel implements Post {
 	stages:(Stage[]);
 	totals:(Total[]);
 	tracks:(Track[]);
+	votes:(Vote[]);
 	builtIn: boolean;
 	enabled: boolean;
 	created: Date;
@@ -45,6 +52,6 @@ export class PostModel implements Post {
 	expires?: Date;
 
 	public toEntity(): Post {
-		return {id: this.id, _id:this.id, postitems:this.postitems, title:this.title, orgaId:this.orgaId, userId:this.userId, flowId:this.flowId, stageId:this.stageId, stages:this.stages, totals:this.totals, tracks:this.tracks, enabled: this.enabled, builtIn: this.builtIn, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
+		return {id: this.id, _id:this.id, postitems:this.postitems, title:this.title, orgaId:this.orgaId, userId:this.userId, flowId:this.flowId, stageId:this.stageId, stages:this.stages, totals:this.totals, tracks:this.tracks, votes:this.votes, enabled: this.enabled, builtIn: this.builtIn, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
 	}
 }
