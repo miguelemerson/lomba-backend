@@ -207,13 +207,15 @@ export class PostRepositoryImpl implements PostRepository {
 			const resultPost = await this.dataSource.getOne({id: postId});
 			
 			if (resultPost.currentItemCount > 0) {
-				resultPost.items[0].orgaId = orgaId;
-				resultPost.items[0].userId = userId;
-				resultPost.items[0].flowId = flowId;
-				resultPost.items[0].stageId = stageId;
-				resultPost.items[0].votes[0].value = voteValue;
+
+				const newVote = {  
+					flowId:flowId,
+					stageId:stageId,
+					userId:userId,
+					value:voteValue, 
+					created: new Date()} as Vote;
 	
-				const result = await this.dataSource.update(postId, resultPost);
+				const result = await this.dataSource.update(postId, { $push: { votes: newVote}});
 				
 				return Either.right(result);
 			}
