@@ -59,6 +59,13 @@ import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
 import { GetTokenGoogle } from './domain/usecases/auth/get_token_google';
 import firebase, { ServiceAccount } from 'firebase-admin';
 import { GetOrgasByUser } from './domain/usecases/orgas/get_orgas_by_user';
+import { StageModel } from './data/models/flows/stage_model';
+import { FlowModel } from './data/models/flows/flow_model';
+import { PostModel } from './data/models/flows/post_model';
+import { StageDataSourceImpl } from './data/datasources/stage_data_source';
+import { FlowDataSourceImpl } from './data/datasources/flow_data_source';
+import { PostDataSourceImpl } from './data/datasources/post_data_source';
+import { checkData02 } from './core/builtindata/load_data_02';
 
 dotenv.config();
 
@@ -83,6 +90,9 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const passMongo = new MongoWrapper<PasswordModel>('passes', db);
 	const orgaMongo = new MongoWrapper<OrgaModel>('orgas', db);
 	const orgaUserMongo = new MongoWrapper<OrgaUserModel>('orgasusers', db);
+	const stageMongo = new MongoWrapper<StageModel>('stage', db);
+	const flowMongo = new MongoWrapper<FlowModel>('flow', db);
+	const postMongo = new MongoWrapper<PostModel>('post', db);
 
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
@@ -90,6 +100,10 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const passDataSource = new PasswordDataSourceImpl(passMongo);
 	const orgaDataSource = new OrgaDataSourceImpl(orgaMongo);
 	const orgaUserDataSource = new OrgaUserDataSourceImpl(orgaUserMongo);
+	const stageDataSource = new StageDataSourceImpl(stageMongo);
+	const flowDataSource = new FlowDataSourceImpl(flowMongo);
+	const postDataSource = new PostDataSourceImpl(postMongo);
+
 
 	//repositorios
 	const roleRepo = new RoleRepositoryImpl(roleDataSource);
@@ -99,8 +113,10 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const orgaUserRepo = new OrgaUserRepositoryImpl(orgaUserDataSource, userDataSource, orgaDataSource);
 	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource);
 
+
 	//revisa que los datos estén cargados.
 	checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
+	checkData02(stageDataSource, flowDataSource, postDataSource);
 
 	//routers
 	const roleMiddleWare = RolesRouter(new GetRole(roleRepo), new GetRoles(roleRepo), new EnableRole(roleRepo));
