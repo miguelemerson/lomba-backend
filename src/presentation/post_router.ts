@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import { hasRole } from '../core/presentation/check_role_router';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
 import { TextContent } from '../domain/entities/flows/textcontent';
@@ -15,13 +14,22 @@ export default function PostsRouter(
 	const router = express.Router();
 
 	//orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, params: {key:string, value:string}[], textSearch: string,
-	router.get('/',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string}>, res: Response) => {
+	router.get('/get',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
 			//execution
-			const post = await getPosts.execute(req.params.orgaId, req.params.userId, req.params.flowId, req.params.stageId, req.params.boxPage, req.params.params , req.params.textSearch);
+			console.log(req.query);
+			console.log(req.params);
+			const post = await getPosts.execute(
+				(req.query.orgaId!=undefined)?req.query.orgaId.toString():'',
+				(req.query.userId!=undefined)?req.query.userId.toString():'',
+				(req.query.flowId!=undefined)?req.query.flowId.toString():'',
+				(req.query.stageId!=undefined)?req.query.stageId.toString():'',
+				(req.query.boxPage!=undefined)?req.query.boxPage.toString():'',
+				(req.query.textSearch!=undefined)?req.query.textSearch.toString():'',
+			);
 			//evaluate
 			post.fold(error => {
 				//something wrong
@@ -42,13 +50,14 @@ export default function PostsRouter(
 	});
 
 	//orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean
-	router.post('/',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean}>, res: Response) => {
+	router.post('/',[isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
+			const bodypost = req.body as {orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean};
 			//execution
-			const post = await addTextPost.execute(req.params.orgaId, req.params.userId, req.params.flowId, req.params.title, req.params.textContent, req.params.draft);
+			const post = await addTextPost.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.title, bodypost.textContent, bodypost.draft);
 			//evaluate
 			post.fold(error => {
 				//something wrong
@@ -68,13 +77,13 @@ export default function PostsRouter(
 	});
 	
 	//userId: string, flowId: string, stageId: string, postId: string, voteValue: number
-	router.put('/:postId',[isAuth], async (req: Request<{userId: string, flowId: string, stageId: string, postId: string, voteValue: string}>, res: Response) => {
+	router.put('/',[isAuth], async (req: Request<{userId: string, flowId: string, stageId: string, postId: string, voteValue: string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();		
 		try {
 			//execution
-			const post = await sendVote.execute(req.params.userId, req.params.flowId, req.params.stageId, req.params.postId, req.params.voteValue.p);
+			const post = await sendVote.execute(req.params.userId, req.params.flowId, req.params.stageId, req.params.postId, parseFloat(req.params.voteValue));
 			//evaluate
 			post.fold(error => {
 			//something wrong

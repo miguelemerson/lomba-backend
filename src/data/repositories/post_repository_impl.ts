@@ -24,74 +24,84 @@ export class PostRepositoryImpl implements PostRepository {
 		this.flowDataSource = flowDataSource;
 	}
 
-	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, params: {key:string, value:string}[], textSearch: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
+	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			params.filter(f => f.value);
-			let query = {};
+			const query: {
+				orgaId:string | undefined,
+				userId:string | undefined,
+				stageId:string | undefined,
+				flowId:string | undefined,
+				stages: object | undefined,
+				$text: object | undefined,
+				votes: object | undefined
+			} = {orgaId:undefined,
+				userId:undefined,
+				stageId:undefined,
+				flowId:undefined,
+				stages:undefined,
+				$text:undefined,
+				votes:undefined};
+
 			if (boxPage == BoxPages.uploadedPosts) {
-				query = {
-					orgaId:orgaId,
-					userId:userId,
-					flowId:flowId,
-					stages: {$elemMatch: {id:stageId}},
-					$text: {$search: textSearch},
-				};
+				query.orgaId = orgaId;
+				query.userId = userId;
+				query.flowId = flowId;
+				query.stages = {$elemMatch: {id:stageId}};
 			}
 			if (boxPage == BoxPages.forApprovePosts) {
-				query = {
-					orgaId:orgaId,
-					flowId:flowId,
-					stages: {$elemMatch: {id:stageId}},
-					$text: {$search: textSearch},
-					votes: {$elemMatch: {id:{$ne:userId}}}
-				};
+
+				query.orgaId = orgaId;
+				query.flowId = flowId;
+				query.stages = {$elemMatch: {id:stageId}};
+				query.votes = {$elemMatch: {id:{$ne:userId}}};
+
 			}
 			if (boxPage == BoxPages.approvedPosts) {
-				query = {
-					orgaId:orgaId,
-					flowId:flowId,
-					stages: {$elemMatch: {id:stageId}},
-					$text: {$search: textSearch},
-					votes: {$elemMatch: {id:userId, value:1}}
-				};
+
+				query.orgaId = orgaId;
+				query.flowId = flowId;
+				query.stages = {$elemMatch: {id:stageId}};
+				query.votes = {$elemMatch: {id:{$ne:userId, value: 1}}};
+				
 			}
 			if (boxPage == BoxPages.rejectedPosts) {
-				query = {
-					orgaId:orgaId,
-					flowId:flowId,
-					stages: {$elemMatch: {id:stageId}},
-					$text: {$search: textSearch},
-					votes: {$elemMatch: {id:userId, value:-1}}
-				};
+				query.orgaId = orgaId;
+				query.flowId = flowId;
+				query.stages = {$elemMatch: {id:stageId}};
+				query.votes = {$elemMatch: {id:{$ne:userId, value: -1}}};
+				
 			}
 			if (boxPage == BoxPages.latestPosts) {
-				query = {
-					orgaId:orgaId,
-					flowId:flowId,
-					stageId:stageId,
-					$text: {$search: textSearch}
-				};
+				query.orgaId = orgaId;
+				query.flowId = flowId;
+				query.stageId = stageId;
 				sort = [['created',-1]];
+				
 			}
 			if (boxPage == BoxPages.popularPosts) {
-				query = {
-					orgaId:orgaId,
-					flowId:flowId,
-					stageId:stageId,
-					$text: {$search: textSearch}
-				};
+				query.orgaId = orgaId;
+				query.flowId = flowId;
+				query.stageId = stageId;
 				sort = [['totals.totalpositive',-1]];
+				
 			}
 			if (boxPage == BoxPages.votedPosts) {
-				query = {
-					orgaId:orgaId,
-					flowId:flowId,
-					stages: {$elemMatch: {id:stageId}},
-					$text: {$search: textSearch},
-					votes: {$elemMatch: {id:userId}}
-				};
+				query.orgaId = orgaId;
+				query.flowId = flowId;
+				query.stages = {$elemMatch: {id:stageId}};
+				query.votes = {$elemMatch: {id:userId}};
+				
 			}
+
+			if(textSearch != '')
+			{
+				query.$text = {$search: textSearch};
+			}
+
+			console.log('query:');
+			console.log(query);
+
 			const result = await this.dataSource.getMany(query, sort, pageIndex, itemsPerPage);
 			
 			return Either.right(result);		
@@ -200,7 +210,7 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
-	async sendVote(orgaId: string, userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
+	async sendVote(userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			//COMPLETAR

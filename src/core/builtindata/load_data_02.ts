@@ -12,6 +12,7 @@ import { Stage } from '../../domain/entities/flows/stage';
 import { TextContent } from '../../domain/entities/flows/textcontent';
 import { Total } from '../../domain/entities/flows/total';
 import { Vote } from '../../domain/entities/flows/vote';
+import { MongoWrapper } from '../wrappers/mongo_wrapper';
 import { data_insert01 } from './load_data_01';
 
 const flowId = '00000111-0111-0111-0111-000000000111';
@@ -24,7 +25,23 @@ const post02Id = '00002AAA-0119-0111-0111-000000000000';
 const post03Id = '00003AAA-0119-0111-0111-000000000000';
 const post04Id = '00004AAA-0119-0111-0111-000000000000';
 
-export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource) => {
+export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, postMongo: MongoWrapper<PostModel>) => {
+
+	try{
+		postMongo.db.collection(postMongo.collectionName).dropIndex('title_text_postitems.content.text_text');
+	}catch(e){
+		console.log('no index');
+	}
+	
+
+	postMongo.db.collection(postMongo.collectionName).createIndex(
+		{
+			'title': 'text',
+			'postitems.content.text': 'text'
+		},{
+			name: 'title_text_postitems.content.text_text'
+		}
+	);
 
 	data_insert02.flows[0].stages = data_insert02.stages;
 
