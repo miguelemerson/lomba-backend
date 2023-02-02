@@ -13,6 +13,8 @@ export interface PostDataSource {
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
 	setId(obj: PostModel): PostModel;
+    updateDirect(id: string, post: object): Promise<ModelContainer<PostModel>>;
+
 }
 
 export class PostDataSourceImpl implements PostDataSource {
@@ -37,6 +39,9 @@ export class PostDataSourceImpl implements PostDataSource {
 	async update(id: string, post: object): Promise<ModelContainer<PostModel>>{
 		return await this.collection.update(id, post).then(() => this.getOne({'_id':id}));
 	}
+	async updateDirect(id: string, post: object): Promise<ModelContainer<PostModel>>{
+		return await this.collection.updateDirect(id, post).then(() => this.getOne({'_id':id}));
+	}	
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		return await this.collection.enable(id, enableOrDisable);
 	}

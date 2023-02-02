@@ -13,6 +13,7 @@ export interface FlowDataSource {
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
 	setId(obj: FlowModel): FlowModel;
+	updateDirect(id: string, flow: object): Promise<ModelContainer<FlowModel>>;
 }
 
 export class FlowDataSourceImpl implements FlowDataSource {
@@ -37,6 +38,9 @@ export class FlowDataSourceImpl implements FlowDataSource {
 	async update(id: string, flow: object): Promise<ModelContainer<FlowModel>>{
 		return await this.collection.update(id, flow).then(() => this.getOne({'_id':id}));
 	}
+	async updateDirect(id: string, post: object): Promise<ModelContainer<FlowModel>>{
+		return await this.collection.updateDirect(id, post).then(() => this.getOne({'_id':id}));
+	}	
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		return await this.collection.enable(id, enableOrDisable);
 	}

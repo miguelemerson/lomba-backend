@@ -10,6 +10,7 @@ export interface NoSQLDatabaseWrapper<T>{
     update(id: string, obj: object): Promise<boolean>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
+    updateDirect(id: string, obj: object): Promise<boolean>;	
 }
 
 export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
@@ -114,6 +115,11 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		return (result?.modifiedCount > 0 ? true : false);
 
 	}
+	async updateDirect(id: string, obj: object): Promise<boolean>{
+		const result = await this.db.collection<Document>(this.collectionName).updateOne({_id: id}, obj);
+		return (result?.modifiedCount > 0 ? true : false);
+
+	}	
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		const result = await this.db.collection<Document>(this.collectionName)
 			.updateOne({_id: id, builtIn:false}, {$set: {enabled: enableOrDisable, updated: new Date()}});
