@@ -27,6 +27,7 @@ export class PostRepositoryImpl implements PostRepository {
 	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
+			
 			const query: {
 				orgaId:string | undefined,
 				userId:string | undefined,
@@ -101,6 +102,7 @@ export class PostRepositoryImpl implements PostRepository {
 
 			console.log('query:');
 			console.log(query);
+			console.log(JSON.stringify(query));
 
 			const result = await this.dataSource.getMany(query, sort, pageIndex, itemsPerPage);
 			
