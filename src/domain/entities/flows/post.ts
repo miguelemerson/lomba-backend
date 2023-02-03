@@ -5,6 +5,7 @@ import { PostItem } from './postitem';
 import { Stage } from './stage';
 import { Total } from './total';
 import { Track } from './track';
+import { Vote } from './vote';
 
 export interface Post extends Entity, BuiltIn, Audit {
     postitems:(PostItem[]);
@@ -16,4 +17,5 @@ export interface Post extends Entity, BuiltIn, Audit {
     stages:(Stage[]);
     totals:(Total[]);
     tracks:(Track[]);
+    votes:(Vote[]);    
 }

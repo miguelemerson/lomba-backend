@@ -6,10 +6,13 @@ export interface NoSQLDatabaseWrapper<T>{
     getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>;
     getOne(query: object): Promise<ModelContainer<T>>;
+    getOneWithOptions(query: object, projection: object | undefined): Promise<ModelContainer<T>>;	
     add(obj: T) : Promise<boolean>;
     update(id: string, obj: object): Promise<boolean>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
+    updateDirect(id: string, obj: object): Promise<boolean>;	
+	updateArray(id: string, obj: object, arrayFilters:object): Promise<boolean>;
 }
 
 export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
@@ -100,6 +103,14 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		return ModelContainer.fromOneItem(result as T);
 	}
 
+	async getOneWithOptions<T>(query: object, projection: object | undefined): Promise<ModelContainer<T>>{
+		const result = await this.db.collection<Document>(this.collectionName).findOne(query, projection);
+		if(result == null || result == undefined){
+			return new ModelContainer([]);
+		}
+		return ModelContainer.fromOneItem(result as T);
+	}
+
 	async add<T>(obj: T) : Promise<boolean>{
 		const result = await this.db.collection<Document>(this.collectionName).insertOne(obj as Document);
 		return (result?.insertedId ? true: false);
@@ -110,10 +121,22 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		if(obj != null)
 			params['updated'] = new Date();
 
-		const result = await this.db.collection<Document>(this.collectionName).updateOne({_id: id}, {$set:params});
+		const result = await this.db.collection<Document>(this.collectionName).updateOne({_id: id}, {$set:params},);
+		return (result?.modifiedCount > 0 ? true : false);
+	}
+	async updateArray(id: string, obj: object, arrayFilters:object): Promise<boolean>{
+		const params = (obj as {[x: string]: unknown;});
+		if(obj != null)
+			params['updated'] = new Date();
+
+		const result = await this.db.collection<Document>(this.collectionName).updateOne({_id: id}, {$set:params},arrayFilters);
+		return (result?.modifiedCount > 0 ? true : false);
+	}	
+	async updateDirect(id: string, obj: object): Promise<boolean>{
+		const result = await this.db.collection<Document>(this.collectionName).updateOne({_id: id}, obj);
 		return (result?.modifiedCount > 0 ? true : false);
 
-	}
+	}	
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		const result = await this.db.collection<Document>(this.collectionName)
 			.updateOne({_id: id, builtIn:false}, {$set: {enabled: enableOrDisable, updated: new Date()}});

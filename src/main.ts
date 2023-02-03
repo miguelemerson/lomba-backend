@@ -54,11 +54,23 @@ import { GetOrgaUserByOrga } from './domain/usecases/orgas/get_orgausers_by_orga
 import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user';
 import { GetUsersNotInOrga } from './domain/usecases/users/get_users_notin_orga';
 import PasswordsRouter from './presentation/password_router';
+import PostsRouter from './presentation/post_router';
 import { ExistsUser } from './domain/usecases/users/exists_user';
 import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
 import { GetTokenGoogle } from './domain/usecases/auth/get_token_google';
 import firebase, { ServiceAccount } from 'firebase-admin';
 import { GetOrgasByUser } from './domain/usecases/orgas/get_orgas_by_user';
+import { StageModel } from './data/models/flows/stage_model';
+import { FlowModel } from './data/models/flows/flow_model';
+import { PostModel } from './data/models/flows/post_model';
+import { StageDataSourceImpl } from './data/datasources/stage_data_source';
+import { FlowDataSourceImpl } from './data/datasources/flow_data_source';
+import { PostDataSourceImpl } from './data/datasources/post_data_source';
+import { checkData02 } from './core/builtindata/load_data_02';
+import { GetPosts } from './domain/usecases/flows/get_posts';
+import { AddTextPost } from './domain/usecases/flows/add_text_post';
+import { SendVote } from './domain/usecases/flows/send_vote';
+import { PostRepositoryImpl } from './data/repositories/post_repository_impl';
 
 dotenv.config();
 
@@ -83,6 +95,9 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const passMongo = new MongoWrapper<PasswordModel>('passes', db);
 	const orgaMongo = new MongoWrapper<OrgaModel>('orgas', db);
 	const orgaUserMongo = new MongoWrapper<OrgaUserModel>('orgasusers', db);
+	const stageMongo = new MongoWrapper<StageModel>('stage', db);
+	const flowMongo = new MongoWrapper<FlowModel>('flow', db);
+	const postMongo = new MongoWrapper<PostModel>('post', db);
 
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
@@ -90,6 +105,10 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const passDataSource = new PasswordDataSourceImpl(passMongo);
 	const orgaDataSource = new OrgaDataSourceImpl(orgaMongo);
 	const orgaUserDataSource = new OrgaUserDataSourceImpl(orgaUserMongo);
+	const stageDataSource = new StageDataSourceImpl(stageMongo);
+	const flowDataSource = new FlowDataSourceImpl(flowMongo);
+	const postDataSource = new PostDataSourceImpl(postMongo);
+
 
 	//repositorios
 	const roleRepo = new RoleRepositoryImpl(roleDataSource);
@@ -98,9 +117,12 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const orgaRepo = new OrgaRepositoryImpl(orgaDataSource);
 	const orgaUserRepo = new OrgaUserRepositoryImpl(orgaUserDataSource, userDataSource, orgaDataSource);
 	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource);
+	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource);
+
 
 	//revisa que los datos estén cargados.
-	checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
+	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
+	await checkData02(stageDataSource, flowDataSource, postDataSource, postMongo);
 
 	//routers
 	const roleMiddleWare = RolesRouter(new GetRole(roleRepo), new GetRoles(roleRepo), new EnableRole(roleRepo));
@@ -117,7 +139,10 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const orgauserMiddleWare = OrgaUsersRouter(new GetOrgaUserByOrga(orgaUserRepo), new GetOrgaUserByUser(orgaUserRepo), new GetOrgaUser(orgaUserRepo), new AddOrgaUser(orgaUserRepo), new UpdateOrgaUser(orgaUserRepo), new EnableOrgaUser(orgaUserRepo), new DeleteOrgaUser(orgaUserRepo));
 
 	const authMiddleWare = AuthRouter(new GetToken(authRepo), new RegisterUser(authRepo), new ChangeOrga(authRepo), new GetTokenGoogle(authRepo));
+
 	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
+
+	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo) );
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
@@ -125,6 +150,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/orgauser', orgauserMiddleWare);
 	app.use('/api/v1/auth', authMiddleWare);
 	app.use('/api/v1/password', passMiddleWare);
+	app.use('/api/v1/post', postMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));
