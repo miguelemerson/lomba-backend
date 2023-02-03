@@ -166,9 +166,9 @@ export class PostRepositoryImpl implements PostRepository {
 		try
 		{
 			//COMPLETAR
-			const resultPost = await this.dataSource.getOne({id: postId});
+			const resultPost = await this.dataSource.getOneWithOptions({id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId}, {votes: {$elemMatch:{ 'userId':userId, 'stageId':stageId, 'flowId':flowId }}});
 			
-			if (resultPost.currentItemCount > 0) {
+			if (resultPost.currentItemCount < 1) {
 
 				const newVote = {  
 					flowId:flowId,
@@ -181,6 +181,18 @@ export class PostRepositoryImpl implements PostRepository {
 				
 				return Either.right(result);
 			}
+			else
+			{
+				const beforeVote = resultPost.items[0].votes[0];
+				beforeVote.updated = new Date();
+				beforeVote.value = voteValue;
+
+				const result = await this.dataSource.updateArray(postId, {'votes.$[elem].updated': new Date(), 'votes.$[elem].value':voteValue}, {arrayFilters: [{'elem.userId':userId, 'elem.stageId':stageId, 'elem.flowId':flowId}]});
+
+				return Either.right(result);
+			}
+
+
 			return Either.left(new GenericFailure('undetermined'));
 		}
 		catch(error)

@@ -8,12 +8,14 @@ export interface PostDataSource {
     getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;
     getOne(query: object): Promise<ModelContainer<PostModel>>;
+    getOneWithOptions(query: object, projection: object | undefined): Promise<ModelContainer<PostModel>>;	
     add(post: PostModel) : Promise<ModelContainer<PostModel>>;
     update(id: string, post: object): Promise<ModelContainer<PostModel>>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
 	setId(obj: PostModel): PostModel;
     updateDirect(id: string, post: object): Promise<ModelContainer<PostModel>>;
+	updateArray(id: string, post: object, arrayFilters: object): Promise<ModelContainer<PostModel>>;
 
 }
 
@@ -31,7 +33,9 @@ export class PostDataSourceImpl implements PostDataSource {
 	async getOne(query: object): Promise<ModelContainer<PostModel>>{
 		return await this.collection.getOne(query);
 	}
-
+	async getOneWithOptions(query: object, projection: object | undefined): Promise<ModelContainer<PostModel>>{
+		return await this.collection.getOneWithOptions(query, projection);
+	}
 	async add(post: PostModel) : Promise<ModelContainer<PostModel>>{
 		post = this.setId(post);
 		return await this.collection.add(post).then(() => this.getOne({'_id':post.id}));
@@ -41,6 +45,9 @@ export class PostDataSourceImpl implements PostDataSource {
 	}
 	async updateDirect(id: string, post: object): Promise<ModelContainer<PostModel>>{
 		return await this.collection.updateDirect(id, post).then(() => this.getOne({'_id':id}));
+	}	
+	async updateArray(id: string, post: object, arrayFilters: object): Promise<ModelContainer<PostModel>>{
+		return await this.collection.updateArray(id, post, arrayFilters).then(() => this.getOne({'_id':id}));
 	}	
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		return await this.collection.enable(id, enableOrDisable);
