@@ -13,15 +13,12 @@ export default function PostsRouter(
 ) {
 	const router = express.Router();
 
-	//orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, params: {key:string, value:string}[], textSearch: string,
-	router.get('/get',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string}>, res: Response) => {
+	router.get('/box/',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
 			//execution
-			console.log(req.query);
-			console.log(req.params);
 			const post = await getPosts.execute(
 				(req.query.orgaId!=undefined)?req.query.orgaId.toString():'',
 				(req.query.userId!=undefined)?req.query.userId.toString():'',
@@ -49,7 +46,6 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 
-	//orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean
 	router.post('/',[isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
@@ -76,14 +72,17 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 	
-	//userId: string, flowId: string, stageId: string, postId: string, voteValue: number
-	router.put('/',[isAuth], async (req: Request<{userId: string, flowId: string, stageId: string, postId: string, voteValue: string}>, res: Response) => {
+	router.post('/vote/',[isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();		
 		try {
 			//execution
-			const post = await sendVote.execute(req.params.userId, req.params.flowId, req.params.stageId, req.params.postId, parseFloat(req.params.voteValue));
+			console.log(req.query);
+			const bodypost = req.body as {userId: string, flowId: string, stageId: string, postId: string, voteValue: string};
+			//execution
+			const post = await sendVote.execute(bodypost.userId, bodypost.flowId, bodypost.stageId, bodypost.postId, parseInt(bodypost.voteValue));
+			console.log(bodypost);
 			//evaluate
 			post.fold(error => {
 			//something wrong

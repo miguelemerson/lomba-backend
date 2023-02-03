@@ -149,39 +149,6 @@ export class PostRepositoryImpl implements PostRepository {
 				}
 			}
 
-			/* MODO ADD
-			if(resultFlow.currentItemCount > 0)
-			{
-				const firstStage = resultFlow.items[0].stages.filter(e=> e.order = 1)[0];
-
-				const postItem = {order:1, content: textContent, type:'text', format:'', builtIn:false, created: new Date()} as PostItem;
-				const postItems:PostItem[] = [postItem];
-				const firstStageId = firstStage.id;
-				const post = new PostModel('', postItems, title, orgaId, userId, flowId, firstStageId, true, false);
-
-				post.stages.push(firstStage);
-
-				if(!draft)
-				{
-					const vote = {  
-						flowId:flowId,
-						stageId:firstStageId,
-						userId:userId,
-						value:1, created: new Date()} as Vote;
-
-					post.votes.push(vote);
-
-					const secondStage = resultFlow.items[0].stages.filter(e=> e.order = firstStage.order + 1)[0];
-
-					post.stageId = secondStage.id;
-					post.stages.push(secondStage);
-				}
-
-				const resultPost = await this.dataSource.add(post);
-				return Either.right(resultPost);	
-
-			}
-*/
 			return Either.left(new GenericFailure('undetermined'));
 		}
 		catch(error)
@@ -210,7 +177,7 @@ export class PostRepositoryImpl implements PostRepository {
 					value:voteValue, 
 					created: new Date()} as Vote;
 	
-				const result = await this.dataSource.update(postId, { $push: { votes: newVote}});
+				const result = await this.dataSource.updateDirect(postId, { $push: { votes: newVote}});
 				
 				return Either.right(result);
 			}
