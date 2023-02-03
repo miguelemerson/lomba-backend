@@ -78,24 +78,22 @@ export default function PostsRouter(
 		let toSend = RouterResponse.emptyResponse();		
 		try {
 			//execution
-			console.log(req.query);
-			const bodypost = req.body as {userId: string, flowId: string, stageId: string, postId: string, voteValue: string};
+			const bodypost = req.body as {userId: string, flowId: string, stageId: string, postId: string, voteValue: number};
 			//execution
-			const post = await sendVote.execute(bodypost.userId, bodypost.flowId, bodypost.stageId, bodypost.postId, parseInt(bodypost.voteValue));
-			console.log(bodypost);
+			const post = await sendVote.execute(bodypost.userId, bodypost.flowId, bodypost.stageId, bodypost.postId,bodypost.voteValue);
 			//evaluate
 			post.fold(error => {
 			//something wrong
 				code = 500;
-				toSend = new RouterResponse('1.0', error as object, 'put', {id: req.params.postId}, 'post was not edited');	
+				toSend = new RouterResponse('1.0', error as object, 'post', {id: req.params.postId}, 'vote was not do it');	
 			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', value, 'put', {id: req.params.postId}, 'post edited');
+				toSend = new RouterResponse('1.0', value, 'post', {id: req.params.postId}, 'vote do it');
 			});
 		} catch (err) {
 			//something wrong
 			code = 500;
-			toSend = new RouterResponse('1.0', err as object, 'put', {id: req.params.postId}, 'post was not edited');
+			toSend = new RouterResponse('1.0', err as object, 'post', {id: req.params.postId}, 'vote was not do it');
 		}
 		//respond cordially
 		res.status(code).send(toSend);
