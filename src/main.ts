@@ -121,8 +121,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 
 	//revisa que los datos estén cargados.
-	checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
-	checkData02(stageDataSource, flowDataSource, postDataSource, postMongo);
+	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
+	await checkData02(stageDataSource, flowDataSource, postDataSource, postMongo);
 
 	//routers
 	const roleMiddleWare = RolesRouter(new GetRole(roleRepo), new GetRoles(roleRepo), new EnableRole(roleRepo));

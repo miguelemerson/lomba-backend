@@ -13,6 +13,7 @@ import { StageDataSource } from '../datasources/stage_data_source';
 import { Vote } from '../../domain/entities/flows/vote';
 import { PostItem } from '../../domain/entities/flows/postitem';
 import { FlowDataSource } from '../datasources/flow_data_source';
+import { MongoQuery } from '../../core/wrappers/mongo_query';
 
 export class PostRepositoryImpl implements PostRepository {
 	dataSource: PostDataSource;
@@ -28,21 +29,7 @@ export class PostRepositoryImpl implements PostRepository {
 		try
 		{
 			
-			const query: {
-				orgaId:string | undefined,
-				userId:string | undefined,
-				stageId:string | undefined,
-				flowId:string | undefined,
-				stages: object | undefined,
-				$text: object | undefined,
-				votes: object | undefined
-			} = {orgaId:undefined,
-				userId:undefined,
-				stageId:undefined,
-				flowId:undefined,
-				stages:undefined,
-				$text:undefined,
-				votes:undefined};
+			const query: MongoQuery = new MongoQuery();
 
 			if (boxPage == BoxPages.uploadedPosts) {
 				query.orgaId = orgaId;
@@ -100,11 +87,7 @@ export class PostRepositoryImpl implements PostRepository {
 				query.$text = {$search: textSearch};
 			}
 
-			console.log('query:');
-			console.log(query);
-			console.log(JSON.stringify(query));
-
-			const result = await this.dataSource.getMany(query, sort, pageIndex, itemsPerPage);
+			const result = await this.dataSource.getMany(query.build(), sort, pageIndex, itemsPerPage);
 			
 			return Either.right(result);		
 		}
