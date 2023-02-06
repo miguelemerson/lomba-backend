@@ -19,7 +19,13 @@ import { UserModel } from '../models/user_model';
 import { User } from '../../domain/entities/user';
 import { data_insert01 } from '../../core/builtindata/load_data_01';
 import { Token } from '../../domain/entities/token';
-import { googleApp } from '../../core/google_app';
+import firebase, { ServiceAccount } from 'firebase-admin';
+import { configEnv } from '../../config_env';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
+export const googleApp = firebase.initializeApp({credential:firebase.credential.cert(JSON.parse(configEnv().FIREBASE_CERT) as ServiceAccount)});
 
 export class AuthRepositoryImpl implements AuthRepository {
 	passwordDataSource: PasswordDataSource;
