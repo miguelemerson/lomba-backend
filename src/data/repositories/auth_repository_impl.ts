@@ -25,6 +25,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+console.log(configEnv().FIREBASE_CERT);
+
 export const googleApp = firebase.initializeApp({credential:firebase.credential.cert(JSON.parse(configEnv().FIREBASE_CERT) as ServiceAccount)});
 
 export class AuthRepositoryImpl implements AuthRepository {
