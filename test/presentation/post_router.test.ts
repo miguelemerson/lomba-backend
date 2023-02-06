@@ -7,15 +7,13 @@ import { Failure, GenericFailure } from '../../src/core/errors/failures';
 import { generateJWT } from '../../src/core/jwt';
 import { ModelContainer } from '../../src/core/model_container';
 import { RouterResponse } from '../../src/core/router_response';
-import { UserModel } from '../../src/data/models/user_model';
+import { PostModel } from '../../src/data/models/flows/post_model';
 import { Post } from '../../src/domain/entities/flows/post';
 import { AddTextPostUseCase } from '../../src/domain/usecases/flows/add_text_post';
 import { GetPostsUseCase } from '../../src/domain/usecases/flows/get_posts';
 import { SendVoteUseCase } from '../../src/domain/usecases/flows/send_vote';
 import PostsRouter from '../../src/presentation/post_router';
 import server from '../../src/server';
-import { PostItem } from '../../src/domain/entities/flows/postitem';
-import { PostModel } from '../../src/data/models/flows/post_model';
 
 class MockAddTextPostUseCase implements AddTextPostUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<Post>>> {
