@@ -19,7 +19,7 @@ import { UserModel } from '../models/user_model';
 import { User } from '../../domain/entities/user';
 import { data_insert01 } from '../../core/builtindata/load_data_01';
 import { Token } from '../../domain/entities/token';
-import { googleApp } from '../../main';
+import { googleApp } from '../../core/google_app';
 
 export class AuthRepositoryImpl implements AuthRepository {
 	passwordDataSource: PasswordDataSource;

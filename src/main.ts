@@ -58,7 +58,7 @@ import PostsRouter from './presentation/post_router';
 import { ExistsUser } from './domain/usecases/users/exists_user';
 import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
 import { GetTokenGoogle } from './domain/usecases/auth/get_token_google';
-import firebase, { ServiceAccount } from 'firebase-admin';
+
 import { GetOrgasByUser } from './domain/usecases/orgas/get_orgas_by_user';
 import { StageModel } from './data/models/flows/stage_model';
 import { FlowModel } from './data/models/flows/flow_model';
@@ -73,8 +73,6 @@ import { SendVote } from './domain/usecases/flows/send_vote';
 import { PostRepositoryImpl } from './data/repositories/post_repository_impl';
 
 dotenv.config();
-
-export const googleApp = firebase.initializeApp({credential:firebase.credential.cert(JSON.parse(configEnv().FIREBASE_CERT) as ServiceAccount)});
 
 (async () => {
 	
