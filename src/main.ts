@@ -75,8 +75,6 @@ import firebase, { ServiceAccount } from 'firebase-admin';
 
 dotenv.config();
 
-console.log(configEnv().FIREBASE_CERT);
-
 export const googleApp = firebase.initializeApp({credential:firebase.credential.cert(JSON.parse(configEnv().FIREBASE_CERT) as ServiceAccount)});
 
 (async () => {
