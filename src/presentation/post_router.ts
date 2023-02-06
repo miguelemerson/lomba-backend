@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { hasRole } from '../core/presentation/check_role_router';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
 import { TextContent } from '../domain/entities/flows/textcontent';
@@ -46,7 +47,7 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.post('/',[isAuth], async (req: Request, res: Response) => {
+	router.post('/',[isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
