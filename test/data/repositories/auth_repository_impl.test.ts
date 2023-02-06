@@ -23,6 +23,13 @@ import { TokenModel } from '../../../src/data/models/token_model';
 import { Token } from '../../../src/domain/entities/token';
 import { Role } from '../../../src/domain/entities/role';
 import { generateJWT, validJWT } from '../../../src/core/jwt';
+import { AuthRepository } from '../../../src/domain/repositories/auth_repository';
+import { PasswordRepository } from '../../../src/domain/repositories/password_repository';
+import { OrgaUserRepository } from '../../../src/domain/repositories/orgauser_repository';
+import { OrgaRepository } from '../../../src/domain/repositories/orga_repository';
+import { RoleRepository } from '../../../src/domain/repositories/role_repository';
+import { UserRepository } from '../../../src/domain/repositories/user_repository';
+import firebase from 'firebase-admin';
 
 class MockUserDataSource implements UserDataSource {
 	getMany(): Promise<ModelContainer<UserModel>> {
@@ -135,16 +142,17 @@ class MockPasswordDataSource implements PasswordDataSource {
 
 describe('Auth Repository Implementation', () => {
 	let mockUserDataSource: UserDataSource;
-	let userRepository: UserRepositoryImpl;
+	let userRepository: UserRepository;
 	let mockRoleDataSource: RoleDataSource;
-	let roleRepository: RoleRepositoryImpl;
+	let roleRepository: RoleRepository;
 	let mockOrgaDataSource: OrgaDataSource;
-	let orgaRepository: OrgaRepositoryImpl;
+	let orgaRepository: OrgaRepository;
 	let mockOrgaUserDataSource: OrgaUserDataSource;
-	let orgaUserRepository: OrgaUserRepositoryImpl;
+	let orgaUserRepository: OrgaUserRepository;
 	let mockPasswordDataSource: PasswordDataSource;
-	let passwordRepository: PasswordRepositoryImpl;
-	let authRepository: AuthRepositoryImpl;
+	let passwordRepository: PasswordRepository;
+	let authRepository: AuthRepository;
+	const googleApp = firebase.initializeApp();
 
 	const listUsers: UserModel[] = [
 		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
@@ -177,6 +185,7 @@ describe('Auth Repository Implementation', () => {
 		new PasswordModel('ppp', hashPass2.hash, hashPass2.salt, true, false),
 	];
 	const testToken = new TokenModel('newToken', 'orgaId', []);
+	
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -190,7 +199,10 @@ describe('Auth Repository Implementation', () => {
 		orgaUserRepository = new OrgaUserRepositoryImpl(mockOrgaUserDataSource, mockUserDataSource, mockOrgaDataSource);
 		mockPasswordDataSource = new MockPasswordDataSource();
 		passwordRepository = new PasswordRepositoryImpl(mockPasswordDataSource);
-		authRepository = new AuthRepositoryImpl(mockUserDataSource,mockOrgaDataSource,mockPasswordDataSource,mockOrgaUserDataSource);
+
+
+
+		authRepository = new AuthRepositoryImpl(mockUserDataSource,mockOrgaDataSource,mockPasswordDataSource,mockOrgaUserDataSource, googleApp);
 	});
 
 	describe('getAuth', () => {

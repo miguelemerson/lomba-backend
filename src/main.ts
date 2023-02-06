@@ -71,8 +71,13 @@ import { GetPosts } from './domain/usecases/flows/get_posts';
 import { AddTextPost } from './domain/usecases/flows/add_text_post';
 import { SendVote } from './domain/usecases/flows/send_vote';
 import { PostRepositoryImpl } from './data/repositories/post_repository_impl';
+import firebase, { ServiceAccount } from 'firebase-admin';
 
 dotenv.config();
+
+console.log(configEnv().FIREBASE_CERT);
+
+export const googleApp = firebase.initializeApp({credential:firebase.credential.cert(JSON.parse(configEnv().FIREBASE_CERT) as ServiceAccount)});
 
 (async () => {
 	
@@ -114,7 +119,7 @@ dotenv.config();
 	const passRepo = new PasswordRepositoryImpl(passDataSource);
 	const orgaRepo = new OrgaRepositoryImpl(orgaDataSource);
 	const orgaUserRepo = new OrgaUserRepositoryImpl(orgaUserDataSource, userDataSource, orgaDataSource);
-	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource);
+	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource, googleApp);
 	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource);
 
 
