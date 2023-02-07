@@ -25,7 +25,7 @@ export class PostRepositoryImpl implements PostRepository {
 		this.flowDataSource = flowDataSource;
 	}
 
-	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
+	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined, params?: Map<string, unknown> | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			
@@ -35,7 +35,18 @@ export class PostRepositoryImpl implements PostRepository {
 				query.orgaId = orgaId;
 				query.userId = userId;
 				query.flowId = flowId;
-				query.stages = {$elemMatch: {id:stageId}};
+				if(params?.has('isdraft') && params?.get('isdraft')?.toString() == 'true')
+				{
+					query.stageId = stageId;
+				}
+				else
+				{
+					query.stages = {$elemMatch: {id:stageId}};
+				}
+				if(!sort)
+				{
+					sort = [['created', -1]];
+				}
 			}
 			if (boxPage == BoxPages.forApprovePosts) {
 
@@ -43,7 +54,10 @@ export class PostRepositoryImpl implements PostRepository {
 				query.flowId = flowId;
 				query.stages = {$elemMatch: {id:stageId}};
 				query.votes = {$elemMatch: {id:{$ne:userId}}};
-
+				if(!sort)
+				{
+					sort = [['created', -1]];
+				}
 			}
 			if (boxPage == BoxPages.approvedPosts) {
 
@@ -51,21 +65,26 @@ export class PostRepositoryImpl implements PostRepository {
 				query.flowId = flowId;
 				query.stages = {$elemMatch: {id:stageId}};
 				query.votes = {$elemMatch: {id:{$ne:userId, value: 1}}};
-				
+				if(!sort)
+				{
+					sort = [['created', -1]];
+				}
 			}
 			if (boxPage == BoxPages.rejectedPosts) {
 				query.orgaId = orgaId;
 				query.flowId = flowId;
 				query.stages = {$elemMatch: {id:stageId}};
 				query.votes = {$elemMatch: {id:{$ne:userId, value: -1}}};
-				
+				if(!sort)
+				{
+					sort = [['created', -1]];
+				}
 			}
 			if (boxPage == BoxPages.latestPosts) {
 				query.orgaId = orgaId;
 				query.flowId = flowId;
 				query.stageId = stageId;
 				sort = [['created',-1]];
-				
 			}
 			if (boxPage == BoxPages.popularPosts) {
 				query.orgaId = orgaId;
@@ -80,6 +99,22 @@ export class PostRepositoryImpl implements PostRepository {
 				query.stages = {$elemMatch: {id:stageId}};
 				query.votes = {$elemMatch: {id:userId}};
 				
+				if(params?.has('voteState') && params?.get('voteState')?.toString() == '1')
+				{
+					query.votes = {$elemMatch: {id:userId, value:1}};
+				}
+				else if (params?.has('voteState') && params?.get('voteState')?.toString() == '-1')
+				{
+					query.votes = {$elemMatch: {id:userId, value:-1}};
+				}
+				else
+				{
+					query.votes = {$elemMatch: {id:userId}};
+				}
+				if(!sort)
+				{
+					sort = [['created', -1]];
+				}
 			}
 
 			if(textSearch != '')
