@@ -1,10 +1,14 @@
+import firebase from 'firebase-admin';
 import { MongoError } from 'mongodb';
+import { data_insert01 } from '../../core/builtindata/load_data_01';
 import { Either } from '../../core/either';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
 import { generateJWT } from '../../core/jwt';
 import { ModelContainer } from '../../core/model_container';
 import { HashPassword } from '../../core/password_hash';
 import { Auth } from '../../domain/entities/auth';
+import { Token } from '../../domain/entities/token';
+import { User } from '../../domain/entities/user';
 import { AuthRepository } from '../../domain/repositories/auth_repository';
 import { OrgaDataSource } from '../datasources/orga_data_source';
 import { OrgaUserDataSource } from '../datasources/orgauser_data_source';
@@ -16,21 +20,20 @@ import { PasswordModel } from '../models/password_model';
 import { RoleModel } from '../models/role_model';
 import { TokenModel } from '../models/token_model';
 import { UserModel } from '../models/user_model';
-import { User } from '../../domain/entities/user';
-import { data_insert01 } from '../../core/builtindata/load_data_01';
-import { Token } from '../../domain/entities/token';
-import { googleApp } from '../../main';
+
 
 export class AuthRepositoryImpl implements AuthRepository {
 	passwordDataSource: PasswordDataSource;
 	userDataSource: UserDataSource;
 	orgaDataSource: OrgaDataSource;
 	orgaUserDataSource: OrgaUserDataSource;
-	constructor(userDataSource: UserDataSource, orgaDataSource: OrgaDataSource, passwordDataSource: PasswordDataSource, orgaUserDataSource: OrgaUserDataSource){
+	firebaseGoogleApp: firebase.app.App;
+	constructor(userDataSource: UserDataSource, orgaDataSource: OrgaDataSource, passwordDataSource: PasswordDataSource, orgaUserDataSource: OrgaUserDataSource, googleApp: firebase.app.App){
 		this.passwordDataSource = passwordDataSource;
 		this.userDataSource = userDataSource;
 		this.orgaDataSource = orgaDataSource;
 		this.orgaUserDataSource = orgaUserDataSource;
+		this.firebaseGoogleApp = googleApp;
 	}
 
 	async getAuth(auth:Auth):Promise<Either<Failure,ModelContainer<TokenModel>>>
@@ -181,7 +184,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 
 			try
 			{
-				const googleVerify = await googleApp.auth().verifyIdToken(googleToken);
+				const googleVerify = await this.firebaseGoogleApp.auth().verifyIdToken(googleToken);
 
 				if(googleVerify.id == '')
 					Either.left(new GenericFailure('No valid token'));

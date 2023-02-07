@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { hasRole } from '../core/presentation/check_role_router';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
 import { TextContent } from '../domain/entities/flows/textcontent';
@@ -13,19 +14,32 @@ export default function PostsRouter(
 ) {
 	const router = express.Router();
 
-	router.get('/box/',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string}>, res: Response) => {
+	router.get('/box/',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxpage: string, textsearch: string, sort: string, pageindex: string, pagesize:string, paramvars: string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
+
+			let sort: [string, 1 | -1][] | undefined;
+			if(req.query.sort)
+			{
+				sort = req.query.sort ? JSON.parse(req.query.sort.toString()) as [string, 1 | -1][] : undefined;
+			}
+
+			let params: Map<string, unknown> | undefined;
+			if(req.query.paramVars)
+			{
+				params = req.query.paramvars ? JSON.parse(req.query.paramvars.toString()) as Map<string, unknown> : undefined;
+			}
+
 			//execution
 			const post = await getPosts.execute(
 				(req.query.orgaId!=undefined)?req.query.orgaId.toString():'',
 				(req.query.userId!=undefined)?req.query.userId.toString():'',
 				(req.query.flowId!=undefined)?req.query.flowId.toString():'',
 				(req.query.stageId!=undefined)?req.query.stageId.toString():'',
-				(req.query.boxPage!=undefined)?req.query.boxPage.toString():'',
-				(req.query.textSearch!=undefined)?req.query.textSearch.toString():'',
+				(req.query.boxpage!=undefined)?req.query.boxpage.toString():'',
+				(req.query.textsearch!=undefined)?req.query.textsearch.toString():'',sort, (req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, (req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined, params
 			);
 			//evaluate
 			post.fold(error => {
@@ -46,7 +60,7 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.post('/',[isAuth], async (req: Request, res: Response) => {
+	router.post('/',[isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();

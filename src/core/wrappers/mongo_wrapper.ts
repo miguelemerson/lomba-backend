@@ -27,17 +27,17 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		sort: [string, 1 | -1][] | undefined, result: unknown, itemsPerPage: number | undefined, startIndex: number, totalPages: number) {
 		totalItems = await this.setTotalItems(pageIndex, totalItems, query);
 		
-		if (sort == null && pageIndex == null)
+		if (sort == undefined && pageIndex == undefined)
 			result = await this.runSimpleQuery(result, query);
-		if (sort != null && pageIndex == null)
+		if (sort != undefined && pageIndex == undefined)
 			result = await this.runSorterQuery(result, query, sort);
-		if (sort != null && pageIndex != null) {
-			const limit: number = (itemsPerPage == null ? 10 : itemsPerPage);
+		if (sort != undefined && pageIndex != undefined) {
+			const limit: number = (itemsPerPage == undefined ? 10 : itemsPerPage);
 			const skip: number = (pageIndex - 1) * limit;
 			result = await this.runFullQuery(result, query, sort, skip, limit);
 
 			startIndex = ((pageIndex - 1) * limit) + 1;
-			totalPages = parseInt(Math.round((totalItems == null ? 0 : totalPages) / limit).toString());
+			totalPages = parseInt(Math.round((totalItems == undefined ? 0 : totalPages) / limit).toString());
 		}
 		return { totalItems, result, startIndex, totalPages };
 	}
