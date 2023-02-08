@@ -43,7 +43,7 @@ describe('Post Router', () => {
 		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
 	];*/
 
-	const UrlGetPost = '?orgaId=00000200-0200-0200-0200-000000000200&userId=00000005-0005-0005-0005-000000000005&flowId=00000111-0111-0111-0111-000000000111&stageId=00000AAA-0111-0111-0111-000000000111&boxPage=uploaded&textSearch=post';
+	const UrlGetPost = '?orgaId=00000200-0200-0200-0200-000000000200&userId=00000005-0005-0005-0005-000000000005&flowId=00000111-0111-0111-0111-000000000111&stageId=00000AAA-0111-0111-0111-000000000111&boxPage=uploaded&searchText=post';
 
 	const fakeGetPost: PostModel = new PostModel('00001AAA-0119-0111-0111-000000000000',
 		[],'primer post del sistema','00000200-0200-0200-0200-000000000200','00000005-0005-0005-0005-000000000005',

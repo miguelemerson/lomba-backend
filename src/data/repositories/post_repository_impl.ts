@@ -25,7 +25,7 @@ export class PostRepositoryImpl implements PostRepository {
 		this.flowDataSource = flowDataSource;
 	}
 
-	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, textSearch: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined, params?: Map<string, unknown> | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
+	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, searchText: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined, params?: Map<string, unknown> | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			
@@ -117,9 +117,9 @@ export class PostRepositoryImpl implements PostRepository {
 				}
 			}
 
-			if(textSearch != '')
+			if(searchText != '')
 			{
-				query.$text = {$search: textSearch};
+				query.$text = {$search: searchText};
 			}
 
 			const result = await this.dataSource.getMany(query.build(), sort, pageIndex, itemsPerPage);
