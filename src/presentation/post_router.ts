@@ -14,7 +14,7 @@ export default function PostsRouter(
 ) {
 	const router = express.Router();
 
-	router.get('/box/',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxpage: string, textsearch: string, sort: string, pageindex: string, pagesize:string, paramvars: string}>, res: Response) => {
+	router.get('/box/',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxpage: string, searchtext: string, sort: string, pageindex: string, pagesize:string, paramvars: string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
@@ -39,7 +39,7 @@ export default function PostsRouter(
 				(req.query.flowId!=undefined)?req.query.flowId.toString():'',
 				(req.query.stageId!=undefined)?req.query.stageId.toString():'',
 				(req.query.boxpage!=undefined)?req.query.boxpage.toString():'',
-				(req.query.textsearch!=undefined)?req.query.textsearch.toString():'',sort, (req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, (req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined, params
+				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',sort, (req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, (req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined, params
 			);
 			//evaluate
 			post.fold(error => {

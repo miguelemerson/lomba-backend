@@ -6,6 +6,8 @@ export const configEnv = () => {
 		DB_NAME: process.env.DB_NAME ? process.env.DB_NAME : 'LOGIN_DB',
 		SECRET_KEY: process.env.SECRET_KEY ? process.env.SECRET_KEY : 'pawa',
 		TOKEN_EXP: process.env.TOKEN_EXP ? process.env.TOKEN_EXP : 3600,
-		FIREBASE_CERT:process.env.FIREBASE_CERT ? process.env.FIREBASE_CERT : '{}'
+		FIREBASE_CERT:process.env.FIREBASE_CERT ? process.env.FIREBASE_CERT : '{}',
+		AZSTORAGEACCOUNT_NAME:process.env.AZSTORAGEACCOUNT_NAME ? process.env.AZSTORAGEACCOUNT_NAME : '',
+		AZSTORAGEACCOUNT_KEY:process.env.AZSTORAGEACCOUNT_KEY ? process.env.AZSTORAGEACCOUNT_KEY : ''
 	};
 };
