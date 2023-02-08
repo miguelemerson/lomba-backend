@@ -121,7 +121,6 @@ export class PostRepositoryImpl implements PostRepository {
 			{
 				query.$text = {$search: searchText};
 			}
-			console.log(query.build());
 			const result = await this.dataSource.getMany(query.build(), sort, pageIndex, itemsPerPage);
 			
 			return Either.right(result);		
