@@ -144,7 +144,7 @@ export class PostRepositoryImpl implements PostRepository {
 			
 			if(resultFlow.currentItemCount > 0)
 			{
-				const firstStage = resultFlow.items[0].stages.filter(e=> e.order = 1)[0];
+				const firstStage = resultFlow.items[0].stages.filter(e=> e.order == 1)[0];
 
 				const postItem = {order:1, content: textContent, type:'text', format:'', builtIn:false, created: new Date()} as PostItem;
 
@@ -168,7 +168,7 @@ export class PostRepositoryImpl implements PostRepository {
 						value:1, created: new Date()} as Vote;
 					listVotes.push(vote);
 
-					const secondStage = resultFlow.items[0].stages.filter(e=> e.order = firstStage.order + 1)[0];
+					const secondStage = resultFlow.items[0].stages.filter(e=> e.order == firstStage.order + 1)[0];
 
 					postStageId = secondStage.id;
 					listStages.push(secondStage);
