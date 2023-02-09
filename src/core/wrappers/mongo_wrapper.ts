@@ -1,5 +1,4 @@
 import { Db, Document, ObjectId } from 'mongodb';
-import {  } from '../../domain/entities/entity';
 import { ModelContainer } from '../model_container';
 
 export interface NoSQLDatabaseWrapper<T>{

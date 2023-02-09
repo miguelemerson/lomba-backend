@@ -25,17 +25,17 @@ export class PostRepositoryImpl implements PostRepository {
 		this.flowDataSource = flowDataSource;
 	}
 
-	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, searchText: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined, params?: Map<string, unknown> | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
+	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, searchText: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			
 			const query: MongoQuery = new MongoQuery();
 
 			if (boxPage == BoxPages.uploadedPosts) {
 				query.orgaId = orgaId;
 				query.userId = userId;
 				query.flowId = flowId;
-				if(params?.has('isdraft') && params?.get('isdraft')?.toString() == 'true')
+				
+				if((params['isdraft'] as string).toString() == 'true')
 				{
 					query.stageId = stageId;
 				}
@@ -99,11 +99,11 @@ export class PostRepositoryImpl implements PostRepository {
 				query.stages = {$elemMatch: {id:stageId}};
 				query.votes = {$elemMatch: {id:userId}};
 				
-				if(params?.has('voteState') && params?.get('voteState')?.toString() == '1')
+				if((params['voteState'] as string).toString() == '1')
 				{
 					query.votes = {$elemMatch: {id:userId, value:1}};
 				}
-				else if (params?.has('voteState') && params?.get('voteState')?.toString() == '-1')
+				else if ((params['voteState'] as string) == '-1')
 				{
 					query.votes = {$elemMatch: {id:userId, value:-1}};
 				}
@@ -200,7 +200,7 @@ export class PostRepositoryImpl implements PostRepository {
 		try
 		{
 			//COMPLETAR
-			const resultPost = await this.dataSource.getOneWithOptions({id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId}, {votes: {$elemMatch:{ 'userId':userId, 'stageId':stageId, 'flowId':flowId }}});
+			const resultPost = await this.dataSource.getOneWithOptions({id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId}, {'votes.$': 1});
 			
 			if (resultPost.currentItemCount < 1) {
 
@@ -217,6 +217,7 @@ export class PostRepositoryImpl implements PostRepository {
 			}
 			else
 			{
+
 				const beforeVote = resultPost.items[0].votes[0];
 				beforeVote.updated = new Date();
 				beforeVote.value = voteValue;
