@@ -14,7 +14,7 @@ export default function PostsRouter(
 ) {
 	const router = express.Router();
 
-	router.get('/box/',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxpage: string, searchtext: string, sort: string, pageindex: string, pagesize:string, paramvars: string}>, res: Response) => {
+	router.get('/box/', async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxpage: string, searchtext: string, sort: string, pageindex: string, pagesize:string, paramvars: string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
