@@ -34,6 +34,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		return await this.collection.getOne(query);
 	}
 	async getOneWithOptions(query: object, projection: object | undefined): Promise<ModelContainer<PostModel>>{
+	
 		return await this.collection.getOneWithOptions(query, projection);
 	}
 	async add(post: PostModel) : Promise<ModelContainer<PostModel>>{

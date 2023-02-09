@@ -5,10 +5,11 @@
  * @summary list containers in an account, showing options for paging, resuming paging, etc.
  */
 
-import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
+import { BlobServiceClient, ContainerClient, StorageSharedKeyCredential } from '@azure/storage-blob';
 
 // Load the .env file if it exists
 import * as dotenv from 'dotenv';
+import * as fs from 'fs';
 import { configEnv } from './config_env';
 dotenv.config();
 
@@ -47,6 +48,38 @@ async function main() {
 	}
 
 	//cargar archivo
+	// get Container - full public read access
+	const conainerName = 'testsubidos3';
+	const containerClient: ContainerClient =
+    blobServiceClient.getContainerClient(conainerName);
+	//await blobServiceClient.createContainer(conainerName);
+
+	let exist = false;
+	for await (const blob of containerClient.listBlobsFlat()) {
+		console.log(`${blob.name}`);
+    
+		if(blob.name == conainerName)
+		{
+			console.log('existe');
+			exist = true;
+		}
+	}
+
+	blobServiceClient.createContainer(conainerName).then(async () => {
+		const data = fs.readFileSync('./gokusunglasses.jpg');
+
+		const blobClient = containerClient.getBlockBlobClient('gokusunglasses.jpg');
+    
+		// set mimetype as determined from browser with file upload control
+		//const options = { blobHTTPHeaders: { blobContentType: file.type } };
+      
+		// upload file
+		await blobClient.uploadData(data);
+	});
+
+
+
+
 
 }
 
