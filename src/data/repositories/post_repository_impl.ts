@@ -1,4 +1,4 @@
-import { MongoError } from 'mongodb';
+import { FindOperators, MongoError } from 'mongodb';
 import { PostRepository } from '../../domain/repositories/post_repository';
 import { PostDataSource } from '../datasources/post_data_source';
 import { PostModel } from '../models/flows/post_model';
@@ -121,7 +121,10 @@ export class PostRepositoryImpl implements PostRepository {
 			{
 				query.$text = {$search: searchText};
 			}
-			const result = await this.dataSource.getMany(query.build(), sort, pageIndex, itemsPerPage);
+
+			const options = {id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}};
+
+			const result = await this.dataSource.getManyWithOptions(query.build(), {projection: options}, sort, pageIndex, itemsPerPage);
 			
 			return Either.right(result);		
 		}
@@ -199,9 +202,13 @@ export class PostRepositoryImpl implements PostRepository {
 	async sendVote(userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
+			const query = {id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId};
+
+			const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1};
+
 			//COMPLETAR
-			const resultPost = await this.dataSource.getOneWithOptions({id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId}, {'votes.$': 1});
-			
+			const resultPost = await this.dataSource.getOneWithOptions(query, {projection: options});
+		
 			if (resultPost.currentItemCount < 1) {
 
 				const newVote = {  
