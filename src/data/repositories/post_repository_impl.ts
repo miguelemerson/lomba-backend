@@ -47,6 +47,7 @@ export class PostRepositoryImpl implements PostRepository {
 				{
 					sort = [['created', -1]];
 				}
+
 			}
 			if (boxPage == BoxPages.forApprovePosts) {
 
@@ -142,7 +143,6 @@ export class PostRepositoryImpl implements PostRepository {
 	async addTextPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-
 			const resultFlow = await this.flowDataSource.getOne({id:flowId});
 			
 			if(resultFlow.currentItemCount > 0)
@@ -161,7 +161,7 @@ export class PostRepositoryImpl implements PostRepository {
 
 
 				listStages.push(firstStage);
-				
+
 				if(!draft)
 				{
 					const vote = {  
