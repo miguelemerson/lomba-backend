@@ -1,4 +1,4 @@
-import { MongoError } from 'mongodb';
+import { FindOperators, MongoError } from 'mongodb';
 import { PostRepository } from '../../domain/repositories/post_repository';
 import { PostDataSource } from '../datasources/post_data_source';
 import { PostModel } from '../models/flows/post_model';
@@ -25,17 +25,17 @@ export class PostRepositoryImpl implements PostRepository {
 		this.flowDataSource = flowDataSource;
 	}
 
-	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, searchText: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined, params?: Map<string, unknown> | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
+	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, searchText: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			
 			const query: MongoQuery = new MongoQuery();
 
 			if (boxPage == BoxPages.uploadedPosts) {
 				query.orgaId = orgaId;
 				query.userId = userId;
 				query.flowId = flowId;
-				if(params?.has('isdraft') && params?.get('isdraft')?.toString() == 'true')
+				
+				if((params['isdraft'] as string).toString() == 'true')
 				{
 					query.stageId = stageId;
 				}
@@ -47,6 +47,7 @@ export class PostRepositoryImpl implements PostRepository {
 				{
 					sort = [['created', -1]];
 				}
+
 			}
 			if (boxPage == BoxPages.forApprovePosts) {
 
@@ -99,11 +100,11 @@ export class PostRepositoryImpl implements PostRepository {
 				query.stages = {$elemMatch: {id:stageId}};
 				query.votes = {$elemMatch: {id:userId}};
 				
-				if(params?.has('voteState') && params?.get('voteState')?.toString() == '1')
+				if((params['voteState'] as string).toString() == '1')
 				{
 					query.votes = {$elemMatch: {id:userId, value:1}};
 				}
-				else if (params?.has('voteState') && params?.get('voteState')?.toString() == '-1')
+				else if ((params['voteState'] as string) == '-1')
 				{
 					query.votes = {$elemMatch: {id:userId, value:-1}};
 				}
@@ -121,7 +122,10 @@ export class PostRepositoryImpl implements PostRepository {
 			{
 				query.$text = {$search: searchText};
 			}
-			const result = await this.dataSource.getMany(query.build(), sort, pageIndex, itemsPerPage);
+
+			const options = {id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}};
+
+			const result = await this.dataSource.getManyWithOptions(query.build(), {projection: options}, sort, pageIndex, itemsPerPage);
 			
 			return Either.right(result);		
 		}
@@ -139,12 +143,11 @@ export class PostRepositoryImpl implements PostRepository {
 	async addTextPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-
 			const resultFlow = await this.flowDataSource.getOne({id:flowId});
 			
 			if(resultFlow.currentItemCount > 0)
 			{
-				const firstStage = resultFlow.items[0].stages.filter(e=> e.order = 1)[0];
+				const firstStage = resultFlow.items[0].stages.filter(e=> e.order == 1)[0];
 
 				const postItem = {order:1, content: textContent, type:'text', format:'', builtIn:false, created: new Date()} as PostItem;
 
@@ -158,7 +161,7 @@ export class PostRepositoryImpl implements PostRepository {
 
 
 				listStages.push(firstStage);
-				
+
 				if(!draft)
 				{
 					const vote = {  
@@ -168,7 +171,7 @@ export class PostRepositoryImpl implements PostRepository {
 						value:1, created: new Date()} as Vote;
 					listVotes.push(vote);
 
-					const secondStage = resultFlow.items[0].stages.filter(e=> e.order = firstStage.order + 1)[0];
+					const secondStage = resultFlow.items[0].stages.filter(e=> e.order == firstStage.order + 1)[0];
 
 					postStageId = secondStage.id;
 					listStages.push(secondStage);
@@ -199,9 +202,13 @@ export class PostRepositoryImpl implements PostRepository {
 	async sendVote(userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
+			const query = {id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId};
+
+			const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1};
+
 			//COMPLETAR
-			const resultPost = await this.dataSource.getOneWithOptions({id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId}, {votes: {$elemMatch:{ 'userId':userId, 'stageId':stageId, 'flowId':flowId }}});
-			
+			const resultPost = await this.dataSource.getOneWithOptions(query, {projection: options});
+		
 			if (resultPost.currentItemCount < 1) {
 
 				const newVote = {  
@@ -217,6 +224,7 @@ export class PostRepositoryImpl implements PostRepository {
 			}
 			else
 			{
+
 				const beforeVote = resultPost.items[0].votes[0];
 				beforeVote.updated = new Date();
 				beforeVote.value = voteValue;

@@ -7,8 +7,10 @@ import crypto from 'crypto';
 export interface PostDataSource {
     getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;
+	getManyWithOptions(query: object, options?: object | undefined, sort?: [string, 1 | -1][],
+			pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;		
     getOne(query: object): Promise<ModelContainer<PostModel>>;
-    getOneWithOptions(query: object, projection: object | undefined): Promise<ModelContainer<PostModel>>;	
+    getOneWithOptions(query: object, options: object | undefined): Promise<ModelContainer<PostModel>>;	
     add(post: PostModel) : Promise<ModelContainer<PostModel>>;
     update(id: string, post: object): Promise<ModelContainer<PostModel>>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
@@ -16,7 +18,7 @@ export interface PostDataSource {
 	setId(obj: PostModel): PostModel;
     updateDirect(id: string, post: object): Promise<ModelContainer<PostModel>>;
 	updateArray(id: string, post: object, arrayFilters: object): Promise<ModelContainer<PostModel>>;
-
+	get dbcollection(): MongoWrapper<PostModel>;
 }
 
 export class PostDataSourceImpl implements PostDataSource {
@@ -26,15 +28,24 @@ export class PostDataSourceImpl implements PostDataSource {
 		this.collection = dbMongo;
 	}
 
+	public get dbcollection(): MongoWrapper<PostModel> {
+		return this.collection;
+	}
+
 	async getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>{
 		return await this.collection.getMany<PostModel>(query, sort, pageIndex, itemsPerPage);
 	}
+	async getManyWithOptions(query: object, options: object | undefined, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>{
+		return await this.collection.getManyWithOptions<PostModel>(query, options, sort, pageIndex, itemsPerPage);
+	}	
 	async getOne(query: object): Promise<ModelContainer<PostModel>>{
 		return await this.collection.getOne(query);
 	}
-	async getOneWithOptions(query: object, projection: object | undefined): Promise<ModelContainer<PostModel>>{
-		return await this.collection.getOneWithOptions(query, projection);
+	async getOneWithOptions(query: object, options: object | undefined): Promise<ModelContainer<PostModel>>{
+	
+		return await this.collection.getOneWithOptions(query, options);
 	}
 	async add(post: PostModel) : Promise<ModelContainer<PostModel>>{
 		post = this.setId(post);

@@ -14,7 +14,7 @@ export default function PostsRouter(
 ) {
 	const router = express.Router();
 
-	router.get('/box/',[isAuth], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxpage: string, searchtext: string, sort: string, pageindex: string, pagesize:string, paramvars: string}>, res: Response) => {
+	router.get('/box/', async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxpage: string, searchtext: string, sort: string, pageindex: string, pagesize:string, paramvars: string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
@@ -26,10 +26,10 @@ export default function PostsRouter(
 				sort = req.query.sort ? JSON.parse(req.query.sort.toString()) as [string, 1 | -1][] : undefined;
 			}
 
-			let params: Map<string, unknown> | undefined;
-			if(req.query.paramVars)
+			let params: {[x: string]: unknown} = {};
+			if(req.query.paramvars)
 			{
-				params = req.query.paramvars ? JSON.parse(req.query.paramvars.toString()) as Map<string, unknown> : undefined;
+				params = req.query.paramvars ? JSON.parse(req.query.paramvars.toString()) as {[x: string]: string} : {};
 			}
 
 			//execution
@@ -39,7 +39,7 @@ export default function PostsRouter(
 				(req.query.flowId!=undefined)?req.query.flowId.toString():'',
 				(req.query.stageId!=undefined)?req.query.stageId.toString():'',
 				(req.query.boxpage!=undefined)?req.query.boxpage.toString():'',
-				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',sort, (req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, (req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined, params
+				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',params, sort, (req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, (req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined
 			);
 			//evaluate
 			post.fold(error => {
@@ -65,9 +65,9 @@ export default function PostsRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			const bodypost = req.body as {orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean};
+			const bodypost = req.body as {orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, isdraft: boolean};
 			//execution
-			const post = await addTextPost.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.title, bodypost.textContent, bodypost.draft);
+			const post = await addTextPost.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.title, bodypost.textContent, bodypost.isdraft);
 			//evaluate
 			post.fold(error => {
 				//something wrong

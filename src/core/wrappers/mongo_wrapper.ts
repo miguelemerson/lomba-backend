@@ -1,10 +1,11 @@
 import { Db, Document, ObjectId } from 'mongodb';
-import {  } from '../../domain/entities/entity';
 import { ModelContainer } from '../model_container';
 
 export interface NoSQLDatabaseWrapper<T>{
     getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>;
+		getManyWithOptions(query: object, options?: object | undefined, sort?: [string, 1 | -1][],
+			pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>;		
     getOne(query: object): Promise<ModelContainer<T>>;
     getOneWithOptions(query: object, projection: object | undefined): Promise<ModelContainer<T>>;	
     add(obj: T) : Promise<boolean>;
@@ -23,18 +24,18 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		this.db = dbMongo;
 	}
     
-	private async runQuery(pageIndex: number | undefined, totalItems: number | undefined, query: object, 
+	private async runQuery(pageIndex: number | undefined, totalItems: number | undefined, query: object, options: object | undefined,
 		sort: [string, 1 | -1][] | undefined, result: unknown, itemsPerPage: number | undefined, startIndex: number, totalPages: number) {
 		totalItems = await this.setTotalItems(pageIndex, totalItems, query);
 		
 		if (sort == undefined && pageIndex == undefined)
-			result = await this.runSimpleQuery(result, query);
+			result = await this.runSimpleQuery(result, query, options);
 		if (sort != undefined && pageIndex == undefined)
-			result = await this.runSorterQuery(result, query, sort);
+			result = await this.runSorterQuery(result, query, options, sort);
 		if (sort != undefined && pageIndex != undefined) {
 			const limit: number = (itemsPerPage == undefined ? 10 : itemsPerPage);
 			const skip: number = (pageIndex - 1) * limit;
-			result = await this.runFullQuery(result, query, sort, skip, limit);
+			result = await this.runFullQuery(result, query, options, sort, skip, limit);
 
 			startIndex = ((pageIndex - 1) * limit) + 1;
 			totalPages = parseInt(Math.round((totalItems == undefined ? 0 : totalPages) / limit).toString());
@@ -42,21 +43,21 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		return { totalItems, result, startIndex, totalPages };
 	}
 
-	private async runFullQuery(result: unknown, query: object, sort: [string, 1 | -1][], skip: number, limit: number) {
+	private async runFullQuery(result: unknown, query: object, options: object | undefined, sort: [string, 1 | -1][], skip: number, limit: number) {
 		result = await this.db.collection<Document>(this.collectionName)
-			.find(query).sort(sort).skip(skip).limit(limit).toArray();
+			.find(query, options).sort(sort).skip(skip).limit(limit).toArray();
 		return result;
 	}
 
-	private async runSorterQuery(result: unknown, query: object, sort: [string, 1 | -1][]) {
+	private async runSorterQuery(result: unknown, query: object, options: object | undefined, sort: [string, 1 | -1][]) {
 		result = await this.db.collection<Document>(this.collectionName)
-			.find(query).sort(sort).toArray();
+			.find(query, options).sort(sort).toArray();
 		return result;
 	}
 
-	private async runSimpleQuery(result: unknown, query: object) {
+	private async runSimpleQuery(result: unknown, query: object, options: object | undefined) {
 		result = await this.db.collection<Document>(this.collectionName)
-			.find(query).toArray();
+			.find(query, options).toArray();
 		return result;
 	}
 
@@ -83,7 +84,27 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		let totalItems:number | undefined = undefined;
 
 		({ totalItems, result, startIndex, totalPages } = 
-			await this.runQuery(pageIndex, totalItems, query, 
+			await this.runQuery(pageIndex, totalItems, query, undefined, 
+				sort, result, itemsPerPage, startIndex, totalPages));
+	
+		if(result == null || result == undefined){
+			throw new Error('null value');
+		}
+
+		const contains_many = this.createModelContainer<T>(result, itemsPerPage, pageIndex, startIndex, totalItems, totalPages);
+
+		return contains_many;
+	}
+
+	async getManyWithOptions<T>(query: object, options?: object | undefined, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>{
+		let result = null;
+		let startIndex = 1;
+		let totalPages = 0;  
+		let totalItems:number | undefined = undefined;
+
+		({ totalItems, result, startIndex, totalPages } = 
+			await this.runQuery(pageIndex, totalItems, query, options, 
 				sort, result, itemsPerPage, startIndex, totalPages));
 	
 		if(result == null || result == undefined){
