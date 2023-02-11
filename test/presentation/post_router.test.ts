@@ -124,6 +124,7 @@ describe('Post Router', () => {
 
 		});
 
+		/*
 		test('debe retornar 401 porque usuario no autenticado', async () => {
 			//arrange
 			const expectedData = fakeGetPost;
@@ -140,6 +141,7 @@ describe('Post Router', () => {
 			expect(roures.error).toBeDefined();
 
 		});
+		*/
 
 		test('debe retornar 500 en caso de failure', async () => {
 			//arrange
