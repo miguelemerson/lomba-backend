@@ -3,7 +3,7 @@ import { Stage } from '../../../domain/entities/flows/stage';
 export class StageModel implements Stage {
 	constructor(id:string, name:string,
 		order:number,
-		queryOut:object, enabled: boolean, builtIn: boolean){
+		queryOut:object | undefined, enabled: boolean, builtIn: boolean){
 		this.id = id;
 		this._id = id;
 		this.name = name;
@@ -17,7 +17,7 @@ export class StageModel implements Stage {
 	id: string;
 	name: string;
 	order: number;
-	queryOut: object;
+	queryOut: object | undefined;
 	builtIn: boolean;
 	enabled: boolean;
 	created: Date;

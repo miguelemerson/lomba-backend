@@ -1,4 +1,4 @@
-import { MongoError } from 'mongodb';
+import { FindOperators, MongoError } from 'mongodb';
 import { PostRepository } from '../../domain/repositories/post_repository';
 import { PostDataSource } from '../datasources/post_data_source';
 import { PostModel } from '../models/flows/post_model';
@@ -14,6 +14,8 @@ import { Vote } from '../../domain/entities/flows/vote';
 import { PostItem } from '../../domain/entities/flows/postitem';
 import { FlowDataSource } from '../datasources/flow_data_source';
 import { MongoQuery } from '../../core/wrappers/mongo_query';
+import { TotalModel } from '../models/flows/total_model';
+import { Total } from '../../domain/entities/flows/total';
 
 export class PostRepositoryImpl implements PostRepository {
 	dataSource: PostDataSource;
@@ -47,6 +49,7 @@ export class PostRepositoryImpl implements PostRepository {
 				{
 					sort = [['created', -1]];
 				}
+
 			}
 			if (boxPage == BoxPages.forApprovePosts) {
 
@@ -121,7 +124,13 @@ export class PostRepositoryImpl implements PostRepository {
 			{
 				query.$text = {$search: searchText};
 			}
-			const result = await this.dataSource.getMany(query.build(), sort, pageIndex, itemsPerPage);
+
+			const options = {id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}};
+
+
+			console.log(query.build());
+
+			const result = await this.dataSource.getManyWithOptions(query.build(), {projection: options}, sort, pageIndex, itemsPerPage);
 			
 			return Either.right(result);		
 		}
@@ -139,7 +148,6 @@ export class PostRepositoryImpl implements PostRepository {
 	async addTextPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-
 			const resultFlow = await this.flowDataSource.getOne({id:flowId});
 			
 			if(resultFlow.currentItemCount > 0)
@@ -158,7 +166,7 @@ export class PostRepositoryImpl implements PostRepository {
 
 
 				listStages.push(firstStage);
-				
+
 				if(!draft)
 				{
 					const vote = {  
@@ -199,31 +207,74 @@ export class PostRepositoryImpl implements PostRepository {
 	async sendVote(userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			//COMPLETAR
-			const resultPost = await this.dataSource.getOneWithOptions({id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId}, {'votes.$': 1});
-			
+			const query = {id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId};
+
+			const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1};
+
+			//busca si el usuario ya ha votado antes por el post en el stage
+			const resultPost = await this.dataSource.getOneWithOptions(query, {projection: options});
+		
+			//si no lo encuentra, entonces es primer voto del usuario al post
 			if (resultPost.currentItemCount < 1) {
 
-				const newVote = {  
+				//crea el voto nuevo
+				const newVote:Vote = {  
 					flowId:flowId,
 					stageId:stageId,
 					userId:userId,
 					value:voteValue, 
 					created: new Date()} as Vote;
 	
+				//agrega el voto nuevo a la lista de votos del post
 				const result = await this.dataSource.updateDirect(postId, { $push: { votes: newVote}});
+
+				//se debe ir por el post nuevamente, sin el filtro de voto
+				const resultPostComplete = await this.dataSource.getOne({id: postId});
+
+				//actualiza los totales del post.
+				if(resultPostComplete.items[0].totals.length < 1)
+				{
+					const newTotal:TotalModel = new TotalModel(voteValue == 1 ? voteValue : 0, voteValue == -1 ? voteValue : 0, 1, flowId, stageId);
+
+					const resultTotal = await this.dataSource.updateDirect(postId, { $push: { totals: newTotal}});
+				}
+				else
+				{
+					const updateQuery = voteValue == 1 ? { $inc: {'totals.$[elem].totalpositive':1, 'totals.$[elem].totalcount':1}} : { $inc: {'totals.$[elem].totalnegative': 1, 'totals.$[elem].totalcount': 1}};
+
+					const resultTotal = await this.dataSource.updateArray(postId, updateQuery, {arrayFilters: [{'elem.stageId':stageId, 'elem.flowId':flowId}]});
+				}
 				
+				//revisión de cambio de etapa!
+				//busca la etapa actual
+
+
+				await this.checkNextStage(stageId, postId, flowId, resultPostComplete);
+
 				return Either.right(result);
 			}
-			else
+			else if(resultPost.items[0].votes[0].value !=voteValue)
 			{
 
 				const beforeVote = resultPost.items[0].votes[0];
 				beforeVote.updated = new Date();
 				beforeVote.value = voteValue;
 
-				const result = await this.dataSource.updateArray(postId, {'votes.$[elem].updated': new Date(), 'votes.$[elem].value':voteValue}, {arrayFilters: [{'elem.userId':userId, 'elem.stageId':stageId, 'elem.flowId':flowId}]});
+			
 
+				const result = await this.dataSource.updateArray(postId, { $set :{'votes.$[elem].updated': new Date(), 'votes.$[elem].value':voteValue}}, {arrayFilters: [{'elem.userId':userId, 'elem.stageId':stageId, 'elem.flowId':flowId}]});
+
+				//actualiza totales:
+				//se invierten los valores, solo si el voto tiene otro valor
+				const updateQuery = voteValue == 1 ? { $inc: {'totals.$[elem].totalpositive': 1, 'totals.$[elem].totalnegative':-1}} : { $inc: {'totals.$[elem].totalnegative': 1, 'totals.$[elem].totalpositive':-1}};
+
+				const resultTotal = await this.dataSource.updateArray(postId, updateQuery, {arrayFilters: [{'elem.stageId':stageId, 'elem.flowId':flowId}]});
+
+
+				//revisión de cambio de etapa!
+				//busca la etapa actual
+				await this.checkNextStage(stageId, postId, flowId, resultPost);
+				
 				return Either.right(result);
 			}
 
@@ -241,4 +292,52 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
+
+	private async checkNextStage(stageId: string, postId: string, flowId: string, resultPost: ModelContainer<PostModel>) {
+
+		const resultStage = await this.stageDataSource.getOne({ id: stageId });
+
+		//si la etapa actual tiene Query de salida entonces
+		if (resultStage.items[0].queryOut != undefined) {
+			//agrego el parámetro id del post
+			//para aplicar la query junto con el postId
+			//si el resultado devuelve el post entonces coincide
+			//con la query para pasar al siguiente etapa.
+			const params = (resultStage.items[0].queryOut as { [x: string]: unknown; });
+			params['id'] = postId;
+			params['stageId'] = stageId;
+			params['flowId'] = flowId;
+
+			//aquí busca y revisa si la query de salida coincide con el post.
+			const resultProcess = await this.dataSource.getOne(params);
+
+			//si lo consigue y por supuesto el postId coincide entonces
+			if (resultProcess.currentItemCount > 0 &&
+				resultProcess.items[0].id == postId) {
+				//cambiar de etapa a la siguiente, ir por el flow.
+				//busca el flow para tener todas las etapas.
+				const resultFlow = await this.flowDataSource.getOne({ id: flowId });
+
+				//si existe una siguiente etapa para la etapa actual entonces procede
+				if (resultFlow.items[0].stages.filter(e => e.order == resultStage.items[0].order + 1).length > 0) {
+					//carga la siguiente etapa en nextStage
+					//por eso usa el order + 1
+					const nextStage = resultFlow.items[0].stages.filter(e => e.order == resultStage.items[0].order + 1)[0];
+
+					//en listStages se cargan las etapas del post actual
+					//para así darle push
+					const listStages = resultPost.items[0].stages;
+
+					//se agrega la nueva o siguiente etapa a la lista de etapas del post
+					listStages.push(nextStage);
+
+					//aquí se actualizan las etapas y el stageId con la nueva etapa.
+					const resultUpdatePost = await this.dataSource.update(postId, { stageId: nextStage.id, stages: listStages });
+
+				}
+
+			}
+
+		}
+	}
 }

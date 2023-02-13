@@ -65,9 +65,9 @@ export default function PostsRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			const bodypost = req.body as {orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean};
+			const bodypost = req.body as {orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, isdraft: boolean};
 			//execution
-			const post = await addTextPost.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.title, bodypost.textContent, bodypost.draft);
+			const post = await addTextPost.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.title, bodypost.textContent, bodypost.isdraft);
 			//evaluate
 			post.fold(error => {
 				//something wrong

@@ -27,22 +27,6 @@ const post04Id = '00004AAA-0119-0111-0111-000000000000';
 
 export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, postMongo: MongoWrapper<PostModel>) => {
 
-	try{
-		postMongo.db.collection(postMongo.collectionName).dropIndex('title_text_postitems.content.text_text');
-	}catch(e){
-		console.log('no index');
-	}
-	
-
-	postMongo.db.collection(postMongo.collectionName).createIndex(
-		{
-			'title': 'text',
-			'postitems.content.text': 'text'
-		},{
-			name: 'title_text_postitems.content.text_text'
-		}
-	);
-
 	data_insert02.flows[0].stages = data_insert02.stages;
 
 	data_insert02.posts[0].postitems.push(data_insert02.postitems[0]);
@@ -59,13 +43,15 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 	data_insert02.posts[3].totals.push(data_insert02.totals[0]);
 	data_insert02.posts[3].votes.push(data_insert02.votes[0]);
 	
+	//const listCollections = (await postMongo.db.listCollections().toArray());
+	
 	///buscar si existe stage cada uno
 	//stages
 	data_insert02.stages.forEach(async stage => {
 		const result = await stageSource.getOne({_id:stage.id});
 		if(result.currentItemCount < 1)
 		{
-			await stageSource.add(new StageModel(stage.id, stage.name, stage.order, {}, stage.enabled, stage.builtIn));
+			await stageSource.add(new StageModel(stage.id, stage.name, stage.order, stage.queryOut, stage.enabled, stage.builtIn));
 		}
 	});
 
@@ -109,13 +95,34 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 				
 		}
 	});
+
+	try{
+		postMongo.db.collection(postMongo.collectionName).dropIndex('title_text_postitems.content.text_text');
+	}catch(e){
+		console.log('no index');
+	}
+	
+	try
+	{
+		postMongo.db.collection(postMongo.collectionName).createIndex(
+			{
+				'title': 'text',
+				'postitems.content.text': 'text'
+			},{
+				name: 'title_text_postitems.content.text_text'
+			}
+		);
+	}catch(e){
+		console.log('no created index');
+	}
+
 };
 
 export const data_insert02 = {
 
-	stages:[{name: 'Carga', order:1, queryOut: {},
+	stages:[{name: 'Carga', order:1, queryOut: {'votes.value': 1},
 		_id:stageId01Load, id:stageId01Load, enabled:true, builtIn:true, created: new Date()} as Stage,
-        {name: 'Aprobación', order:2, queryOut: {},_id:stageId02Approval, id:stageId02Approval, enabled:true, builtIn:true, created: new Date()} as Stage,{name: 'Votación', order:3, queryOut: {},_id:stageId03Voting, id:stageId03Voting, enabled:true, builtIn:true, created: new Date()} as Stage],
+        {name: 'Aprobación', order:2, queryOut: {'totals.totalpositive': 2, 'totals.totalcount' : 2},_id:stageId02Approval, id:stageId02Approval, enabled:true, builtIn:true, created: new Date()} as Stage,{name: 'Votación', order:3, queryOut: undefined,_id:stageId03Voting, id:stageId03Voting, enabled:true, builtIn:true, created: new Date()} as Stage],
 
 	flows:[{name: 'Flujo de Votación', stages:[], _id:flowId, id:flowId, enabled:true, builtIn:true, created: new Date()} as Flow],
 
