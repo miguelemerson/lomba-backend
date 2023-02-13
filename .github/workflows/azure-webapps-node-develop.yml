@@ -19,11 +19,11 @@
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: lomba-backend-develop    # set this to your application's name
+  AZURE_WEBAPP_NAME: lomba-develop-back    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
   NODE_VERSION: '16.x'                # set this to the node version to use
 
@@ -87,7 +87,7 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        publish-profile: ${{ secrets.DEVELOP_AZURE_WEBAPP_PUBLISH_PROFILE }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
   slackNotification:
     name: Slack Notification
@@ -101,7 +101,7 @@ jobs:
       env:
         SLACK_COLOR: ${{ job.status }}
         SLACK_ICON: https://github.com/rtCamp.png?size=48
-        SLACK_MESSAGE: '...build and deploy :rocket:'
-        SLACK_TITLE: Publicación de backend
+        SLACK_MESSAGE: '...build and deploy DEVELOP :rocket:'
+        SLACK_TITLE: Pub Backend DEVELOP
         SLACK_USERNAME: github      
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
