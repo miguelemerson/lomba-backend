@@ -72,6 +72,7 @@ import { AddTextPost } from './domain/usecases/flows/add_text_post';
 import { SendVote } from './domain/usecases/flows/send_vote';
 import { PostRepositoryImpl } from './data/repositories/post_repository_impl';
 import firebase, { ServiceAccount } from 'firebase-admin';
+import { BlobStorageSourceImpl } from './data/datasources/blob_storage_source';
 
 dotenv.config();
 
@@ -89,6 +90,12 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	
 	await client.connect();
 	const db = client.db(configEnv().DB_NAME);
+
+	///storage
+	const blobService = BlobStorageSourceImpl.newBlobService(configEnv().AZSTORAGEACCOUNT_NAME, configEnv().AZSTORAGEACCOUNT_KEY);
+
+	const storageFiles = new BlobStorageSourceImpl(blobService, 'files');
+	storageFiles.startContainer();
     
 	///wrappers
 	const roleMongo = new MongoWrapper<RoleModel>('roles', db);
