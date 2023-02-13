@@ -27,28 +27,6 @@ const post04Id = '00004AAA-0119-0111-0111-000000000000';
 
 export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, postMongo: MongoWrapper<PostModel>) => {
 
-	try{
-		postMongo.db.collection(postMongo.collectionName).dropIndex('title_text_postitems.content.text_text');
-	}catch(e){
-		console.log('no index');
-	}
-	
-	try
-	{
-		postMongo.db.collection(postMongo.collectionName).createIndex(
-			{
-				'title': 'text',
-				'postitems.content.text': 'text'
-			},{
-				name: 'title_text_postitems.content.text_text'
-			}
-		);
-	}catch(e){
-		console.log('no created index');
-	}
-
-	console.log('después de los try catch');
-
 	data_insert02.flows[0].stages = data_insert02.stages;
 
 	data_insert02.posts[0].postitems.push(data_insert02.postitems[0]);
@@ -64,6 +42,8 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 
 	data_insert02.posts[3].totals.push(data_insert02.totals[0]);
 	data_insert02.posts[3].votes.push(data_insert02.votes[0]);
+	
+	//const listCollections = (await postMongo.db.listCollections().toArray());
 	
 	///buscar si existe stage cada uno
 	//stages
@@ -115,6 +95,27 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 				
 		}
 	});
+
+	try{
+		postMongo.db.collection(postMongo.collectionName).dropIndex('title_text_postitems.content.text_text');
+	}catch(e){
+		console.log('no index');
+	}
+	
+	try
+	{
+		postMongo.db.collection(postMongo.collectionName).createIndex(
+			{
+				'title': 'text',
+				'postitems.content.text': 'text'
+			},{
+				name: 'title_text_postitems.content.text_text'
+			}
+		);
+	}catch(e){
+		console.log('no created index');
+	}
+
 };
 
 export const data_insert02 = {
