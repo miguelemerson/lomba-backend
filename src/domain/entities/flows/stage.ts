@@ -5,5 +5,5 @@ import { Entity } from '../entity';
 export interface Stage extends Entity, BuiltIn, Audit {
     name: string;
     order: number;
-    queryOut: object;
+    queryOut: object | undefined;
 }

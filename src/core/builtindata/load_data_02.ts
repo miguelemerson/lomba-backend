@@ -33,15 +33,21 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 		console.log('no index');
 	}
 	
+	try
+	{
+		postMongo.db.collection(postMongo.collectionName).createIndex(
+			{
+				'title': 'text',
+				'postitems.content.text': 'text'
+			},{
+				name: 'title_text_postitems.content.text_text'
+			}
+		);
+	}catch(e){
+		console.log('no created index');
+	}
 
-	postMongo.db.collection(postMongo.collectionName).createIndex(
-		{
-			'title': 'text',
-			'postitems.content.text': 'text'
-		},{
-			name: 'title_text_postitems.content.text_text'
-		}
-	);
+	console.log('después de los try catch');
 
 	data_insert02.flows[0].stages = data_insert02.stages;
 
@@ -65,7 +71,7 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 		const result = await stageSource.getOne({_id:stage.id});
 		if(result.currentItemCount < 1)
 		{
-			await stageSource.add(new StageModel(stage.id, stage.name, stage.order, {}, stage.enabled, stage.builtIn));
+			await stageSource.add(new StageModel(stage.id, stage.name, stage.order, stage.queryOut, stage.enabled, stage.builtIn));
 		}
 	});
 
@@ -113,9 +119,9 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 
 export const data_insert02 = {
 
-	stages:[{name: 'Carga', order:1, queryOut: {},
+	stages:[{name: 'Carga', order:1, queryOut: {'votes.value': 1},
 		_id:stageId01Load, id:stageId01Load, enabled:true, builtIn:true, created: new Date()} as Stage,
-        {name: 'Aprobación', order:2, queryOut: {},_id:stageId02Approval, id:stageId02Approval, enabled:true, builtIn:true, created: new Date()} as Stage,{name: 'Votación', order:3, queryOut: {},_id:stageId03Voting, id:stageId03Voting, enabled:true, builtIn:true, created: new Date()} as Stage],
+        {name: 'Aprobación', order:2, queryOut: {'totals.totalpositive': 2, 'totals.totalcount' : 2},_id:stageId02Approval, id:stageId02Approval, enabled:true, builtIn:true, created: new Date()} as Stage,{name: 'Votación', order:3, queryOut: undefined,_id:stageId03Voting, id:stageId03Voting, enabled:true, builtIn:true, created: new Date()} as Stage],
 
 	flows:[{name: 'Flujo de Votación', stages:[], _id:flowId, id:flowId, enabled:true, builtIn:true, created: new Date()} as Flow],
 

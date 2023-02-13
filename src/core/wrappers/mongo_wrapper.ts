@@ -146,11 +146,7 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		return (result?.modifiedCount > 0 ? true : false);
 	}
 	async updateArray(id: string, obj: object, arrayFilters:object): Promise<boolean>{
-		const params = (obj as {[x: string]: unknown;});
-		if(obj != null)
-			params['updated'] = new Date();
-
-		const result = await this.db.collection<Document>(this.collectionName).updateOne({_id: id}, {$set:params},arrayFilters);
+		const result = await this.db.collection<Document>(this.collectionName).updateOne({_id: id}, obj,arrayFilters);
 		return (result?.modifiedCount > 0 ? true : false);
 	}	
 	async updateDirect(id: string, obj: object): Promise<boolean>{
