@@ -13,6 +13,18 @@ export interface UserDataSource {
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
 	setId(obj: UserModel): UserModel;
+
+	getByOrgaId(orgaId:string, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<UserModel>>;
+
+	getWhoAreNotInOrga(orgaId:string, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<UserModel>>;		
+
+	getById(userId:string): Promise<ModelContainer<UserModel>>;
+
+	getIfExistsByUsernameEmail(username: string, email: string, discardUserId: string): Promise<ModelContainer<UserModel>>;
+
+	getByUsernameEmail(username: string, email: string): Promise<ModelContainer<UserModel>>;
 }
 
 export class UserDataSourceImpl implements UserDataSource {
@@ -21,7 +33,21 @@ export class UserDataSourceImpl implements UserDataSource {
 	constructor(dbMongo: MongoWrapper<UserModel>){
 		this.collection = dbMongo;
 	}
-
+	async getByOrgaId(orgaId: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<UserModel>> {
+		return await this.collection.getMany<UserModel>({'orgas.id' : orgaId}, sort, pageIndex, itemsPerPage);
+	}
+	async getWhoAreNotInOrga(orgaId: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<UserModel>> {
+		return await this.collection.getMany<UserModel>({'orgas.id' : {$ne: orgaId}}, sort, pageIndex, itemsPerPage);
+	}
+	async getById(userId: string): Promise<ModelContainer<UserModel>> {
+		return await this.collection.getOne({'_id':userId});
+	}
+	async getIfExistsByUsernameEmail(username: string, email: string, discardUserId: string): Promise<ModelContainer<UserModel>> {
+		return await this.collection.getOne({$and:[{'id':{$ne:discardUserId}}, {$or:[ {'username':username}, {'email':email}]}]});
+	}
+	async getByUsernameEmail(username: string, email: string): Promise<ModelContainer<UserModel>> {
+		return await this.collection.getOne({ '$and':[{'$or': [{username: username}, {email: email}]}, {enabled: true}] });
+	}
 	async getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<UserModel>>{
 		return await this.collection.getMany<UserModel>(query, sort, pageIndex, itemsPerPage);

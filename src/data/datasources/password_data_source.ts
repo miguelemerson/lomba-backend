@@ -11,6 +11,7 @@ export interface PasswordDataSource {
     update(id: string, password: object): Promise<ModelContainer<PasswordModel>>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
+	getByUserId(userId:string): Promise<ModelContainer<PasswordModel>>;
 }
 
 export class PasswordDataSourceImpl implements PasswordDataSource {
@@ -18,6 +19,9 @@ export class PasswordDataSourceImpl implements PasswordDataSource {
 
 	constructor(dbMongo: MongoWrapper<PasswordModel>){
 		this.collection = dbMongo;
+	}
+	async getByUserId(userId: string): Promise<ModelContainer<PasswordModel>> {
+		return await this.collection.getOne({'userId':userId});
 	}
 
 	async getMany(query: object, sort?: [string, 1 | -1][],

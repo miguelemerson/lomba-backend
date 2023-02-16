@@ -16,7 +16,7 @@ export class OrgaRepositoryImpl implements OrgaRepository {
 	async getOrgas(sort?: [string, 1 | -1][]): Promise<Either<Failure,ModelContainer<Orga>>> {
 		try
 		{
-			const result = await this.dataSource.getMany({},sort);
+			const result = await this.dataSource.getAll(sort);
 			return Either.right(result);
 		}
 		catch(error)
@@ -34,7 +34,7 @@ export class OrgaRepositoryImpl implements OrgaRepository {
 	async getOrga(id: string): Promise<Either<Failure,ModelContainer<Orga>>> {
 		try
 		{
-			const result = await this.dataSource.getOne({'_id':id});
+			const result = await this.dataSource.getById(id);
 			return Either.right(result);
 		}
 		catch(error)
@@ -118,7 +118,7 @@ export class OrgaRepositoryImpl implements OrgaRepository {
 		try
 		{
 			
-			const result = await this.dataSource.getOne({'code':code});
+			const result = await this.dataSource.getByCode(code, orgaId);
 			
 			return Either.right(result);
 		}

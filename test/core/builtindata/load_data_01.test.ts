@@ -12,6 +12,24 @@ import { RoleModel } from '../../../src/data/models/role_model';
 import { UserModel } from '../../../src/data/models/user_model';
 
 class MockUserDataSource implements UserDataSource {
+	getIfExistsByUsernameEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUsernameEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByOrgaId(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getWhoAreNotInOrga(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getById(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUsernameOrEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<UserModel>> {
 		throw new Error('Method not implemented 1.');
 	}
@@ -34,6 +52,12 @@ class MockUserDataSource implements UserDataSource {
 }
 
 class MockRoleDataSource implements RoleDataSource {
+	getByName(): Promise<ModelContainer<RoleModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getAll(): Promise<ModelContainer<RoleModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<RoleModel>> {
 		throw new Error('Method not implemented.');
 	}
@@ -56,6 +80,18 @@ class MockRoleDataSource implements RoleDataSource {
 }
 
 class MockOrgaDataSource implements OrgaDataSource {
+	getByOrgasIdArray(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getAll(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getById(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByCode(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<OrgaModel>> {
 		throw new Error('Method not implemented 7.');
 	}
@@ -78,6 +114,15 @@ class MockOrgaDataSource implements OrgaDataSource {
 }
 
 class MockOrgaUserDataSource implements OrgaUserDataSource {
+	getByOrgaId(): Promise<ModelContainer<OrgaUserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUserId(): Promise<ModelContainer<OrgaUserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getOneBy(): Promise<ModelContainer<OrgaUserModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<OrgaUserModel>> {
 		throw new Error('Method not implemented 10.');
 	}
@@ -99,6 +144,9 @@ class MockOrgaUserDataSource implements OrgaUserDataSource {
 	setId():OrgaUserModel{throw new Error('Method not implemented.');}
 }
 class MockPasswordDataSource implements PasswordDataSource {
+	getByUserId(): Promise<ModelContainer<PasswordModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<PasswordModel>> {
 		throw new Error('Method not implemented 13.');
 	}

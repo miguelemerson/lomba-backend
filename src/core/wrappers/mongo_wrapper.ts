@@ -4,10 +4,10 @@ import { ModelContainer } from '../model_container';
 export interface NoSQLDatabaseWrapper<T>{
     getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>;
-		getManyWithOptions(query: object, options?: object | undefined, sort?: [string, 1 | -1][],
-			pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>;		
+	getManyWithOptions(query: object, options?: object | undefined, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<T>>;		
     getOne(query: object): Promise<ModelContainer<T>>;
-    getOneWithOptions(query: object, projection: object | undefined): Promise<ModelContainer<T>>;	
+    getOneWithOptions(query: object, options: object | undefined): Promise<ModelContainer<T>>;	
     add(obj: T) : Promise<boolean>;
     update(id: string, obj: object): Promise<boolean>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
@@ -124,8 +124,8 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		return ModelContainer.fromOneItem(result as T);
 	}
 
-	async getOneWithOptions<T>(query: object, projection: object | undefined): Promise<ModelContainer<T>>{
-		const result = await this.db.collection<Document>(this.collectionName).findOne(query, projection);
+	async getOneWithOptions<T>(query: object, options: object | undefined): Promise<ModelContainer<T>>{
+		const result = await this.db.collection<Document>(this.collectionName).findOne(query, options);
 		if(result == null || result == undefined){
 			return new ModelContainer([]);
 		}

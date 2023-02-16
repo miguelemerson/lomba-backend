@@ -11,6 +11,9 @@ export interface RoleDataSource {
     update(id: string, role: object): Promise<ModelContainer<RoleModel>>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
+
+    getByName(name:string): Promise<ModelContainer<RoleModel>>;
+	getAll(): Promise<ModelContainer<RoleModel>>;
 }
 
 export class RoleDataSourceImpl implements RoleDataSource {
@@ -18,6 +21,12 @@ export class RoleDataSourceImpl implements RoleDataSource {
 
 	constructor(dbMongo: MongoWrapper<RoleModel>){
 		this.collection = dbMongo;
+	}
+	async getByName(name: string): Promise<ModelContainer<RoleModel>> {
+		return await this.collection.getOne({'_id':name});
+	}
+	async getAll(): Promise<ModelContainer<RoleModel>> {
+		return await this.collection.getMany<RoleModel>({});
 	}
 
 	async getMany(query: object, sort?: [string, 1 | -1][],

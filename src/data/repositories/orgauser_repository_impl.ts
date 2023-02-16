@@ -24,7 +24,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	async getOrgaUsersByOrga(orgaId: string): Promise<Either<Failure,ModelContainer<OrgaUser>>> {
 		try
 		{
-			const result = await this.dataSource.getMany({'orgaId': orgaId});
+			const result = await this.dataSource.getByOrgaId(orgaId);
 			return Either.right(result);
 		}
 		catch(error)
@@ -43,7 +43,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	async getOrgaUsersByUser(userId: string): Promise<Either<Failure,ModelContainer<OrgaUser>>> {
 		try
 		{
-			const result = await this.dataSource.getMany({'userId': userId});
+			const result = await this.dataSource.getByUserId(userId);
 			return Either.right(result);
 		}
 		catch(error)
@@ -62,7 +62,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	async getOrgaUser(orgaId: string, userId: string): Promise<Either<Failure,ModelContainer<OrgaUser>>> {
 		try
 		{
-			const result = await this.dataSource.getOne({'orgaId': orgaId, 'userId': userId});
+			const result = await this.dataSource.getOneBy(orgaId, userId);
 			return Either.right(result);
 		}
 		catch(error)
@@ -86,7 +86,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 
 			if(result.currentItemCount > 0)
 			{
-				const resultOrga = await this.orgaDataSource.getOne({'_id' : orgaId});
+				const resultOrga = await this.orgaDataSource.getById(orgaId);
 
 				const orgas:{id:string, code:string}[] = [];
 
@@ -95,7 +95,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 					orgas.push({id: resultOrga.items[0].id, code: resultOrga.items[0].code});
 				}
 
-				const resultUser = await this.userDataSource.getOne({'_id' : orgaUser.userId});
+				const resultUser = await this.userDataSource.getById(orgaUser.userId);
 
 				if(orgas.length > 0 && resultUser.currentItemCount > 0)
 				{
@@ -204,7 +204,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 
 					if(result)
 					{
-						const modelContainerUser= await this.userDataSource.getOne({'_id':lastOrgaUser.userId});
+						const modelContainerUser= await this.userDataSource.getById(lastOrgaUser.userId);
 
 						const orgas = modelContainerUser.items[0].orgas;
 						if(orgas)
@@ -242,11 +242,11 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	async getOrgasByUserId(userId:string) : Promise<Either<Failure, ModelContainer<Orga>>>{
 		try
 		{
-			const result = await this.dataSource.getMany({'userId': userId});
+			const result = await this.dataSource.getByUserId(userId);
 
 			if(result.currentItemCount > 0)
 			{
-				const resultOrga = await this.orgaDataSource.getMany({'_id': {$in: result.items.map((element) => element.orgaId)}});
+				const resultOrga = await this.orgaDataSource.getByOrgasIdArray(result.items.map((element) => element.orgaId));
 				return Either.right(resultOrga);
 			}
 

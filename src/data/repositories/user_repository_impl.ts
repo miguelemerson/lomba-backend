@@ -18,8 +18,9 @@ export class UserRepositoryImpl implements UserRepository {
 		{
 			if(!sort)
 				sort = [['name', 1]];
+
 			const result = await this.dataSource
-				.getMany({'orgas.id' : orgaId}, sort);
+				.getByOrgaId(orgaId, sort);
 			
 			return Either.right(result);		
 		}
@@ -41,7 +42,7 @@ export class UserRepositoryImpl implements UserRepository {
 				sort = [['name', 1]];
 
 			const result = await this.dataSource
-				.getMany({'orgas.id' : {$ne: orgaId}}, sort, pageIndex, itemsPerPage);
+				.getWhoAreNotInOrga(orgaId, sort, pageIndex, itemsPerPage);
 			
 			return Either.right(result);		
 		}
@@ -59,7 +60,7 @@ export class UserRepositoryImpl implements UserRepository {
 	async getUser(id: string): Promise<Either<Failure,ModelContainer<User>>> {
 		try
 		{
-			const result = await this.dataSource.getOne({'_id':id});
+			const result = await this.dataSource.getById(id);
 			return Either.right(result);
 		}
 		catch(error)
@@ -90,7 +91,7 @@ export class UserRepositoryImpl implements UserRepository {
 		}
 	}
 
-	async updateUser(id: string, user: UserModel) : Promise<Either<Failure,ModelContainer<User>>>{
+	async updateUser(id: string, user: object) : Promise<Either<Failure,ModelContainer<User>>>{
 		try{
 			const result = await this.dataSource.update(id, user);
 			return Either.right(result);
@@ -140,7 +141,7 @@ export class UserRepositoryImpl implements UserRepository {
 		try
 		{
 			
-			const result = await this.dataSource.getOne({$and:[{'id':{$ne:userId}}, {$or:[ {'username':username}, {'email':email}]}]});
+			const result = await this.dataSource.getIfExistsByUsernameEmail(username, email, userId);
 			
 			return Either.right(result);
 		}

@@ -114,7 +114,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 			{
 				await this.newOrgaUser(auth.orgaId, newUser._id, roles);
 
-				const orgas = await this.orgaDataSource.getOne({'_id':auth.orgaId});
+				const orgas = await this.orgaDataSource.getById(auth.orgaId);
 				if (orgas.currentItemCount > 0) {
 					const orgasIdCode = [{id:orgas.items[0].id,code:orgas.items[0].code}];
 					await this.userDataSource.update(newUser.id, {orgas:orgasIdCode});
@@ -206,7 +206,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 
 					await this.newOrgaUser(defaultOrgaId, newUser._id, defaultRole);
 
-					const orgas = await this.orgaDataSource.getOne({'_id':defaultOrgaId});
+					const orgas = await this.orgaDataSource.getById(defaultOrgaId);
 					if (orgas.currentItemCount > 0) {
 						const orgasIdCode = [{id:orgas.items[0].id,code:orgas.items[0].code}];
 						const modelContainer = await this.userDataSource.update(newUser.id, {orgas:orgasIdCode});
@@ -259,9 +259,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 	}
 
 	private async findUser(username:string, email:string):Promise<UserModel | undefined> {
-		const userQuery = { '$and':[{'$or': [{username: username}, {email: email}]}, {enabled: true}] };
-
-		const userResult = await this.userDataSource.getMany(userQuery);
+		const userResult = await this.userDataSource.getByUsernameEmail(username, email);
 		if(userResult.currentItemCount < 1)
 		{
 			//si no lo encuentra retorna falla
@@ -273,8 +271,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 	private async findPassword(userId:string, password:string):Promise<PasswordModel | undefined> {
 		//buscamos una o más password habilitadas para el usuario
 		//Luego a partir del hash y salt sabemos de alguna coincidencia
-		const passQuery = { userId: userId, enabled:true};
-		const passResult = await this.passwordDataSource.getMany(passQuery);
+		const passResult = await this.passwordDataSource.getByUserId(userId);
 		if(passResult.currentItemCount < 1)
 			return undefined;
 		else
@@ -297,7 +294,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 			return [];
 
 		const arrayIdOrgaUser = orgas.map(a => a.id);
-		const orgaResult = await this.orgaDataSource.getMany({id: {'$in': arrayIdOrgaUser }});
+		const orgaResult = await this.orgaDataSource.getByOrgasIdArray(arrayIdOrgaUser);
 		//tenemos las orgas
 		return orgaResult.items;
 	}
@@ -322,7 +319,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 		if(orgaId)
 		{
 			//conseguir el orgauser para sacar los roles
-			const orgaUserResult = await this.orgaUserDataSource.getMany({userId:userId, orgaId:orgaId});
+			const orgaUserResult = await this.orgaUserDataSource.getOneBy(orgaId, userId);
 			//una vez encontrada la relación de orgas con usuario entonces recogemos los roles
 			if(orgaUserResult.currentItemCount > 0 && orgaUserResult.items[0].roles.length > 0)
 			{

@@ -47,7 +47,7 @@ export class PasswordRepositoryImpl implements PasswordRepository {
 
 			const changes = {hash:passHashed.hash, salt:passHashed.salt, istemp:false};
 
-			const resultExist = await this.dataSource.getOne({'userId':userId});
+			const resultExist = await this.dataSource.getByUserId(userId);
 			if(resultExist.currentItemCount > 0)
 			{
 				const result = await this.dataSource.update(userId, changes);

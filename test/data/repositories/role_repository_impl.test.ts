@@ -6,6 +6,12 @@ import { RoleRepositoryImpl } from '../../../src/data/repositories/role_reposito
 import { DatabaseFailure, GenericFailure, NetworkFailure } from '../../../src/core/errors/failures';
 
 class MockRoleDataSource implements RoleDataSource {
+	getByName(): Promise<ModelContainer<RoleModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getAll(): Promise<ModelContainer<RoleModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<RoleModel>> {
 		throw new Error('Method not implemented.');
 	}    
@@ -47,7 +53,7 @@ describe('Role Repository Implementation', () => {
 		test('deberá entregar lista de roles', async () => {
 			//arrange
 			const expectedData = listRoles;
-			jest.spyOn(mockRoleDataSource, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
+			jest.spyOn(mockRoleDataSource, 'getAll').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
 			//act
 			const result = await roleRepository.getRoles();
 			//assert
@@ -57,7 +63,7 @@ describe('Role Repository Implementation', () => {
 		
 		test('deberá generar error de Database', async () => {
 			//arrange
-			jest.spyOn(mockRoleDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockRoleDataSource, 'getAll').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await roleRepository.getRoles();
 			let failure:unknown;
@@ -71,7 +77,7 @@ describe('Role Repository Implementation', () => {
 
 		test('deberá generar error de Network', async () => {
 			//arrange
-			jest.spyOn(mockRoleDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockRoleDataSource, 'getAll').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await roleRepository.getRoles();
 			let failure:unknown;
@@ -85,7 +91,7 @@ describe('Role Repository Implementation', () => {
 
 		test('deberá generar error genérico', async () => {
 			//arrange
-			jest.spyOn(mockRoleDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockRoleDataSource, 'getAll').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await roleRepository.getRoles();
 			let failure:unknown;
@@ -102,7 +108,7 @@ describe('Role Repository Implementation', () => {
 	describe('getRole', () => {
 		test('debe entregar un rol', async () => {
 			//arrange
-			jest.spyOn(mockRoleDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listRoles[0])));
+			jest.spyOn(mockRoleDataSource, 'getByName').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listRoles[0])));
 			//act
 			const result = await roleRepository.getRole('aaa');
 			let failure:unknown;
@@ -111,13 +117,13 @@ describe('Role Repository Implementation', () => {
 			result.fold(err => {failure = err;}, val => {value = val;});
 
 			expect(result.isRight());
-			expect(mockRoleDataSource.getOne).toHaveBeenCalledWith({'_id':'aaa'});
+			expect(mockRoleDataSource.getByName).toHaveBeenCalledWith('aaa');
 			expect(value).toStrictEqual(ModelContainer.fromOneItem(listRoles[0]));
 		});
 
 		test('deberá generar error de Database al buscar un rol', async () => {
 			//arrange
-			jest.spyOn(mockRoleDataSource, 'getOne').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockRoleDataSource, 'getByName').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await roleRepository.getRole('aaa');
 			let failure:unknown;
@@ -131,7 +137,7 @@ describe('Role Repository Implementation', () => {
 
 		test('deberá generar error de Network al buscar un rol', async () => {
 			//arrange
-			jest.spyOn(mockRoleDataSource, 'getOne').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockRoleDataSource, 'getByName').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await roleRepository.getRole('aaa');
 			let failure:unknown;
@@ -145,7 +151,7 @@ describe('Role Repository Implementation', () => {
 
 		test('deberá generar error genérico al buscar un rol', async () => {
 			//arrange
-			jest.spyOn(mockRoleDataSource, 'getOne').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockRoleDataSource, 'getByName').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await roleRepository.getRole('aaa');
 			let failure:unknown;

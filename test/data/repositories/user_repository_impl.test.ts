@@ -6,6 +6,12 @@ import { UserRepositoryImpl } from '../../../src/data/repositories/user_reposito
 import { DatabaseFailure, GenericFailure, NetworkFailure } from '../../../src/core/errors/failures';
 
 class MockUserDataSource implements UserDataSource {
+	getIfExistsByUsernameEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUsernameEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<UserModel>> {
 		throw new Error('Method not implemented.');
 	}
@@ -25,6 +31,18 @@ class MockUserDataSource implements UserDataSource {
 		throw new Error('Method not implemented.');
 	}
 	setId():UserModel{throw new Error('Method not implemented.');}
+	getByOrgaId(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getWhoAreNotInOrga(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getById(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUsernameOrEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
 }
 
 describe('User Repository Implementation', () => {
@@ -46,7 +64,7 @@ describe('User Repository Implementation', () => {
 		test('deberá entregar lista de usuarios', async () => {
 			//arrange
 			const expectedData = listUsers;
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
+			jest.spyOn(mockUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
 			//act
 			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
 			//assert
@@ -56,7 +74,7 @@ describe('User Repository Implementation', () => {
 		
 		test('deberá generar error de Database', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
 			let failure:unknown;
@@ -70,7 +88,7 @@ describe('User Repository Implementation', () => {
 
 		test('deberá generar error de Network', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
 			let failure:unknown;
@@ -84,7 +102,7 @@ describe('User Repository Implementation', () => {
 
 		test('deberá generar error genérico', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
 			let failure:unknown;
@@ -101,7 +119,7 @@ describe('User Repository Implementation', () => {
 	describe('getUser', () => {
 		test('debe entregar un usuario', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockUserDataSource, 'getById').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 			//act
 			const result = await userRepository.getUser('aaa');
 			let failure:unknown;
@@ -110,13 +128,13 @@ describe('User Repository Implementation', () => {
 			result.fold(err => {failure = err;}, val => {value = val;});
 
 			expect(result.isRight());
-			expect(mockUserDataSource.getOne).toHaveBeenCalledWith({'_id':'aaa'});
+			expect(mockUserDataSource.getById).toHaveBeenCalledWith('aaa');
 			expect(value).toStrictEqual(ModelContainer.fromOneItem(listUsers[0]));
 		});
 
 		test('deberá generar error de Database al buscar un usuario', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockUserDataSource, 'getById').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await userRepository.getUser('aaa');
 			let failure:unknown;
@@ -130,7 +148,7 @@ describe('User Repository Implementation', () => {
 
 		test('deberá generar error de Network al buscar un usuario', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockUserDataSource, 'getById').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await userRepository.getUser('aaa');
 			let failure:unknown;
@@ -144,7 +162,7 @@ describe('User Repository Implementation', () => {
 
 		test('deberá generar error genérico al buscar un usuario', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getById').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await userRepository.getUser('aaa');
 			let failure:unknown;

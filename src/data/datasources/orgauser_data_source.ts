@@ -11,6 +11,10 @@ export interface OrgaUserDataSource {
     update(id: string, orgaOrgaUser: object): Promise<ModelContainer<OrgaUserModel>>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
+
+	getByOrgaId(orgaId:string): Promise<ModelContainer<OrgaUserModel>>;
+	getByUserId(userId:string): Promise<ModelContainer<OrgaUserModel>>;
+	getOneBy(orgaId: string, userId: string): Promise<ModelContainer<OrgaUserModel>>;
 }
 
 export class OrgaUserDataSourceImpl implements OrgaUserDataSource {
@@ -18,6 +22,15 @@ export class OrgaUserDataSourceImpl implements OrgaUserDataSource {
 
 	constructor(dbMongo: MongoWrapper<OrgaUserModel>){
 		this.collection = dbMongo;
+	}
+	async getByOrgaId(orgaId: string): Promise<ModelContainer<OrgaUserModel>> {
+		return await this.collection.getMany<OrgaUserModel>({'orgaId': orgaId});
+	}
+	async getByUserId(userId: string): Promise<ModelContainer<OrgaUserModel>> {
+		return await this.collection.getMany<OrgaUserModel>({'userId': userId});
+	}
+	async getOneBy(orgaId: string, userId: string): Promise<ModelContainer<OrgaUserModel>> {
+		return await this.collection.getOne({'orgaId': orgaId, 'userId': userId});
 	}
 
 	async getMany(query: object, sort?: [string, 1 | -1][],

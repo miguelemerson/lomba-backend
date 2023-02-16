@@ -32,6 +32,12 @@ import { UserRepository } from '../../../src/domain/repositories/user_repository
 import firebase from 'firebase-admin';
 
 class MockUserDataSource implements UserDataSource {
+	getIfExistsByUsernameEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUsernameEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<UserModel>> {
 		throw new Error('Method not implemented.');
 	}
@@ -51,9 +57,27 @@ class MockUserDataSource implements UserDataSource {
 		throw new Error('Method not implemented.');
 	}
 	setId():UserModel{throw new Error('Method not implemented.');}
+	getByOrgaId(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getWhoAreNotInOrga(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getById(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUsernameOrEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
 }
 
 class MockRoleDataSource implements RoleDataSource {
+	getByName(): Promise<ModelContainer<RoleModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getAll(): Promise<ModelContainer<RoleModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<RoleModel>> {
 		throw new Error('Method not implemented.');
 	}
@@ -76,6 +100,18 @@ class MockRoleDataSource implements RoleDataSource {
 }
 
 class MockOrgaDataSource implements OrgaDataSource {
+	getByOrgasIdArray(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getAll(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getById(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByCode(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<OrgaModel>> {
 		throw new Error('Method not implemented.');
 	}
@@ -98,6 +134,15 @@ class MockOrgaDataSource implements OrgaDataSource {
 }
 
 class MockOrgaUserDataSource implements OrgaUserDataSource {
+	getByOrgaId(): Promise<ModelContainer<OrgaUserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUserId(): Promise<ModelContainer<OrgaUserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getOneBy(): Promise<ModelContainer<OrgaUserModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<OrgaUserModel>> {
 		throw new Error('Method not implemented.');
 	}
@@ -119,6 +164,9 @@ class MockOrgaUserDataSource implements OrgaUserDataSource {
 	setId():OrgaUserModel{throw new Error('Method not implemented.');}
 }
 class MockPasswordDataSource implements PasswordDataSource {
+	getByUserId(): Promise<ModelContainer<PasswordModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<PasswordModel>> {
 		throw new Error('Method not implemented.');
 	}
@@ -208,19 +256,19 @@ describe('Auth Repository Implementation', () => {
 	describe('getAuth', () => {
 		test('debe entregar un token satisfactorio', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
 			//act
 			const result = await authRepository.getAuth(testAuth);
 			const value = result.getOrElse(ModelContainer.fromOneItem(testToken));
 
 			expect(result.isRight()).toBeTruthy();
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(1);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(1);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(1);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(1);
 			expect(value).toBeDefined();
 			expect(value?.currentItemCount).toStrictEqual(1);
 			expect(validJWT(value.items[0].value, 'lomba')).toBeDefined();
@@ -229,10 +277,10 @@ describe('Auth Repository Implementation', () => {
 
 		test('deberá generar error de Database al buscar un token', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await authRepository.getAuth(testAuth);
 			let failure:unknown;
@@ -240,20 +288,20 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 			
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(DatabaseFailure);
 		});
 
 		test('deberá generar error de Network al buscar un token', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await authRepository.getAuth(testAuth);
 			let failure:unknown;
@@ -262,20 +310,20 @@ describe('Auth Repository Implementation', () => {
 			result.fold(err => {failure = err;}, val => {value = val;});
 
 			
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(NetworkFailure);
 		});
 		
 		test('deberá generar error genérico al buscar un token', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await authRepository.getAuth(testAuth);
 			let failure:unknown;
@@ -283,20 +331,20 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});
 
 		test('deberá generar error genérico al buscar un token sin password', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const testAuthNoPass:Auth = {username:'admin', password:''};
 			const result = await authRepository.getAuth(testAuthNoPass);
@@ -305,20 +353,20 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
-			expect(mockUserDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(0);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});
 
 		test('deberá generar error genérico al buscar un token y no encontrar un usuario', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer<UserModel>([])));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(new ModelContainer<UserModel>([])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await authRepository.getAuth(testAuth);
 			let failure:unknown;
@@ -326,20 +374,20 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});
 
 		test('deberá generar error genérico al buscar un token y no encontrar la password', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer<PasswordModel>([])));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(new ModelContainer<PasswordModel>([])));
 			//act
 			const result = await authRepository.getAuth(testAuth);
 			let failure:unknown;
@@ -347,10 +395,10 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(1);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});
@@ -364,7 +412,7 @@ describe('Auth Repository Implementation', () => {
 			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
 			jest.spyOn(mockPasswordDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
 
-			jest.spyOn(mockOrgaDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaDataSource, 'getById').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
 
 			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 			//act
@@ -518,7 +566,7 @@ describe('Auth Repository Implementation', () => {
 			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(new ModelContainer<OrgaUserModel>([])));
 			jest.spyOn(mockPasswordDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
 			
-			jest.spyOn(mockOrgaDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaDataSource, 'getById').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
 
 			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 			//act
@@ -538,18 +586,18 @@ describe('Auth Repository Implementation', () => {
 	describe('changeOrga', () => {
 		test('debe actulizar un orga satisfactorio', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
 			//act
 			const result = await authRepository.changeOrga(testAuthOrgaNew);
 			const value = result.getOrElse(ModelContainer.fromOneItem(testToken));
 
 			expect(result.isRight());
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(value).toBeDefined();
 			expect(value?.currentItemCount).toStrictEqual(1);
 			expect(validJWT(value.items[0].value, 'lomba')).toBeDefined();
@@ -558,10 +606,10 @@ describe('Auth Repository Implementation', () => {
 
 		test('deberá generar error de Database al actulizar un orga', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await authRepository.changeOrga(testAuthOrgaNew);
 			let failure:unknown;
@@ -569,20 +617,20 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 			
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(DatabaseFailure);
 		});
 
 		test('deberá generar error de Network al actulizar un orga', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await authRepository.changeOrga(testAuthOrgaNew);
 			let failure:unknown;
@@ -591,20 +639,20 @@ describe('Auth Repository Implementation', () => {
 			result.fold(err => {failure = err;}, val => {value = val;});
 
 			
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(NetworkFailure);
 		});
 		
 		test('deberá generar error genérico al actulizar un orga', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await authRepository.changeOrga(testAuthOrgaNew);
 			let failure:unknown;
@@ -612,20 +660,20 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});
 
 		test('deberá generar error genérico al actulizar un orga sin orgaId', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const testAuthNoOrga:Auth = {username:'admin', password:'4321', orgaId:''};
 			const result = await authRepository.changeOrga(testAuthNoOrga);
@@ -634,20 +682,20 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
-			expect(mockUserDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(0);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});
 
 		test('deberá generar error genérico al actulizar un orga y no encontrar un usuario', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer<UserModel>([])));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(new ModelContainer<UserModel>([])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await authRepository.changeOrga(testAuthOrgaNew);
 			let failure:unknown;
@@ -655,20 +703,20 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});
 
 		test('deberá generar error genérico al actulizar un orga y no encontrar un user.orga', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[2])));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[2])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await authRepository.changeOrga(testAuthOrgaNew);
 			let failure:unknown;
@@ -676,19 +724,19 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(0);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(0);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
 			expect(result.isLeft()).toBeFalsy();
 		});
 
 		test('deberá generar error genérico al actulizar un orga y encontrar el mismo orgaId', async () => {
 			//arrange
-			jest.spyOn(mockUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
-			jest.spyOn(mockOrgaDataSource, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockPasswordDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const testAuthEqualOrga:Auth = {username:'admin', password:'4321', orgaId:'ooo'};
 			const result = await authRepository.changeOrga(testAuthEqualOrga);
@@ -697,10 +745,10 @@ describe('Auth Repository Implementation', () => {
 
 			result.fold(err => {failure = err;}, val => {value = val;});
 
-			expect(mockUserDataSource.getMany).toBeCalledTimes(1);
-			expect(mockOrgaDataSource.getMany).toBeCalledTimes(1);
-			expect(mockPasswordDataSource.getMany).toBeCalledTimes(0);
-			expect(mockOrgaUserDataSource.getMany).toBeCalledTimes(1);
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(1);
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});

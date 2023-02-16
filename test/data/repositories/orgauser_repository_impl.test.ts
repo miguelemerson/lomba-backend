@@ -10,6 +10,15 @@ import { OrgaDataSource } from '../../../src/data/datasources/orga_data_source';
 import { OrgaModel } from '../../../src/data/models/orga_model';
 
 class MockOrgaUserDataSource implements OrgaUserDataSource {
+	getByOrgaId(): Promise<ModelContainer<OrgaUserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUserId(): Promise<ModelContainer<OrgaUserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getOneBy(): Promise<ModelContainer<OrgaUserModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<OrgaUserModel>> {
 		throw new Error('Method not implemented.');
 	}    
@@ -33,6 +42,12 @@ class MockOrgaUserDataSource implements OrgaUserDataSource {
 }
 
 class MockUserDataSource implements UserDataSource {
+	getIfExistsByUsernameEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUsernameEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<UserModel>> {
 		throw new Error('Method not implemented.');
 	}
@@ -52,9 +67,33 @@ class MockUserDataSource implements UserDataSource {
 		throw new Error('Method not implemented.');
 	}
 	setId():UserModel{throw new Error('Method not implemented.');}
+	getByOrgaId(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getWhoAreNotInOrga(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getById(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByUsernameOrEmail(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
 }
 
 class MockOrgaDataSource implements OrgaDataSource {
+	getByOrgasIdArray(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getAll(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getById(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByCode(): Promise<ModelContainer<OrgaModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<OrgaModel>>{
 		throw new Error('Method not implemented.');
 	}
@@ -105,7 +144,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá entregar lista de orgausuarios', async () => {
 			//arrange
 			const expectedData = listOrgaUsers;
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
+			jest.spyOn(mockOrgaUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
 			//act
 			const result = await orgauserRepository.getOrgaUsersByOrga('OrgaUser');
 			//assert
@@ -115,7 +154,7 @@ describe('OrgaUser Repository Implementation', () => {
 		
 		test('deberá generar error de Database', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await orgauserRepository.getOrgaUsersByOrga('OrgaUser');
 			let failure:unknown;
@@ -129,7 +168,7 @@ describe('OrgaUser Repository Implementation', () => {
 
 		test('deberá generar error de Network', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await orgauserRepository.getOrgaUsersByOrga('OrgaUser');
 			let failure:unknown;
@@ -143,7 +182,7 @@ describe('OrgaUser Repository Implementation', () => {
 
 		test('deberá generar error genérico', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await orgauserRepository.getOrgaUsersByOrga('OrgaUser');
 			let failure:unknown;
@@ -161,7 +200,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá entregar lista de orgausuarios', async () => {
 			//arrange
 			const expectedData = listOrgaUsers;
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
+			jest.spyOn(mockOrgaUserDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
 			//act
 			const result = await orgauserRepository.getOrgaUsersByUser('orgaUser');
 			//assert
@@ -171,7 +210,7 @@ describe('OrgaUser Repository Implementation', () => {
 		
 		test('deberá generar error de Database', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await orgauserRepository.getOrgaUsersByUser('orgaUser');
 			let failure:unknown;
@@ -185,7 +224,7 @@ describe('OrgaUser Repository Implementation', () => {
 
 		test('deberá generar error de Network', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await orgauserRepository.getOrgaUsersByUser('orgaUser');
 			let failure:unknown;
@@ -199,7 +238,7 @@ describe('OrgaUser Repository Implementation', () => {
 
 		test('deberá generar error genérico', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getMany').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await orgauserRepository.getOrgaUsersByUser('orgaUser');
 			let failure:unknown;
@@ -216,7 +255,7 @@ describe('OrgaUser Repository Implementation', () => {
 	describe('getOrgaUser', () => {
 		test('debe entregar un orgausuario', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
 			//act
 			const result = await orgauserRepository.getOrgaUser('OrgaUser','orgaUser');
 			let failure:unknown;
@@ -225,13 +264,13 @@ describe('OrgaUser Repository Implementation', () => {
 			result.fold(err => {failure = err;}, val => {value = val;});
 
 			expect(result.isRight());
-			expect(mockOrgaUserDataSource.getOne).toHaveBeenCalledWith({'orgaId':'OrgaUser','userId':'orgaUser'});
+			expect(mockOrgaUserDataSource.getOneBy).toHaveBeenCalledWith('OrgaUser', 'orgaUser');
 			expect(value).toStrictEqual(ModelContainer.fromOneItem(listOrgaUsers[0]));
 		});
 
 		test('deberá generar error de Database al buscar un orgausuario', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await orgauserRepository.getOrgaUser('OrgaUser','orgaUser');
 			let failure:unknown;
@@ -245,7 +284,7 @@ describe('OrgaUser Repository Implementation', () => {
 
 		test('deberá generar error de Network al buscar un orgausuario', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await orgauserRepository.getOrgaUser('OrgaUser','orgaUser');
 			let failure:unknown;
@@ -259,7 +298,7 @@ describe('OrgaUser Repository Implementation', () => {
 
 		test('deberá generar error genérico al buscar un orgausuario', async () => {
 			//arrange
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await orgauserRepository.getOrgaUser('OrgaUser','orgaUser');
 			let failure:unknown;
@@ -278,9 +317,9 @@ describe('OrgaUser Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
 
-			jest.spyOn(mockOrgaDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaDataSource, 'getById').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
 
-			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockUserDataSource, 'getById').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 
 			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
 
@@ -345,7 +384,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('debe llamar a las funciones de actualzar', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));			
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));			
 			//act
 			const result = await orgauserRepository.updateOrgaUser('OrgaUser', 'Ouser', listOrgaUsers[0]);
 			let failure:unknown;
@@ -361,7 +400,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error de Database al actualizar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'update').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));			
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));			
 			//act
 			const result = await orgauserRepository.updateOrgaUser('OrgaUser', 'Ouser', listOrgaUsers[0]);
 			let failure:unknown;
@@ -376,7 +415,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error de Network al actualizar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'update').mockImplementation(() => Promise.reject(new Error('neterror')));
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
 			const result = await orgauserRepository.updateOrgaUser('OrgaUser', 'Ouser', listOrgaUsers[0]);
 			let failure:unknown;
@@ -391,7 +430,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error genérico al actualizar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'update').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
 			const result = await orgauserRepository.updateOrgaUser('OrgaUser', 'Ouser', listOrgaUsers[0]);
 			let failure:unknown;
@@ -466,8 +505,8 @@ describe('OrgaUser Repository Implementation', () => {
 		test('debe llamar a las funciones de elminación', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.resolve(true));
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
-			jest.spyOn(mockUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));	
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
+			jest.spyOn(mockUserDataSource, 'getById').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));	
 			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));				
 			//act
 			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
@@ -480,7 +519,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error de Database al eliminar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
 			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
 			let failure:unknown;
@@ -495,7 +534,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error de Network al eliminar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.reject(new Error('neterror')));
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
 			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
 			let failure:unknown;
@@ -510,7 +549,7 @@ describe('OrgaUser Repository Implementation', () => {
 		test('deberá generar error genérico al eliminar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.reject('generic'));
-			jest.spyOn(mockOrgaUserDataSource, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));		
 			//act
 			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
 			let failure:unknown;

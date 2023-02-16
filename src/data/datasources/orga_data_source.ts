@@ -11,6 +11,10 @@ export interface OrgaDataSource {
     update(id: string, orga: object): Promise<ModelContainer<OrgaModel>>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
+	getByOrgasIdArray(orgasId: string[]): Promise<ModelContainer<OrgaModel>>;
+	getAll(sort?: [string, 1 | -1][]): Promise<ModelContainer<OrgaModel>>;
+	getById(orgaId:string): Promise<ModelContainer<OrgaModel>>;
+	getByCode(orgaCode:string, discardOrgaId:string): Promise<ModelContainer<OrgaModel>>;
 }
 
 export class OrgaDataSourceImpl implements OrgaDataSource {
@@ -18,6 +22,18 @@ export class OrgaDataSourceImpl implements OrgaDataSource {
 
 	constructor(dbMongo: MongoWrapper<OrgaModel>){
 		this.collection = dbMongo;
+	}
+	async getAll(sort?: [string, 1 | -1][] | undefined): Promise<ModelContainer<OrgaModel>> {
+		return await this.collection.getMany<OrgaModel>({}, sort);
+	}
+	async getById(orgaId: string): Promise<ModelContainer<OrgaModel>> {
+		return await this.collection.getOne({_id: orgaId});
+	}
+	async getByCode(orgaCode: string, discardOrgaId: string): Promise<ModelContainer<OrgaModel>> {
+		return await this.collection.getOne({code:orgaCode, '_id':{$ne:discardOrgaId}});
+	}
+	async getByOrgasIdArray(orgasId: string[]): Promise<ModelContainer<OrgaModel>> {
+		return await this.collection.getMany<OrgaModel>({'_id': {$in: orgasId}});
 	}
 
 	async getMany(query: object, sort?: [string, 1 | -1][],

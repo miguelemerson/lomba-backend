@@ -16,7 +16,7 @@ export class RoleRepositoryImpl implements RoleRepository {
 	async getRoles(): Promise<Either<Failure,ModelContainer<Role>>> {
 		try
 		{
-			const result = await this.dataSource.getMany({});
+			const result = await this.dataSource.getAll();
 			return Either.right(result);
 		}
 		catch(error)
@@ -31,10 +31,10 @@ export class RoleRepositoryImpl implements RoleRepository {
 		}
 	}
 
-	async getRole(id: string): Promise<Either<Failure,ModelContainer<Role>>> {
+	async getRole(name: string): Promise<Either<Failure,ModelContainer<Role>>> {
 		try
 		{
-			const result = await this.dataSource.getOne({'_id':id});
+			const result = await this.dataSource.getByName(name);
 			return Either.right(result);
 		}
 		catch(error)
