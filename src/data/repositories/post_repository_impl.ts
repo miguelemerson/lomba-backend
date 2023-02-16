@@ -1,21 +1,20 @@
-import { FindOperators, MongoError } from 'mongodb';
-import { PostRepository } from '../../domain/repositories/post_repository';
-import { PostDataSource } from '../datasources/post_data_source';
-import { PostModel } from '../models/flows/post_model';
-import { ModelContainer } from '../../core/model_container';
-import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
-import { Either } from '../../core/either';
-import { Post } from '../../domain/entities/flows/post';
+import { MongoError } from 'mongodb';
 import { BoxPages } from '../../core/box_page';
-import { TextContent } from '../../domain/entities/flows/textcontent';
-import { Stage } from '../../domain/entities/flows/stage';
-import { StageDataSource } from '../datasources/stage_data_source';
-import { Vote } from '../../domain/entities/flows/vote';
-import { PostItem } from '../../domain/entities/flows/postitem';
-import { FlowDataSource } from '../datasources/flow_data_source';
+import { Either } from '../../core/either';
+import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
+import { ModelContainer } from '../../core/model_container';
 import { MongoQuery } from '../../core/wrappers/mongo_query';
+import { Post } from '../../domain/entities/flows/post';
+import { PostItem } from '../../domain/entities/flows/postitem';
+import { Stage } from '../../domain/entities/flows/stage';
+import { TextContent } from '../../domain/entities/flows/textcontent';
+import { Vote } from '../../domain/entities/flows/vote';
+import { PostRepository } from '../../domain/repositories/post_repository';
+import { FlowDataSource } from '../datasources/flow_data_source';
+import { PostDataSource } from '../datasources/post_data_source';
+import { StageDataSource } from '../datasources/stage_data_source';
+import { PostModel } from '../models/flows/post_model';
 import { TotalModel } from '../models/flows/total_model';
-import { Total } from '../../domain/entities/flows/total';
 
 export class PostRepositoryImpl implements PostRepository {
 	dataSource: PostDataSource;

@@ -1,8 +1,6 @@
 import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
 import { ModelContainer } from '../../../core/model_container';
-import { TokenModel } from '../../../data/models/token_model';
-import { Auth } from '../../entities/auth';
 import { Token } from '../../entities/token';
 import { User } from '../../entities/user';
 import { AuthRepository } from '../../repositories/auth_repository';

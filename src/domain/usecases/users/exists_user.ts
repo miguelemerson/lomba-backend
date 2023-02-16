@@ -1,7 +1,6 @@
 import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
 import { ModelContainer } from '../../../core/model_container';
-import { UserModel } from '../../../data/models/user_model';
 import { User } from '../../entities/user';
 import { UserRepository } from '../../repositories/user_repository';
 

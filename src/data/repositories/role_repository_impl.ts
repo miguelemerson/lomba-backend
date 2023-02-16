@@ -1,11 +1,10 @@
+import { MongoError } from 'mongodb';
+import { Either } from '../../core/either';
+import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
+import { ModelContainer } from '../../core/model_container';
+import { Role } from '../../domain/entities/role';
 import { RoleRepository } from '../../domain/repositories/role_repository';
 import { RoleDataSource } from '../datasources/role_data_source';
-import { MongoError } from 'mongodb';
-import { ModelContainer } from '../../core/model_container';
-import { RoleModel } from '../models/role_model';
-import { Failure, GenericFailure, NetworkFailure, DatabaseFailure } from '../../core/errors/failures';
-import { Either } from '../../core/either';
-import { Role } from '../../domain/entities/role';
 
 export class RoleRepositoryImpl implements RoleRepository {
 	dataSource: RoleDataSource;

@@ -1,7 +1,6 @@
 import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
 import { ModelContainer } from '../../../core/model_container';
-import { OrgaModel } from '../../../data/models/orga_model';
 import { Orga } from '../../entities/orga';
 import { OrgaRepository } from '../../repositories/orga_repository';
 
