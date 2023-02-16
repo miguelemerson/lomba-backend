@@ -144,7 +144,7 @@ export class PostRepositoryImpl implements PostRepository {
 	async addTextPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			const resultFlow = await this.flowDataSource.getOne({id:flowId});
+			const resultFlow = await this.flowDataSource.getById(flowId);
 			
 			if(resultFlow.currentItemCount > 0)
 			{
@@ -208,7 +208,7 @@ export class PostRepositoryImpl implements PostRepository {
 			const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1};
 
 			//busca si el usuario ya ha votado antes por el post en el stage
-			const resultPost = await this.dataSource.getOneWithOptions(query, {projection: options});
+			const resultPost = await this.dataSource.getIfHasVote(userId, flowId, stageId, postId);
 		
 			//si no lo encuentra, entonces es primer voto del usuario al post
 			if (resultPost.currentItemCount < 1) {
@@ -225,7 +225,7 @@ export class PostRepositoryImpl implements PostRepository {
 				const result = await this.dataSource.updateDirect(postId, { $push: { votes: newVote}});
 
 				//se debe ir por el post nuevamente, sin el filtro de voto
-				const resultPostComplete = await this.dataSource.getOne({id: postId});
+				const resultPostComplete = await this.dataSource.getById(postId);
 
 				//actualiza los totales del post.
 				if(resultPostComplete.items[0].totals.length < 1)
@@ -291,7 +291,7 @@ export class PostRepositoryImpl implements PostRepository {
 
 	private async checkNextStage(stageId: string, postId: string, flowId: string, resultPost: ModelContainer<PostModel>) {
 
-		const resultStage = await this.stageDataSource.getOne({ id: stageId });
+		const resultStage = await this.stageDataSource.getById(stageId);
 
 		//si la etapa actual tiene Query de salida entonces
 		if (resultStage.items[0].queryOut != undefined) {
@@ -299,20 +299,15 @@ export class PostRepositoryImpl implements PostRepository {
 			//para aplicar la query junto con el postId
 			//si el resultado devuelve el post entonces coincide
 			//con la query para pasar al siguiente etapa.
-			const params = (resultStage.items[0].queryOut as { [x: string]: unknown; });
-			params['id'] = postId;
-			params['stageId'] = stageId;
-			params['flowId'] = flowId;
-
 			//aquí busca y revisa si la query de salida coincide con el post.
-			const resultProcess = await this.dataSource.getOne(params);
+			const resultProcess = await this.dataSource.getByQueryOut(postId, flowId, stageId, (resultStage.items[0].queryOut as { [x: string]: unknown; }));
 
 			//si lo consigue y por supuesto el postId coincide entonces
 			if (resultProcess.currentItemCount > 0 &&
 				resultProcess.items[0].id == postId) {
 				//cambiar de etapa a la siguiente, ir por el flow.
 				//busca el flow para tener todas las etapas.
-				const resultFlow = await this.flowDataSource.getOne({ id: flowId });
+				const resultFlow = await this.flowDataSource.getById(flowId);
 
 				//si existe una siguiente etapa para la etapa actual entonces procede
 				if (resultFlow.items[0].stages.filter(e => e.order == resultStage.items[0].order + 1).length > 0) {

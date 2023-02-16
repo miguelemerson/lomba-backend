@@ -14,6 +14,8 @@ export interface FlowDataSource {
     delete(id: string): Promise<boolean>;
 	setId(obj: FlowModel): FlowModel;
 	updateDirect(id: string, flow: object): Promise<ModelContainer<FlowModel>>;
+
+	getById(flowId:string): Promise<ModelContainer<FlowModel>>;
 }
 
 export class FlowDataSourceImpl implements FlowDataSource {
@@ -21,6 +23,9 @@ export class FlowDataSourceImpl implements FlowDataSource {
 
 	constructor(dbMongo: MongoWrapper<FlowModel>){
 		this.collection = dbMongo;
+	}
+	async getById(flowId: string): Promise<ModelContainer<FlowModel>> {
+		return await this.collection.getOne({_id:flowId});
 	}
 
 	async getMany(query: object, sort?: [string, 1 | -1][],

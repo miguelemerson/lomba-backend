@@ -13,6 +13,8 @@ export interface StageDataSource {
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
     delete(id: string): Promise<boolean>;
 	setId(obj: StageModel): StageModel;
+
+	getById(stageId:string): Promise<ModelContainer<StageModel>>;
 }
 
 export class StageDataSourceImpl implements StageDataSource {
@@ -20,6 +22,9 @@ export class StageDataSourceImpl implements StageDataSource {
 
 	constructor(dbMongo: MongoWrapper<StageModel>){
 		this.collection = dbMongo;
+	}
+	async getById(stageId: string): Promise<ModelContainer<StageModel>> {
+		return await this.collection.getOne({_id:stageId});
 	}
 
 	async getMany(query: object, sort?: [string, 1 | -1][],
