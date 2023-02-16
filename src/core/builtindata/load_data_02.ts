@@ -97,24 +97,24 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 	});
 
 	try{
-		postMongo.db.collection(postMongo.collectionName).dropIndex('title_text_postitems.content.text_text');
+
+		const sleep = (ms: number | undefined) => new Promise(r => setTimeout(r, ms));
+		await sleep(1500);
+		if(!await postMongo.db.collection(postMongo.collectionName).indexExists('title_text_postitems.content.text_text'))
+		{
+			postMongo.db.collection(postMongo.collectionName).createIndex(
+				{
+					'title': 'text',
+					'postitems.content.text': 'text'
+				},{
+					name: 'title_text_postitems.content.text_text'
+				}
+			);
+		}
 	}catch(e){
 		console.log('no index');
 	}
 	
-	try
-	{
-		postMongo.db.collection(postMongo.collectionName).createIndex(
-			{
-				'title': 'text',
-				'postitems.content.text': 'text'
-			},{
-				name: 'title_text_postitems.content.text_text'
-			}
-		);
-	}catch(e){
-		console.log('no created index');
-	}
 
 };
 

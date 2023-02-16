@@ -47,14 +47,21 @@ export class PasswordRepositoryImpl implements PasswordRepository {
 
 			const changes = {hash:passHashed.hash, salt:passHashed.salt, istemp:false};
 
-			const result = await this.dataSource.update(userId, changes);
-
-			if(result.currentItemCount > 0)
-				return Either.right(true);
-			else
-				return Either.right(false);
-
-
+			const resultExist = await this.dataSource.getOne({'userId':userId});
+			if(resultExist.currentItemCount > 0)
+			{
+				const result = await this.dataSource.update(userId, changes);
+				if(result.currentItemCount > 0)
+					return Either.right(true);
+				else
+					return Either.right(false);
+			}else{
+				const result = await this.dataSource.add(new PasswordModel(userId, passHashed.hash, passHashed.salt, true, false));
+				if(result.currentItemCount > 0)
+					return Either.right(true);
+				else
+					return Either.right(false);
+			}	
 		}
 		catch(error)
 		{
