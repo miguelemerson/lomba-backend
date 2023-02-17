@@ -108,7 +108,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		query['orgaId'] = orgaId;
 		query['flowId'] = flowId;
 		query['stageId'] = stageId;
-		query['votes'] = {$elemMatch: {userId:{$ne:userId}, stageId:stageId}};
+		query['votes'] = {$elemMatch: {userId:{$ne:userId}, stageId:{$ne:stageId}}};
 		if(searchText != '')
 		{
 			query['$text'] = {$search: searchText};
@@ -121,7 +121,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		query['orgaId'] = orgaId;
 		query['flowId'] = flowId;
 		query['stages'] = {$elemMatch: {id:stageId}};
-		query['votes'] = {$elemMatch: {userId:{$ne:userId}, stageId:stageId, value:1}};
+		query['votes'] = {$elemMatch: {userId:userId, stageId:stageId, value:1}};
 		if(searchText != '')
 		{
 			query['$text'] = {$search: searchText};
@@ -133,7 +133,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		query['orgaId'] = orgaId;
 		query['flowId'] = flowId;
 		query['stages'] = {$elemMatch: {id:stageId}};
-		query['votes'] = {$elemMatch: {userId:{$ne:userId}, stageId:stageId, value:-1}};
+		query['votes'] = {$elemMatch: {userId:userId, stageId:stageId, value:-1}};
 		if(searchText != '')
 		{
 			query['$text'] = {$search: searchText};
