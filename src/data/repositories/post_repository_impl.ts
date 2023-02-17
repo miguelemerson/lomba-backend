@@ -32,103 +32,68 @@ export class PostRepositoryImpl implements PostRepository {
 			const query: MongoQuery = new MongoQuery();
 
 			if (boxPage == BoxPages.uploadedPosts) {
-				query.orgaId = orgaId;
-				query.userId = userId;
-				query.flowId = flowId;
-				
-				if((params['isdraft'] as string).toString() == 'true')
-				{
-					query.stageId = stageId;
-				}
-				else
-				{
-					query.stages = {$elemMatch: {id:stageId}};
-				}
+
 				if(!sort)
 				{
 					sort = [['created', -1]];
 				}
 
+				const result = await this.dataSource.getUploadedPosts(orgaId, userId, flowId, stageId, searchText, (params['isdraft'] as string).toString() == 'true', sort, pageIndex, itemsPerPage);
+				return Either.right(result);
 			}
 			if (boxPage == BoxPages.forApprovePosts) {
 
-				query.orgaId = orgaId;
-				query.flowId = flowId;
-				query.stages = {$elemMatch: {id:stageId}};
-				query.votes = {$elemMatch: {id:{$ne:userId}}};
 				if(!sort)
 				{
 					sort = [['created', -1]];
-				}
+				}				
+
+				const result = await this.dataSource.getForApprovePosts(orgaId, userId, flowId, stageId, searchText, sort, pageIndex, itemsPerPage);
+				return Either.right(result);
 			}
 			if (boxPage == BoxPages.approvedPosts) {
-
-				query.orgaId = orgaId;
-				query.flowId = flowId;
-				query.stages = {$elemMatch: {id:stageId}};
-				query.votes = {$elemMatch: {id:{$ne:userId}, value:1}};
 				if(!sort)
 				{
 					sort = [['created', -1]];
 				}
+				
+				const result = await this.dataSource.getApprovedPosts(orgaId, userId, flowId, stageId, searchText, sort, pageIndex, itemsPerPage);
+				return Either.right(result);
 			}
 			if (boxPage == BoxPages.rejectedPosts) {
-				query.orgaId = orgaId;
-				query.flowId = flowId;
-				query.stages = {$elemMatch: {id:stageId}};
-				query.votes = {$elemMatch: {id:{$ne:userId}, value: -1}};
 				if(!sort)
 				{
 					sort = [['created', -1]];
 				}
+
+				const result = await this.dataSource.getRejectedPosts(orgaId, userId, flowId, stageId, searchText, sort, pageIndex, itemsPerPage);
+				return Either.right(result);
 			}
 			if (boxPage == BoxPages.latestPosts) {
-				query.orgaId = orgaId;
-				query.flowId = flowId;
-				query.stageId = stageId;
 				sort = [['created',-1]];
+
+				const result = await this.dataSource.getLatestPosts(orgaId, userId, flowId, stageId, searchText, sort, pageIndex, itemsPerPage);
+				return Either.right(result);
 			}
 			if (boxPage == BoxPages.popularPosts) {
-				query.orgaId = orgaId;
-				query.flowId = flowId;
-				query.stageId = stageId;
 				sort = [['totals.totalpositive',-1]];
-				
+
+				const result = await this.dataSource.getPopularPosts(orgaId, userId, flowId, stageId, searchText, sort, pageIndex, itemsPerPage);			
+				return Either.right(result);	
 			}
 			if (boxPage == BoxPages.votedPosts) {
-				query.orgaId = orgaId;
-				query.flowId = flowId;
-				query.stages = {$elemMatch: {id:stageId}};
-				query.votes = {$elemMatch: {id:userId}};
-				
-				if((params['voteState'] as string).toString() == '1')
-				{
-					query.votes = {$elemMatch: {id:userId, value:1}};
-				}
-				else if ((params['voteState'] as string) == '-1')
-				{
-					query.votes = {$elemMatch: {id:userId, value:-1}};
-				}
-				else
-				{
-					query.votes = {$elemMatch: {id:userId}};
-				}
 				if(!sort)
 				{
 					sort = [['created', -1]];
 				}
+				const onlyWithVote = (params['voteState'] as string).toString() == '1' || (params['voteState'] as string).toString() == '-1' ? parseInt((params['voteState'] as string).toString()) : 0;
+
+				const result = await this.dataSource.getVotedPosts(orgaId, userId, flowId, stageId, searchText, onlyWithVote, sort, pageIndex, itemsPerPage);
+				return Either.right(result);
 			}
 
-			if(searchText != '')
-			{
-				query.$text = {$search: searchText};
-			}
-
-			const options = {id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}};
-
-			const result = await this.dataSource.getManyWithOptions(query.build(), {projection: options}, sort, pageIndex, itemsPerPage);
-			
-			return Either.right(result);		
+		
+			return Either.left(new GenericFailure('no boxpage found'));		
 		}
 		catch(error)
 		{
@@ -179,9 +144,12 @@ export class PostRepositoryImpl implements PostRepository {
 				}
 
 				const resultAddPost = await this.dataSource.add(post);
+
 				if(resultAddPost.currentItemCount > 0)
 				{
-					const resultUpdatePost = await this.dataSource.update(resultAddPost.items[0].id, {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes});
+					const changes:object = {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes};
+
+					const resultUpdatePost = await this.dataSource.update(resultAddPost.items[0].id, changes);
 
 					return Either.right(resultUpdatePost);	
 				}
@@ -203,10 +171,6 @@ export class PostRepositoryImpl implements PostRepository {
 	async sendVote(userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			const query = {id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId};
-
-			const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1};
-
 			//busca si el usuario ya ha votado antes por el post en el stage
 			const resultPost = await this.dataSource.getIfHasVote(userId, flowId, stageId, postId);
 		
@@ -222,7 +186,7 @@ export class PostRepositoryImpl implements PostRepository {
 					created: new Date()} as Vote;
 	
 				//agrega el voto nuevo a la lista de votos del post
-				const result = await this.dataSource.updateDirect(postId, { $push: { votes: newVote}});
+				const result = await this.dataSource.pushToArrayField(postId, { votes: newVote});
 
 				//se debe ir por el post nuevamente, sin el filtro de voto
 				const resultPostComplete = await this.dataSource.getById(postId);
@@ -232,19 +196,15 @@ export class PostRepositoryImpl implements PostRepository {
 				{
 					const newTotal:TotalModel = new TotalModel(voteValue == 1 ? voteValue : 0, voteValue == -1 ? voteValue : 0, 1, flowId, stageId);
 
-					const resultTotal = await this.dataSource.updateDirect(postId, { $push: { totals: newTotal}});
+					const resultTotal = await this.dataSource.pushToArrayField(postId, { totals: newTotal});
 				}
 				else
 				{
-					const updateQuery = voteValue == 1 ? { $inc: {'totals.$[elem].totalpositive':1, 'totals.$[elem].totalcount':1}} : { $inc: {'totals.$[elem].totalnegative': 1, 'totals.$[elem].totalcount': 1}};
-
-					const resultTotal = await this.dataSource.updateArray(postId, updateQuery, {arrayFilters: [{'elem.stageId':stageId, 'elem.flowId':flowId}]});
+					const resultTotal = await this.dataSource.updateTotals(postId, flowId, stageId, voteValue);
 				}
 				
 				//revisión de cambio de etapa!
 				//busca la etapa actual
-
-
 				await this.checkNextStage(stageId, postId, flowId, resultPostComplete);
 
 				return Either.right(result);
@@ -256,16 +216,11 @@ export class PostRepositoryImpl implements PostRepository {
 				beforeVote.updated = new Date();
 				beforeVote.value = voteValue;
 
-			
-
-				const result = await this.dataSource.updateArray(postId, { $set :{'votes.$[elem].updated': new Date(), 'votes.$[elem].value':voteValue}}, {arrayFilters: [{'elem.userId':userId, 'elem.stageId':stageId, 'elem.flowId':flowId}]});
+				const result = await this.dataSource.updateVote(postId, userId, flowId, stageId, voteValue);
 
 				//actualiza totales:
 				//se invierten los valores, solo si el voto tiene otro valor
-				const updateQuery = voteValue == 1 ? { $inc: {'totals.$[elem].totalpositive': 1, 'totals.$[elem].totalnegative':-1}} : { $inc: {'totals.$[elem].totalnegative': 1, 'totals.$[elem].totalpositive':-1}};
-
-				const resultTotal = await this.dataSource.updateArray(postId, updateQuery, {arrayFilters: [{'elem.stageId':stageId, 'elem.flowId':flowId}]});
-
+				const resultTotal = await this.dataSource.updateTotals(postId, flowId, stageId, voteValue);
 
 				//revisión de cambio de etapa!
 				//busca la etapa actual
