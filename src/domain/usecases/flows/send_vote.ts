@@ -5,7 +5,7 @@ import { Post } from '../../entities/flows/post';
 import { PostRepository } from '../../repositories/post_repository';
 
 export interface SendVoteUseCase {
-    execute(userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure,ModelContainer<Post>>>;
+    execute(orgaId:string, userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure,ModelContainer<Post>>>;
 }
 
 export class SendVote implements SendVoteUseCase {
@@ -14,7 +14,7 @@ export class SendVote implements SendVoteUseCase {
 		this.repository = repository;
 	}
 
-	async execute(userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure,ModelContainer<Post>>> {
-		return await this.repository.sendVote(userId, flowId, stageId, postId, voteValue);
+	async execute(orgaId:string, userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure,ModelContainer<Post>>> {
+		return await this.repository.sendVote(orgaId, userId, flowId, stageId, postId, voteValue);
 	}
 }

@@ -92,9 +92,9 @@ export default function PostsRouter(
 		let toSend = RouterResponse.emptyResponse();		
 		try {
 			//execution
-			const bodypost = req.body as {userId: string, flowId: string, stageId: string, postId: string, voteValue: number};
+			const bodypost = req.body as {userId: string, flowId: string, stageId: string, postId: string, orgaId:string, voteValue: number};
 			//execution
-			const post = await sendVote.execute(bodypost.userId, bodypost.flowId, bodypost.stageId, bodypost.postId,bodypost.voteValue);
+			const post = await sendVote.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.stageId, bodypost.postId,bodypost.voteValue);
 			//evaluate
 			post.fold(error => {
 			//something wrong
