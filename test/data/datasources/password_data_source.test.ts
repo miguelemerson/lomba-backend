@@ -100,4 +100,36 @@ describe('Password MongoDB DataSource', () => {
 		expect(data).toEqual(true);
 
 	});	
+
+	test('asigna Id cuando no lo tiene', async () => {
+		//arrange
+		let pass = listPasswords[0];
+		pass.id = '';
+		//act
+		pass = dataSource.setId(pass);
+
+		//assert
+		expect(pass._id).toBeDefined();
+		expect(pass.id).toEqual(pass._id);
+
+	});	
+
+	describe('Los nuevos métodos', () => {
+
+
+		test('getByUserId - obtener una password por userId', async () => {
+		//arrange
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(new ModelContainer(listPasswords)));
+
+			//act
+			const data = await dataSource.getByUserId('aaa');
+
+			//assert
+			expect(mongoWrapper.getOne).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listPasswords));
+
+		});
+
+	});
+
 });

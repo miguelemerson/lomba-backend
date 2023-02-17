@@ -8,6 +8,9 @@ import { HashPassword } from '../../../src/core/password_hash';
 import { UserModel } from '../../../src/data/models/user_model';
 
 class MockPasswordDataSource implements PasswordDataSource {
+	updateByUserId(): Promise<ModelContainer<PasswordModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getByUserId(): Promise<ModelContainer<PasswordModel>> {
 		throw new Error('Method not implemented.');
 	}
@@ -132,7 +135,7 @@ describe('Password Repository Implementation', () => {
 	describe('updatePassword', () => {
 		test('debe llamar a las funciones de actualzar', async () => {
 			//arrange
-			jest.spyOn(mockPasswordDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			jest.spyOn(mockPasswordDataSource, 'updateByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
 			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));			
 			//act
 			const result = await passwordRepository.updatePassword(listUsers[0].id, 'asd');
@@ -142,7 +145,7 @@ describe('Password Repository Implementation', () => {
 			result.fold(err => {failure = err;}, val => {value = val;});			
 			//assert
 			expect(result.isRight());
-			expect(mockPasswordDataSource.update).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.updateByUserId).toBeCalledTimes(1);
 			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(1);
 
 			//expect(value).toEqual(ModelContainer.fromOneItem(listPasswords[0]));
@@ -169,7 +172,7 @@ describe('Password Repository Implementation', () => {
 		test('deberá generar error de Database al actualizar un usuario', async () => {
 			//arrange
 			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));	
-			jest.spyOn(mockPasswordDataSource, 'update').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockPasswordDataSource, 'updateByUserId').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
 			const result = await passwordRepository.updatePassword(listUsers[0].id, 'asd');
 			let failure:unknown;
@@ -184,7 +187,7 @@ describe('Password Repository Implementation', () => {
 		test('deberá generar error de Network al actualizar un usuario', async () => {
 			//arrange
 			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));	
-			jest.spyOn(mockPasswordDataSource, 'update').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockPasswordDataSource, 'updateByUserId').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
 			const result = await passwordRepository.updatePassword(listUsers[0].id, 'asd');
 			let failure:unknown;
@@ -199,7 +202,7 @@ describe('Password Repository Implementation', () => {
 		test('deberá generar error genérico al actualizar un usuario', async () => {
 			//arrange
 			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));	
-			jest.spyOn(mockPasswordDataSource, 'update').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'updateByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await passwordRepository.updatePassword(listUsers[0].id, 'asd');
 			let failure:unknown;
@@ -214,7 +217,7 @@ describe('Password Repository Implementation', () => {
 		test('deberá generar error genérico al actualizar un usuario', async () => {
 			//arrange
 			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));	
-			jest.spyOn(mockPasswordDataSource, 'update').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'updateByUserId').mockImplementation(() => Promise.reject('generic'));
 			//act
 			const result = await passwordRepository.updatePassword(listUsers[0].id, '');
 			let failure:unknown;
