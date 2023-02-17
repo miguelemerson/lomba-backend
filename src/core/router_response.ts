@@ -1,3 +1,4 @@
+import { isBooleanObject } from 'util/types';
 import { DatabaseFailure, GenericFailure, NetworkFailure } from './errors/failures';
 import { ModelContainer } from './model_container';
 import crypto from 'crypto';
@@ -103,24 +104,26 @@ function setDataError(response: object | string | boolean | null, routerResponse
 				totalPages: response.totalPages,
 				updated: new Date(),
 			};
-		} else if(response instanceof Boolean)
+		} 
+		//cualquier objecto menos bool
+		else if(response instanceof Object)
 		{
-			routerResponse.data = {
-				items: [response],
-				kind: 'boolean',
-				currentItemCount: 1,
-				updated: new Date(),				
-			};
-		}
-		//any as object
-		else {
 			routerResponse.data = {
 				items: [response as object],
 				kind: typeof response,
 				currentItemCount: 1,
 				updated: new Date()
 			};
+		} else if(isBooleanObject(new Boolean(response)))
+		{
+			routerResponse.data = {
+				items: [new Boolean(response)],
+				kind: 'boolean',
+				currentItemCount: 1,
+				updated: new Date(),				
+			};
 		}
+		
 	}
 }
 

@@ -69,28 +69,27 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 		}
 	});
 
-
 	///insertar posts
 	data_insert02.posts.forEach(async post => {
-		const result = await postSource.getOne({_id:post.id}); 
+		const result = await postSource.getById(post.id); 
 		if(result.currentItemCount < 1)
 		{
 			const resultAdd = await postSource.add(new PostModel(post.id, [], post.title, post.orgaId, post.userId, post.flowId, post.stageId, post.enabled, post.builtIn));
 
 			post.postitems.forEach(async postitem => {
-				await postSource.updateDirect(resultAdd.items[0].id, {$push : {postitems: postitem}});
+				await postSource.pushToArrayField(resultAdd.items[0].id,  {postitems: postitem});
 			});
 			
 			post.stages.forEach(async stage => {
-				await postSource.updateDirect(resultAdd.items[0].id, {$push : {stages: stage}});
+				await postSource.pushToArrayField(resultAdd.items[0].id,  {stages: stage});
 			});		
 			
 			post.totals.forEach(async total => {
-				await postSource.updateDirect(resultAdd.items[0].id, {$push : {totals: total}});
+				await postSource.pushToArrayField(resultAdd.items[0].id,  {totals: total});
 			});	
 
 			post.votes.forEach(async vote => {
-				await postSource.updateDirect(resultAdd.items[0].id, {$push : {votes: vote}});
+				await postSource.pushToArrayField(resultAdd.items[0].id, {votes: vote});
 			});		
 				
 		}

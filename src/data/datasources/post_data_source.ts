@@ -77,7 +77,7 @@ export class PostDataSourceImpl implements PostDataSource {
 
 	private getWithoutVotesProjection():object
 	{
-		const options = {votes: -1};
+		const options = {id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1};
 
 		return options;
 	}
@@ -100,7 +100,6 @@ export class PostDataSourceImpl implements PostDataSource {
 		{
 			query['stages'] = {$elemMatch: {id:stageId}};
 		}
-
 		return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getForApprovePosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
@@ -108,8 +107,8 @@ export class PostDataSourceImpl implements PostDataSource {
 		const query = {} as {[x: string]: unknown;};
 		query['orgaId'] = orgaId;
 		query['flowId'] = flowId;
-		query['stages'] = {$elemMatch: {id:stageId}};
-		query['votes'] = {$elemMatch: {id:{$ne:userId}}};
+		query['stageId'] = stageId;
+		query['votes'] = {$elemMatch: {userId:{$ne:userId}, stageId:stageId}};
 		if(searchText != '')
 		{
 			query['$text'] = {$search: searchText};

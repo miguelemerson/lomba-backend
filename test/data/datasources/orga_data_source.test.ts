@@ -14,6 +14,8 @@ describe('Orga MongoDB DataSource', () => {
 		new OrgaModel('rrr', 'Orga', 'orga', true, false),
 	];
 
+	const testSort:[string, 1 | -1][] = [['created', -1]];
+
 	beforeAll(async () => {
 		mongoWrapper = ({
 			getMany: jest.fn(),
@@ -126,4 +128,57 @@ describe('Orga MongoDB DataSource', () => {
 		expect(user.id).toEqual(user._id);
 
 	});	
+
+	describe('Nuevos tests de métodos adaptados', () => {
+
+		test('getAll - traer todas las organizaciones', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listOrgas)));
+
+			//act
+			const data = await dataSource.getAll(testSort);
+	
+			//assert
+			expect(mongoWrapper.getMany).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listOrgas));
+		});
+
+		test('getById - traer organización por Id', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(new ModelContainer(listOrgas)));
+
+			//act
+			const data = await dataSource.getById('oid');
+	
+			//assert
+			expect(mongoWrapper.getOne).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listOrgas));
+		});		
+
+		test('getByCode - traer organización por código', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(new ModelContainer(listOrgas)));
+
+			//act
+			const data = await dataSource.getByCode('oid', '');
+	
+			//assert
+			expect(mongoWrapper.getOne).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listOrgas));
+		});				
+
+		test('getByCode - traer organización por array de id', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listOrgas)));
+
+			//act
+			const data = await dataSource.getByOrgasIdArray(['oid', 'oid2']);
+	
+			//assert
+			expect(mongoWrapper.getMany).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listOrgas));
+		});		
+
+	});
+
 });

@@ -36,6 +36,23 @@ describe('Test de Either con sus métodos', () => {
 
 	});    
 
+	test('Usa el map right', () => {
+		//arrange
+		const role = new RoleModel('role', true);
+		//act
+		const r = Either.right<GenericFailure, RoleModel>(role);
+
+		//assert
+		const mappedResult = r.map(value => value.name = 'oro');
+
+		mappedResult.fold(
+			error => expect(error.kind).toBeUndefined(),
+			val => expect(val).toEqual('oro') 
+		);
+
+	});    
+
+
 	test('Usa el flatmap', () => {
 		//arrange
 		const fail = new GenericFailure('error');
@@ -49,8 +66,22 @@ describe('Test de Either con sus métodos', () => {
 			error => expect(error.kind).toEqual('GenericFailure'),
 			val => expect(val).toBeUndefined() 
 		);
+	});    
 
+	test('Usa el flatmap right', () => {
+		//arrange
+		const role = new RoleModel('role', true);
+		//act
+		const l = Either.right<GenericFailure, RoleModel>(role);
 
+		//assert
+		const mappedResult = l.flatMap(() => Either.right((value: { name: string; }) => value.name = 'oso'));
+
+		mappedResult.fold(
+			error => expect(error.kind).toBeUndefined(), val => {
+				expect(val).toBeDefined();
+			}
+		);
 	});    
 
 	test('Crea un right', () => {

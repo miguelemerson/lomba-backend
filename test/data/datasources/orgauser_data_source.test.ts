@@ -113,4 +113,60 @@ describe('OrgaUser MongoDB DataSource', () => {
 		expect(data).toEqual(true);
 
 	});	
+
+	test('asigna Id cuando no lo tiene', async () => {
+		//arrange
+		let orgauser = listOrgaUsers[0];
+		orgauser.id = '';
+		//act
+		orgauser = dataSource.setId(orgauser);
+
+		//assert
+		expect(orgauser._id).toBeDefined();
+		expect(orgauser.id).toEqual(orgauser._id);
+
+	});	
+
+	describe('Test de los nuevos métodos', () => {
+
+		test('getByOrgaId - conseguir por orgaId', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listOrgaUsers)));
+	
+			//act
+			const data = await dataSource.getByOrgaId('Súper OrgaUser');
+	
+			//assert
+			expect(mongoWrapper.getMany).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listOrgaUsers));
+	
+		});
+
+		test('getByUserId - conseguir por userId', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listOrgaUsers)));
+	
+			//act
+			const data = await dataSource.getByUserId('userId');
+	
+			//assert
+			expect(mongoWrapper.getMany).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listOrgaUsers));
+	
+		});		
+
+		test('getOneBy - conseguir por orgaId y userId', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(new ModelContainer(listOrgaUsers)));
+	
+			//act
+			const data = await dataSource.getOneBy('orgaId', 'userId');
+	
+			//assert
+			expect(mongoWrapper.getOne).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listOrgaUsers));
+	
+		});				
+	});
+
 });

@@ -96,10 +96,8 @@ describe('Test para el router response', () => {
 
 	test('Un router response de booleando', () => {
 		//arrange
-		const data = true;
-
 		//act
-		const result = new RouterResponse('1.0', data, 'test', {}, 'test');
+		const result = new RouterResponse('1.0', true, 'test', {}, 'test');
 		
 		//assert
 		expect(result.data).toBeDefined();
@@ -111,7 +109,7 @@ describe('Test para el router response', () => {
 
 	test('Un router response de otro objeto', () => {
 		//arrange
-		const data = listUsers[0];
+		const data = {valor:'cualquiera'};
 
 		//act
 		const result = new RouterResponse('1.0', data, 'test', {}, 'test');

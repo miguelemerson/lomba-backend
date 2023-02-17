@@ -19,4 +19,16 @@ describe('Test de Model Container', () => {
 		expect(result).toEqual(new ModelContainer<RoleModel>([model]));
 	});
 
+	test('consigue un model container desde otro model container', () => {
+		//arrange
+		const models = [new RoleModel('roledemo', true)];
+
+		//act
+		const result = ModelContainer.fromOneItem(models[0]);
+		const result2 = ModelContainer.fromOtherModel(models, result);
+
+		//assert
+		expect(result2).toEqual(new ModelContainer<RoleModel>([models[0]]));
+	});
+
 });
