@@ -164,6 +164,9 @@ class MockOrgaUserDataSource implements OrgaUserDataSource {
 	setId():OrgaUserModel{throw new Error('Method not implemented.');}
 }
 class MockPasswordDataSource implements PasswordDataSource {
+	updateByUserId(): Promise<ModelContainer<PasswordModel>> {
+		throw new Error('Method not implemented.');
+	}
 	getByUserId(): Promise<ModelContainer<PasswordModel>> {
 		throw new Error('Method not implemented.');
 	}
