@@ -108,7 +108,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		query['orgaId'] = orgaId;
 		query['flowId'] = flowId;
 		query['stageId'] = stageId;
-		query['votes'] = {$elemMatch: {userId:{$ne:userId}, stageId:stageId}};
+		query['votes'] = {$elemMatch: {userId:{$ne:userId}}};
 		if(searchText != '')
 		{
 			query['$text'] = {$search: searchText};
