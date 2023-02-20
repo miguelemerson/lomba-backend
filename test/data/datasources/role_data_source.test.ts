@@ -114,16 +114,46 @@ describe('Role MongoDB DataSource', () => {
 
 	});	
 
-	/*test('asigna Id cuando no lo tiene', async () => {
+	test('asigna Id-name cuando no lo tiene', async () => {
 		//arrange
-		let user = listRoles[0];
-		user.id = '';
+		let role = listRoles[0];
+		role.id = '';
 		//act
-		user = dataSource.setId(user);
+		role = dataSource.setId(role);
 
 		//assert
-		expect(user._id).toBeDefined();
-		expect(user.id).toEqual(user._id);
+		expect(role._id).toBeDefined();
+		expect(role.id).toEqual(role._id);
 
-	});	*/
+	});	
+
+
+	describe('Nuevos métodos de Role', () => {
+		test('getByName - trae por nombre de Role', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listRoles[0])));
+	
+			//act
+			const data = await dataSource.getByName('fff');
+	
+			//assert
+			expect(mongoWrapper.getOne).toBeCalledTimes(1);
+			expect(data).toEqual(ModelContainer.fromOneItem(listRoles[0]));
+	
+		});
+
+		test('getAll - trae todos', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listRoles[0])));
+	
+			//act
+			const data = await dataSource.getAll();
+	
+			//assert
+			expect(mongoWrapper.getMany).toBeCalledTimes(1);
+			expect(data).toEqual(ModelContainer.fromOneItem(listRoles[0]));
+	
+		});		
+	});
+
 });
