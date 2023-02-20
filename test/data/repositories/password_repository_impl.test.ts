@@ -169,6 +169,26 @@ describe('Password Repository Implementation', () => {
 			//expect(value).toEqual(ModelContainer.fromOneItem(listPasswords[0]));
 		});
 
+		test('debe llamar a las funciones de actualzar y no actualizar', async () => {
+			//arrange
+			jest.spyOn(mockPasswordDataSource, 'updateByUserId').mockImplementation(() => Promise.resolve(new ModelContainer<PasswordModel>([])));
+
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));			
+			//act
+			const result = await passwordRepository.updatePassword(listUsers[0].id, 'asd');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});			
+			//assert
+			expect(result.isRight());
+			expect(mockPasswordDataSource.updateByUserId).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(1);
+
+			//expect(value).toEqual(ModelContainer.fromOneItem(listPasswords[0]));
+		});
+
+
 		test('deberá generar error de Database al actualizar un usuario', async () => {
 			//arrange
 			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));	

@@ -57,10 +57,7 @@ export class PasswordRepositoryImpl implements PasswordRepository {
 					return Either.right(false);
 			}else{
 				const result = await this.dataSource.add(new PasswordModel(userId, passHashed.hash, passHashed.salt, true, false));
-				if(result.currentItemCount > 0)
-					return Either.right(true);
-				else
-					return Either.right(false);
+				return Either.right(true);
 			}	
 		}
 		catch(error)

@@ -14,6 +14,7 @@ export interface NoSQLDatabaseWrapper<T>{
     delete(id: string): Promise<boolean>;
     updateDirect(id: string, obj: object): Promise<boolean>;	
 	updateArray(id: string, obj: object, arrayFilters:object): Promise<boolean>;
+	updateDirectByQuery(query: object, obj: object): Promise<boolean>;	
 }
 
 export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
@@ -154,6 +155,11 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		return (result?.modifiedCount > 0 ? true : false);
 
 	}	
+	async updateDirectByQuery(query: object, obj: object): Promise<boolean>{
+		const result = await this.db.collection<Document>(this.collectionName).updateOne(query, obj);
+		return (result?.modifiedCount > 0 ? true : false);
+
+	}		
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
 		const result = await this.db.collection<Document>(this.collectionName)
 			.updateOne({_id: id, builtIn:false}, {$set: {enabled: enableOrDisable, updated: new Date()}});

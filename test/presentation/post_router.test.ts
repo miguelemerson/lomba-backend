@@ -107,6 +107,23 @@ describe('Post Router', () => {
 
 		});
 
+		test('debe retornar 200 y con sort y parámetros', async () => {
+			//arrange
+			const expectedData = fakeGetPost;
+			jest.spyOn(mockGetPostsUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(expectedData))));
+			//act
+			const response = await request(server).get('/api/v1/post/box/?sort=%5B%5B%22created%22,1%5D%5D&paramvars=%7B%22isdraft%22:false%7D').set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockGetPostsUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.error).toBeUndefined();
+
+		});
+
 		test('debe retornar 200 y con datos', async () => {
 			//arrange
 			const expectedData = fakeGetPost;

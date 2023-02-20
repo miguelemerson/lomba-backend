@@ -7,6 +7,7 @@ module.exports = {
 		'main.ts',
 		'server.ts',
 		'mongo_wrapper.ts',
-		'config_env.ts'
+		'config_env.ts',
+		'google_auth.ts'
 	]
 };

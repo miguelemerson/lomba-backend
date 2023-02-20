@@ -73,6 +73,7 @@ import { SendVote } from './domain/usecases/flows/send_vote';
 import { PostRepositoryImpl } from './data/repositories/post_repository_impl';
 import firebase, { ServiceAccount } from 'firebase-admin';
 import { BlobStorageSourceImpl } from './data/datasources/blob_storage_source';
+import { GoogleAuth } from './core/google_auth';
 
 dotenv.config();
 
@@ -124,7 +125,10 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const passRepo = new PasswordRepositoryImpl(passDataSource);
 	const orgaRepo = new OrgaRepositoryImpl(orgaDataSource);
 	const orgaUserRepo = new OrgaUserRepositoryImpl(orgaUserDataSource, userDataSource, orgaDataSource);
-	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource, googleApp);
+
+	const googleAuth = new GoogleAuth(googleApp);
+
+	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource, googleAuth);
 	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource);
 
 

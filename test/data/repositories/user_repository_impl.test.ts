@@ -410,7 +410,116 @@ describe('User Repository Implementation', () => {
 		});			
 	});
 
+	describe('getUsersNotInOrga', () => {
+		test('deberá entregar lista de usuarios que no están en la orga', async () => {
+			//arrange
+			const expectedData = listUsers;
+			jest.spyOn(mockUserDataSource, 'getWhoAreNotInOrga').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
+			//act
+			const result = await userRepository.getUsersNotInOrga('aaa', undefined);
+			//assert
+			expect(result.isRight()).toBeTruthy();
+			
+		});
+		
+		test('deberá generar error de Database', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getWhoAreNotInOrga').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			//act
+			const result = await userRepository.getUsersNotInOrga('aaa', undefined);
+			let failure:unknown;
+			let value:unknown;
 
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
 
+		test('deberá generar error de Network', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getWhoAreNotInOrga').mockImplementation(() => Promise.reject(new Error('neterror')));
+			//act
+			const result = await userRepository.getUsersNotInOrga('aaa', undefined);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error genérico', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getWhoAreNotInOrga').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await userRepository.getUsersNotInOrga('aaa', undefined);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});				
+        
+	});
+
+	describe('existsUser', () => {
+		test('deberá entregar usuario si existe', async () => {
+			//arrange
+			const expectedData = listUsers;
+			jest.spyOn(mockUserDataSource, 'getIfExistsByUsernameEmail').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
+			//act
+			const result = await userRepository.existsUser('aaa', 'user', 'email');
+			//assert
+			expect(result.isRight()).toBeTruthy();
+			
+		});
+		
+		test('deberá generar error de Database', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getIfExistsByUsernameEmail').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			//act
+			const result = await userRepository.existsUser('aaa', 'user', 'email');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
+
+		test('deberá generar error de Network', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getIfExistsByUsernameEmail').mockImplementation(() => Promise.reject(new Error('neterror')));
+			//act
+			const result = await userRepository.existsUser('aaa', 'user', 'email');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error genérico', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getIfExistsByUsernameEmail').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await userRepository.existsUser('aaa', 'user', 'email');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});				
+        
+	});
 
 });

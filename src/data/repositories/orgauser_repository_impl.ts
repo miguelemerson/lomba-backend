@@ -128,18 +128,10 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 
 	async updateOrgaUser(orgaId: string, userId: string, orgaUser: OrgaUserModel) : Promise<Either<Failure,ModelContainer<OrgaUser>>>{
 		try{
-			const resultOrgaUser = await this.getOrgaUser(orgaId, userId);
-			if(resultOrgaUser.isRight())
+			const resultOrgaUser = await this.dataSource.getOneBy(orgaId, userId);
+			if(resultOrgaUser.currentItemCount > 0)
 			{
-				let lastOrgaUser:OrgaUser | undefined;
-
-				resultOrgaUser.fold(error => {
-					//something wrong
-					throw new MongoError('No encontrado: ' + error.message);
-				}, value => {
-					lastOrgaUser = value.items[0];
-				});
-
+				const lastOrgaUser = resultOrgaUser.items[0];
 
 				if(lastOrgaUser)
 				{
@@ -185,18 +177,10 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 	}
 	async deleteOrgaUser(orgaId: string, userId: string): Promise<Either<Failure, boolean>>{
 		try{
-			const resultOrgaUser = await this.getOrgaUser(orgaId, userId);
-			if(resultOrgaUser.isRight())
+			const resultOrgaUser = await this.dataSource.getOneBy(orgaId, userId);
+			if(resultOrgaUser.currentItemCount > 0)
 			{
-				let lastOrgaUser:OrgaUser | undefined;
-
-				resultOrgaUser.fold(error => {
-					//something wrong
-					throw new MongoError('No encontrado: ' + error.message);
-				}, value => {
-					lastOrgaUser = value.items[0];
-				});
-
+				const lastOrgaUser = resultOrgaUser.items[0];
 
 				if(lastOrgaUser)
 				{
@@ -212,17 +196,10 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 							const newOrgasList = orgas.filter(e=> e.id != lastOrgaUser?.orgaId);
 
 							await this.userDataSource.update(modelContainerUser.items[0].id, {'orgas':newOrgasList});
-
 						}
-
-
 					}
-
-
 					return Either.right(result);
 				}
-
-				
 			}
 			return Either.left(new GenericFailure('No encontrado'));
 		}
