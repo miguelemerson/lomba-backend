@@ -126,4 +126,66 @@ describe('User MongoDB DataSource', () => {
 		expect(user.id).toEqual(user._id);
 
 	});	
+
+	describe('Nuevos métodos de user data source', () => {
+		test('getByOrgaId - trae usuarios por orgaId', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listUsers)));
+	
+			//act
+			const data = await dataSource.getByOrgaId('aaa');
+	
+			//assert
+			expect(mongoWrapper.getMany).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listUsers));
+		});
+
+		test('getWhoAreNotInOrga - trae los no en orgaId', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listUsers)));
+	
+			//act
+			const data = await dataSource.getWhoAreNotInOrga('aaa');
+	
+			//assert
+			expect(mongoWrapper.getMany).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listUsers));
+		});	
+		
+		test('getById - trae por userId', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(new ModelContainer(listUsers)));
+	
+			//act
+			const data = await dataSource.getById('aaa');
+	
+			//assert
+			expect(mongoWrapper.getOne).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listUsers));
+		});	
+		
+		test('getIfExistsByUsernameEmail - por username email', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(new ModelContainer(listUsers)));
+	
+			//act
+			const data = await dataSource.getIfExistsByUsernameEmail('aaa', 'bbb', '');
+	
+			//assert
+			expect(mongoWrapper.getOne).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listUsers));
+		});	
+		
+		test('getByUsernameEmail - por username email', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(new ModelContainer(listUsers)));
+	
+			//act
+			const data = await dataSource.getByUsernameEmail('aaa', 'bbb');
+	
+			//assert
+			expect(mongoWrapper.getOne).toBeCalledTimes(1);
+			expect(data).toEqual(new ModelContainer(listUsers));
+		});				
+	});
 });
