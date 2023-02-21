@@ -8,6 +8,7 @@ import { UserDataSource } from '../../../src/data/datasources/user_data_source';
 import { UserModel } from '../../../src/data/models/user_model';
 import { OrgaDataSource } from '../../../src/data/datasources/orga_data_source';
 import { OrgaModel } from '../../../src/data/models/orga_model';
+import { Orga } from '../../../src/domain/entities/orga';
 
 class MockOrgaUserDataSource implements OrgaUserDataSource {
 	getByOrgaId(): Promise<ModelContainer<OrgaUserModel>> {
@@ -336,6 +337,31 @@ describe('OrgaUser Repository Implementation', () => {
 			expect(value).toEqual(ModelContainer.fromOneItem(listOrgaUsers[0]));
 		});
 
+		test('debe llamar a los métodos de agregar con orgas del user', async () => {
+			//arrange
+			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+
+			jest.spyOn(mockOrgaDataSource, 'getById').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+
+			listUsers[0].orgas = [{id: listOrgas[0].id, code:listOrgas[0].code}];
+
+			jest.spyOn(mockUserDataSource, 'getById').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+
+			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+
+			//act
+			const result = await orgauserRepository.addOrgaUser(listOrgaUsers[0].orgaId, listOrgaUsers[0].userId, listOrgaUsers[0].roles, listOrgaUsers[0].enabled, listOrgaUsers[0].builtIn);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});	
+
+			//assert
+			expect(result.isRight());
+			expect(mockOrgaUserDataSource.add).toBeCalledTimes(1);
+			expect(value).toEqual(ModelContainer.fromOneItem(listOrgaUsers[0]));
+		});
+
 		test('deberá generar error de Database al agregar un orgausuario', async () => {
 			//arrange
 			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
@@ -442,6 +468,20 @@ describe('OrgaUser Repository Implementation', () => {
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});	
 
+		test('deberá generar error genérico al no encontrar orgauser', async () => {
+			//arrange
+			jest.spyOn(mockOrgaUserDataSource, 'update').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(new ModelContainer<OrgaUserModel>([])));		
+			//act
+			const result = await orgauserRepository.updateOrgaUser('OrgaUser', 'Ouser', listOrgaUsers[0]);
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});		
 
 	});
 
@@ -559,6 +599,96 @@ describe('OrgaUser Repository Implementation', () => {
 			//assert
 			expect(result.isLeft()).toBeTruthy();
 			expect(failure).toBeInstanceOf(GenericFailure);
-		});			
+		});	
+		
+		test('deberá generar error genérico al eliminar y no encontrar un orgausuario', async () => {
+			//arrange
+			jest.spyOn(mockOrgaUserDataSource, 'delete').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(new ModelContainer<OrgaUserModel>([])));		
+			//act
+			const result = await orgauserRepository.deleteOrgaUser('orgaId', 'userId');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});	
 	});
+
+	describe('getOrgasByUserId', () => {
+		test('debe llamar a las funciones de trae orgas por user', async () => {
+			//arrange
+			jest.spyOn(mockOrgaUserDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));	
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));			
+			//act
+			const result = await orgauserRepository.getOrgasByUserId('userId');
+			//assert
+			expect(result.isRight());
+			expect(mockOrgaUserDataSource.getByUserId).toBeCalledTimes(1);
+			expect(result.getOrElse(ModelContainer.fromOneItem(listOrgas[1]))).toEqual(ModelContainer.fromOneItem(listOrgas[0]));
+		});
+
+		test('deberá generar error de Database al buscar orgas por user', async () => {
+			//arrange
+			jest.spyOn(mockOrgaUserDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+
+			//act
+			const result = await orgauserRepository.getOrgasByUserId('userId');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
+
+		test('deberá generar error de Network al orgas por user', async () => {
+			//arrange
+			jest.spyOn(mockOrgaUserDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new Error('neterror')));
+
+			//act
+			const result = await orgauserRepository.getOrgasByUserId('userId');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error de Network al orgas por user', async () => {
+			//arrange
+			jest.spyOn(mockOrgaUserDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
+
+			//act
+			const result = await orgauserRepository.getOrgasByUserId('userId');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});		
+
+		test('deberá generar salida vacía al buscar orgas por user', async () => {
+			//arrange
+			jest.spyOn(mockOrgaUserDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(new ModelContainer<OrgaUserModel>([])));	
+			//act
+			const result = await orgauserRepository.getOrgasByUserId('userId');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isRight()).toBeTruthy();
+		});	
+		
+
+	});
+
 });

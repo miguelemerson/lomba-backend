@@ -22,6 +22,7 @@ describe('Password MongoDB DataSource', () => {
 			update: jest.fn(),
 			enable: jest.fn(),
 			delete: jest.fn(),
+			updateDirectByQuery: jest.fn()
 		} as unknown) as MongoWrapper<PasswordModel>;
 
 		dataSource = new PasswordDataSourceImpl(mongoWrapper);
@@ -127,6 +128,19 @@ describe('Password MongoDB DataSource', () => {
 			//assert
 			expect(mongoWrapper.getOne).toBeCalledTimes(1);
 			expect(data).toEqual(new ModelContainer(listPasswords));
+
+		});
+
+		test('modificar una password por userId', async () => {
+		//arrange
+			jest.spyOn(mongoWrapper, 'updateDirectByQuery').mockImplementation(() => Promise.resolve(true));
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			//act
+			const data = await dataSource.updateByUserId(listPasswords[0].id, listPasswords[0]);
+
+			//assert
+			expect(mongoWrapper.updateDirectByQuery).toBeCalledTimes(1);
+			expect(data).toEqual(ModelContainer.fromOneItem(listPasswords[0]));
 
 		});
 

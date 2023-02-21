@@ -405,6 +405,60 @@ describe('Orga Repository Implementation', () => {
 		});			
 	});
 
+	describe('existsOrga', () => {
+		test('debe llamar a las funciones de existencia', async () => {
+			//arrange
+			jest.spyOn(mockOrgaDataSource, 'getByCode').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			//act
+			const result = await orgaRepository.existsOrga('ooo', '');
+			//assert
+			expect(result.isRight());
+			expect(mockOrgaDataSource.getByCode).toBeCalledTimes(1);
+			expect(result.getOrElse(ModelContainer.fromOneItem(listOrgas[1]))).toEqual(ModelContainer.fromOneItem(listOrgas[0]));
+		});
+
+		test('deberá generar error de Database al eliminar un orga', async () => {
+			//arrange
+			jest.spyOn(mockOrgaDataSource, 'getByCode').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			//act
+			const result = await orgaRepository.existsOrga('ooo', '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
+
+		test('deberá generar error de Network al eliminar un orga', async () => {
+			//arrange
+			jest.spyOn(mockOrgaDataSource, 'getByCode').mockImplementation(() => Promise.reject(new Error('neterror')));
+			//act
+			const result = await orgaRepository.existsOrga('ooo', '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});		
+
+		test('deberá generar error genérico al eliminar un orga', async () => {
+			//arrange
+			jest.spyOn(mockOrgaDataSource, 'getByCode').mockImplementation(() => Promise.reject('generic'));
+			//act
+			const result = await orgaRepository.existsOrga('ooo', '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			//assert
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});			
+	});
 
 
 

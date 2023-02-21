@@ -1,8 +1,8 @@
-import firebase from 'firebase-admin';
 import { MongoError } from 'mongodb';
 import { data_insert01 } from '../../core/builtindata/load_data_01';
 import { Either } from '../../core/either';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
+import { GoogleAuth } from '../../core/google_auth';
 import { generateJWT } from '../../core/jwt';
 import { ModelContainer } from '../../core/model_container';
 import { HashPassword } from '../../core/password_hash';
@@ -27,13 +27,13 @@ export class AuthRepositoryImpl implements AuthRepository {
 	userDataSource: UserDataSource;
 	orgaDataSource: OrgaDataSource;
 	orgaUserDataSource: OrgaUserDataSource;
-	firebaseGoogleApp: firebase.app.App;
-	constructor(userDataSource: UserDataSource, orgaDataSource: OrgaDataSource, passwordDataSource: PasswordDataSource, orgaUserDataSource: OrgaUserDataSource, googleApp: firebase.app.App){
+	googleAuth: GoogleAuth;
+	constructor(userDataSource: UserDataSource, orgaDataSource: OrgaDataSource, passwordDataSource: PasswordDataSource, orgaUserDataSource: OrgaUserDataSource, googleAuth: GoogleAuth){
 		this.passwordDataSource = passwordDataSource;
 		this.userDataSource = userDataSource;
 		this.orgaDataSource = orgaDataSource;
 		this.orgaUserDataSource = orgaUserDataSource;
-		this.firebaseGoogleApp = googleApp;
+		this.googleAuth = googleAuth;
 	}
 
 	async getAuth(auth:Auth):Promise<Either<Failure,ModelContainer<TokenModel>>>
@@ -42,6 +42,9 @@ export class AuthRepositoryImpl implements AuthRepository {
 			//si el password no viene informado, entonces se rechaza la solicitud
 			if(!auth.password)
 				return Either.left(new GenericFailure('Need password'));
+
+			if(auth.orgaId == undefined)
+				auth.orgaId = '';
 
 			//busca usuario por username o email, debe estar habilitado.
 			const user = await this.findUser(auth.username, auth.username);
@@ -63,7 +66,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 			const orgas = await this.findUserOrgas(user.orgas);
 
 			//si el auth especifica orgaId y está contenida en las organizaciones asociadas al usuario entonces:
-			const orgaId = this.resolveSpecificOrga(orgas, auth.orgaId);
+			const orgaId = this.resolveSpecificOrga(orgas, auth.orgaId ?? '');
 
 			//lista de roles del usuario en la organización seleccionada
 			//si la organización no está especificada entonces retorna undefined para los roles
@@ -73,7 +76,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 			const newToken = generateJWT({userId:user.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
 
 			//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
-			const tokenModel = new TokenModel(newToken, orgaId ? orgaId : '', orgas, pass.istemp);
+			const tokenModel = this.createToken(newToken, orgaId, orgas, pass.istemp ?? false);
 			return Either.right(ModelContainer.fromOneItem(tokenModel));
 		}
 		catch(error)
@@ -85,6 +88,10 @@ export class AuthRepositoryImpl implements AuthRepository {
 				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
 			else return Either.left(new GenericFailure('undetermined', error));	
 		}
+	}
+
+	private createToken(newToken: string, orgaId: string, orgas: OrgaModel[], istemp: boolean) {
+		return new TokenModel(newToken, orgaId, orgas, istemp);
 	}
 
 	async registerUser(user:UserModel, auth:Auth, roles:string): Promise<Either<Failure,ModelContainer<User>>>{
@@ -162,7 +169,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 			const newToken = generateJWT({userId:user.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
 
 			//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
-			const tokenModel = new TokenModel(newToken, orgaId ? orgaId : '', orgas);
+			const tokenModel = this.createToken(newToken, orgaId, orgas, false);
 			return Either.right(ModelContainer.fromOneItem(tokenModel));
 
 		}
@@ -184,67 +191,65 @@ export class AuthRepositoryImpl implements AuthRepository {
 
 			try
 			{
-				const googleVerify = await this.firebaseGoogleApp.auth().verifyIdToken(googleToken);
-
-				if(googleVerify.id == '')
-					Either.left(new GenericFailure('No valid token'));
-				
-				//busca usuario por username o email, debe estar habilitado.
-				const user = await this.findUser(userToAuth.username, userToAuth.email);
-				//si no lo encuentra entonces registramos usuario
-				if(!user)
-				{
-					const defaultOrgaId = data_insert01.orgas[1].id;
-					const defaultRole = 'user';
-
-					//id se pasa vacío para que el datasource cree uno nuevo
-					const userModel = new UserModel('', userToAuth.name, userToAuth.username, userToAuth.email, true, false);
-
-					const newUser = await this.newUser(userModel);
-					if(!newUser)
-						return Either.left(new GenericFailure('No user added'));
-
-					await this.newOrgaUser(defaultOrgaId, newUser._id, defaultRole);
-
-					const orgas = await this.orgaDataSource.getById(defaultOrgaId);
-					if (orgas.currentItemCount > 0) {
-						const orgasIdCode = [{id:orgas.items[0].id,code:orgas.items[0].code}];
-						const modelContainer = await this.userDataSource.update(newUser.id, {orgas:orgasIdCode});
-						if(modelContainer.currentItemCount > 0)
-						{
-							newUser.orgas = modelContainer.items[0].orgas;
-						}
-					}				
-
-					userAuth = {id: newUser.id, name: newUser.name, 
-						username: newUser.username, email: newUser.email, enabled: newUser.enabled, builtIn: newUser.builtIn, created: newUser.created, orgas: newUser.orgas, updated: newUser.updated, deleted: newUser.deleted, expires: newUser.expires};
-				}
-				else
-					userAuth = {id: user.id, name: user.name, 
-						username: user.username, email: user.email, enabled: user.enabled, builtIn: user.builtIn, created: user.created, orgas: user.orgas, updated: user.updated, deleted: user.deleted, expires: user.expires};
-
-				//busca las orgas que coincidan con los id que están en el array de organizaciones de usuario.
-				const orgas = await this.findUserOrgas(userAuth.orgas);
-
-				//si el auth especifica orgaId y está contenida en las organizaciones asociadas al usuario entonces:
-				const orgaId = this.resolveSpecificOrga(orgas, undefined);
-
-				//lista de roles del usuario en la organización seleccionada
-				//si la organización no está especificada entonces retorna undefined para los roles
-				const rolesString = await this.findRoles(userAuth.id, orgaId);
-
-				//nuevo token con el payload que se especifica.
-				const newToken = generateJWT({userId:userAuth.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
-
-				//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
-				const tokenModel = new TokenModel(newToken, orgaId ? orgaId : '', orgas, false);
-				return Either.right(ModelContainer.fromOneItem(tokenModel));
-
-
+				if(!await this.googleAuth.isValid(googleToken))
+					return Either.left(new GenericFailure('No valid token'));
 			}catch(e)
 			{
 				return Either.left(new GenericFailure('No valid google token'));
+			}	
+			//busca usuario por username o email, debe estar habilitado.
+			const user = await this.findUser(userToAuth.username, userToAuth.email);
+			//si no lo encuentra entonces registramos usuario
+			if(!user)
+			{
+				const defaultOrgaId = data_insert01.orgas[1].id;
+				const defaultRole = 'user';
+
+				//id se pasa vacío para que el datasource cree uno nuevo
+				const userModel = new UserModel('', userToAuth.name, userToAuth.username, userToAuth.email, true, false);
+
+				const newUser = await this.newUser(userModel);
+				if(!newUser)
+					return Either.left(new GenericFailure('No user added'));
+
+				await this.newOrgaUser(defaultOrgaId, newUser._id, defaultRole);
+
+				const orgas = await this.orgaDataSource.getById(defaultOrgaId);
+				if (orgas.currentItemCount > 0) {
+					const orgasIdCode = [{id:orgas.items[0].id,code:orgas.items[0].code}];
+					const modelContainer = await this.userDataSource.update(newUser.id, {orgas:orgasIdCode});
+					if(modelContainer.currentItemCount > 0)
+					{
+						newUser.orgas = modelContainer.items[0].orgas;
+					}
+				}				
+
+				userAuth = {id: newUser.id, name: newUser.name, 
+					username: newUser.username, email: newUser.email, enabled: newUser.enabled, builtIn: newUser.builtIn, created: newUser.created, orgas: newUser.orgas, updated: newUser.updated, deleted: newUser.deleted, expires: newUser.expires};
 			}
+			else
+				userAuth = {id: user.id, name: user.name, 
+					username: user.username, email: user.email, enabled: user.enabled, builtIn: user.builtIn, created: user.created, orgas: user.orgas, updated: user.updated, deleted: user.deleted, expires: user.expires};
+
+			//busca las orgas que coincidan con los id que están en el array de organizaciones de usuario.
+			const orgas = await this.findUserOrgas(userAuth.orgas);
+
+			//si el auth especifica orgaId y está contenida en las organizaciones asociadas al usuario entonces:
+			const orgaId = this.resolveSpecificOrga(orgas, '');
+
+			//lista de roles del usuario en la organización seleccionada
+			//si la organización no está especificada entonces retorna undefined para los roles
+			const rolesString = await this.findRoles(userAuth.id, orgaId);
+
+			//nuevo token con el payload que se especifica.
+			const newToken = generateJWT({userId:userAuth.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
+
+			//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
+			const tokenModel = this.createToken(newToken, orgaId, orgas, false);
+			return Either.right(ModelContainer.fromOneItem(tokenModel));
+
+
+
 			
 		}
 		catch(error)
@@ -298,21 +303,21 @@ export class AuthRepositoryImpl implements AuthRepository {
 		//tenemos las orgas
 		return orgaResult.items;
 	}
-	private resolveSpecificOrga(orgas:OrgaModel[], orgaId?:string):string | undefined
+	private resolveSpecificOrga(orgas:OrgaModel[], orgaId:string):string
 	{
 		//si especifica orgaId y está contenida en las organizaciones asociadas al usuario entonces:
-		if(orgaId != undefined && orgas.find(o=> o._id == orgaId))
+		if(orgas.find(o=> o._id == orgaId))
 		{
 			//se confirma que el orgaId es el especificado. La asignación es redundante.
-			return orgas.find(o=> o._id = (orgaId == undefined) ? '' : orgaId)?._id;
-		} else if (!orgaId)
+			return orgas.find(o=> o._id == orgaId)?._id ?? '';
+		} else if (orgaId == '')
 		{
 			//si el auth no especifica orgaId, pero el usuario tiene sólo una organización, pues entonces se le asigna esa organización al auth.
 			if(orgas.length == 1)
 				return orgas[0]._id;
 			//en caso contrario el orgaId de auth queda indefinido y el token no especificará orgaId.
 		}
-		return undefined;
+		return '';
 	}
 
 	private async findRoles(userId:string, orgaId:string | undefined): Promise<string | undefined> {

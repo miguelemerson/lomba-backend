@@ -18,10 +18,11 @@ import { AuthRepositoryImpl } from '../../../src/data/repositories/auth_reposito
 import { PasswordRepositoryImpl } from '../../../src/data/repositories/password_repository_impl';
 import { RoleRepositoryImpl } from '../../../src/data/repositories/role_repository_impl';
 import { UserRepositoryImpl } from '../../../src/data/repositories/user_repository_impl';
-import { Auth } from '../../../src/domain/entities/auth';
 import { TokenModel } from '../../../src/data/models/token_model';
 import { Token } from '../../../src/domain/entities/token';
 import { Role } from '../../../src/domain/entities/role';
+import { Auth } from '../../../src/domain/entities/auth';
+
 import { generateJWT, validJWT } from '../../../src/core/jwt';
 import { AuthRepository } from '../../../src/domain/repositories/auth_repository';
 import { PasswordRepository } from '../../../src/domain/repositories/password_repository';
@@ -30,6 +31,17 @@ import { OrgaRepository } from '../../../src/domain/repositories/orga_repository
 import { RoleRepository } from '../../../src/domain/repositories/role_repository';
 import { UserRepository } from '../../../src/domain/repositories/user_repository';
 import firebase from 'firebase-admin';
+import { DecodedAuthBlockingToken, DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
+import { User } from '../../../src/domain/entities/user';
+import { BaseAuth, DeleteUsersResult, GetUsersResult, ListUsersResult, SessionCookieOptions } from 'firebase-admin/lib/auth/base-auth';
+import { ActionCodeSettings } from 'firebase-admin/lib/auth/action-code-settings-builder';
+import { CreateRequest, UpdateRequest, AuthProviderConfigFilter, ListProviderConfigResults, AuthProviderConfig, UpdateAuthProviderRequest } from 'firebase-admin/lib/auth/auth-config';
+import { UserIdentifier } from 'firebase-admin/lib/auth/identifier';
+import { UserImportRecord, UserImportOptions, UserImportResult } from 'firebase-admin/lib/auth/user-import-builder';
+import { UserRecord } from 'firebase-admin/lib/auth/user-record';
+import { ProjectConfigManager } from 'firebase-admin/lib/auth/project-config-manager';
+import { TenantManager } from 'firebase-admin/lib/auth/tenant-manager';
+import { GoogleAuth } from '../../../src/core/google_auth';
 
 class MockUserDataSource implements UserDataSource {
 	getIfExistsByUsernameEmail(): Promise<ModelContainer<UserModel>> {
@@ -204,7 +216,7 @@ describe('Auth Repository Implementation', () => {
 	let passwordRepository: PasswordRepository;
 	let authRepository: AuthRepository;
 	const googleApp = firebase.initializeApp();
-
+	const mockGoogleAuth = new GoogleAuth(googleApp);
 	const listUsers: UserModel[] = [
 		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
 		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
@@ -225,6 +237,7 @@ describe('Auth Repository Implementation', () => {
 		new OrgaUserModel('OrgaUser', 'Ouser', [], true, false),
 	];
 	const testAuth:Auth = {username:'user', password:'4321'};
+	const testUser:User = {id: 'id', name:'name', username:'username', email:'email', enabled:true, builtIn:false, created: new Date()};
 	const testAuthOrga:Auth = {username:'user', password:'4321', orgaId:'000'};
 	const testAuthOrgaNew:Auth = {username:'admin', password:'4321', orgaId:'rrr'};
 
@@ -237,6 +250,7 @@ describe('Auth Repository Implementation', () => {
 	];
 	const testToken = new TokenModel('newToken', 'orgaId', []);
 	
+
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -253,8 +267,10 @@ describe('Auth Repository Implementation', () => {
 
 
 
-		authRepository = new AuthRepositoryImpl(mockUserDataSource,mockOrgaDataSource,mockPasswordDataSource,mockOrgaUserDataSource, googleApp);
+		authRepository = new AuthRepositoryImpl(mockUserDataSource,mockOrgaDataSource,mockPasswordDataSource,mockOrgaUserDataSource, mockGoogleAuth);
 	});
+
+
 
 	describe('getAuth', () => {
 		test('debe entregar un token satisfactorio', async () => {
@@ -756,4 +772,254 @@ describe('Auth Repository Implementation', () => {
 			expect(failure).toBeInstanceOf(GenericFailure);
 		});
 	});
+
+	describe('getAuthGoogle', () => {
+
+	
+		test('OK debe entregar un token satisfactorio', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(true));
+
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			const value = result.getOrElse(ModelContainer.fromOneItem(testToken));
+
+			expect(result.isRight()).toBeTruthy();
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(1);
+			expect(value).toBeDefined();
+			expect(value?.currentItemCount).toStrictEqual(1);
+			expect(validJWT(value.items[0].value, 'lomba')).toBeDefined();
+			
+		});
+
+		test('sin token de google válido', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(false));
+
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			const value = result.getOrElse(ModelContainer.fromOneItem(testToken));
+
+			expect(result.isLeft()).toBeTruthy();
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(0);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
+			expect(value).toBeDefined();
+			expect(value?.currentItemCount).toStrictEqual(1);
+			
+		});
+
+		test('error validando token google', async () => {
+			//arrange
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.reject(new Error('error')));
+
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+
+
+			expect(result.isLeft()).toBeTruthy();
+		});
+
+		test('creando el usuario nuevo', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(new ModelContainer<UserModel>([])));
+			jest.spyOn(mockUserDataSource, 'update').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));			
+			jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));			
+			jest.spyOn(mockOrgaDataSource, 'getById').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));			
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));			
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(true));
+
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			const value = result.getOrElse(ModelContainer.fromOneItem(testToken));
+
+			expect(result.isRight()).toBeTruthy();
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(1);
+			expect(value).toBeDefined();
+			expect(value?.currentItemCount).toStrictEqual(1);
+			
+		});
+
+		test('sin crear el usuario nuevo', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(new ModelContainer<UserModel>([])));
+			jest.spyOn(mockUserDataSource, 'add').mockImplementation(() => Promise.resolve(new ModelContainer<UserModel>([])));			
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgas[0])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(true));
+
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			const value = result.getOrElse(ModelContainer.fromOneItem(testToken));
+
+			expect(result.isLeft()).toBeTruthy();
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
+			expect(value).toBeDefined();
+			expect(value?.currentItemCount).toStrictEqual(1);
+			
+		});
+
+		test('deberá generar error de DatabaseFailure al buscar un token', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(true));
+
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+			
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(DatabaseFailure);
+		});
+
+		test('deberá generar error de NetworkFailure al buscar un token', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject(new Error('neterror')));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(true));
+
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+
+			
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});
+		
+		test('deberá generar error genérico al buscar un token', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(true));
+
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});
+
+		test('deberá generar error genérico al buscar un token sin password', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(true));			
+			//act
+			const testAuthNoPass:Auth = {username:'admin', password:''};
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});
+
+		test('deberá generar error NetworkFailure al buscar un token y no encontrar un usuario', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(new ModelContainer<UserModel>([])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(true));
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(0);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(NetworkFailure);
+		});
+
+		test('deberá generar error genérico al buscar un token y no encontrar la password', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.reject('generic'));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(new ModelContainer<PasswordModel>([])));
+			jest.spyOn(mockGoogleAuth, 'isValid').mockImplementation(() => Promise.resolve(true));
+			//act
+			const result = await authRepository.getAuthGoogle(testUser, '');
+			let failure:unknown;
+			let value:unknown;
+
+			result.fold(err => {failure = err;}, val => {value = val;});
+
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(0);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
+			expect(result.isLeft()).toBeTruthy();
+			expect(failure).toBeInstanceOf(GenericFailure);
+		});
+	});
+
+
 });
+

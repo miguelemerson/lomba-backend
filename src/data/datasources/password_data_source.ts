@@ -47,7 +47,7 @@ export class PasswordDataSourceImpl implements PasswordDataSource {
 		if(changes != null)
 			params['updated'] = new Date();
 
-		return await this.collection.db.collection<PasswordModel>(this.collection.collectionName).updateOne({'userId': userId}, {$set:params}).then(() => this.getOne({'userId':userId}));
+		return await this.collection.updateDirectByQuery({'userId': userId}, {$set:params}).then(() => this.getOne({'userId':userId}));
 		
 	}	
 	async enable(id: string, enableOrDisable: boolean): Promise<boolean>{
