@@ -204,7 +204,7 @@ export class PostDataSourceImpl implements PostDataSource {
 
 		const options = this.getStandardProjection(userId, flowId, stageId);
 
-		return await this.collection.getOneWithOptions(query, options);
+		return await this.collection.getOneWithOptions(query, {projection : options});
 	}
 	async getById(postId: string): Promise<ModelContainer<PostModel>> {
 		return await this.collection.getOneWithOptions({_id:postId}, {projection: this.getWithoutVotesProjection()});
