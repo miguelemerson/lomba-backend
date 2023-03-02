@@ -112,7 +112,7 @@ describe('Post Router', () => {
 			const expectedData = fakeGetPost;
 			jest.spyOn(mockGetPostsUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(expectedData))));
 			//act
-			const response = await request(server).get('/api/v1/post/box/?sort=%5B%5B%22created%22,1%5D%5D&paramvars=%7B%22isdraft%22:false%7D').set({Authorization: 'Bearer ' + testTokenUser});
+			const response = await request(server).get('/api/v1/post/box/?sort=%5B%5B%22created%22,1%5D%5D&paramvars=%7B%22isdraft%22:false%7D&boxpage=uploaded&searchtext=&pageindex=1&pagesize=10').set({Authorization: 'Bearer ' + testTokenUser});
 			const roures = response.body as RouterResponse;
 
 			//assert

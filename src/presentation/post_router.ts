@@ -23,13 +23,13 @@ export default function PostsRouter(
 			let sort: [string, 1 | -1][] | undefined;
 			if(req.query.sort)
 			{
-				sort = req.query.sort ? JSON.parse(req.query.sort.toString()) as [string, 1 | -1][] : undefined;
+				sort = JSON.parse(req.query.sort.toString()) as [string, 1 | -1][];
 			}
 
 			let params: {[x: string]: unknown} = {};
 			if(req.query.paramvars)
 			{
-				params = req.query.paramvars ? JSON.parse(req.query.paramvars.toString()) as {[x: string]: string} : {};
+				params = JSON.parse(req.query.paramvars.toString()) as {[x: string]: string};
 			}
 
 			//execution
@@ -39,7 +39,10 @@ export default function PostsRouter(
 				(req.query.flowId!=undefined)?req.query.flowId.toString():'',
 				(req.query.stageId!=undefined)?req.query.stageId.toString():'',
 				(req.query.boxpage!=undefined)?req.query.boxpage.toString():'',
-				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',params, sort, (req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, (req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined
+				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',
+				params,
+				sort, 
+				(req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, (req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined
 			);
 			//evaluate
 			post.fold(error => {
