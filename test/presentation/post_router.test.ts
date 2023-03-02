@@ -38,11 +38,6 @@ describe('Post Router', () => {
 	let mockGetPostsUseCase: GetPostsUseCase;
 	let mockSendVoteUseCase: SendVoteUseCase;
 
-	/*const listUsers: UserModel[] = [
-		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
-		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
-	];*/
-
 	const UrlGetPost = '?orgaId=00000200-0200-0200-0200-000000000200&userId=00000005-0005-0005-0005-000000000005&flowId=00000111-0111-0111-0111-000000000111&stageId=00000AAA-0111-0111-0111-000000000111&boxPage=uploaded&searchText=post';
 
 	const fakeGetPost: PostModel = new PostModel('00001AAA-0119-0111-0111-000000000000',

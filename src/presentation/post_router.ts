@@ -39,7 +39,11 @@ export default function PostsRouter(
 				(req.query.flowId!=undefined)?req.query.flowId.toString():'',
 				(req.query.stageId!=undefined)?req.query.stageId.toString():'',
 				(req.query.boxpage!=undefined)?req.query.boxpage.toString():'',
-				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',params, sort, (req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, (req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined
+				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',
+				params,
+				sort,
+				(req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined,
+				(req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined
 			);
 			//evaluate
 			post.fold(error => {
