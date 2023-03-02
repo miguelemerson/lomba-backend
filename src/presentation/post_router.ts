@@ -23,13 +23,13 @@ export default function PostsRouter(
 			let sort: [string, 1 | -1][] | undefined;
 			if(req.query.sort)
 			{
-				sort = req.query.sort ? JSON.parse(req.query.sort.toString()) as [string, 1 | -1][] : undefined;
+				sort = JSON.parse(req.query.sort.toString()) as [string, 1 | -1][];
 			}
 
 			let params: {[x: string]: unknown} = {};
 			if(req.query.paramvars)
 			{
-				params = req.query.paramvars ? JSON.parse(req.query.paramvars.toString()) as {[x: string]: string} : {};
+				params = JSON.parse(req.query.paramvars.toString()) as {[x: string]: string};
 			}
 
 			//execution
