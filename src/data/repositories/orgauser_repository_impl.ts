@@ -193,7 +193,7 @@ export class OrgaUserRepositoryImpl implements OrgaUserRepository {
 						const orgas = modelContainerUser.items[0].orgas;
 						if(orgas)
 						{
-							const newOrgasList = orgas.filter(e=> e.id != lastOrgaUser?.orgaId);
+							const newOrgasList = orgas.filter(e=> e.id != lastOrgaUser.orgaId);
 
 							await this.userDataSource.update(modelContainerUser.items[0].id, {'orgas':newOrgasList});
 						}

@@ -60,13 +60,15 @@ export class AuthRepositoryImpl implements AuthRepository {
 			if(!pass)
 				return Either.left(new GenericFailure('Pass not found'));
 
+			if(!pass.istemp) pass.istemp = false;
+
 			//tenemos la password, tiene un dato que indica que la password es temporal, así se podrá exigir al usuario hacer un cambio de ella.			
 
 			//busca las orgas que coincidan con los id que están en el array de organizaciones de usuario.
 			const orgas = await this.findUserOrgas(user.orgas);
 
 			//si el auth especifica orgaId y está contenida en las organizaciones asociadas al usuario entonces:
-			const orgaId = this.resolveSpecificOrga(orgas, auth.orgaId ?? '');
+			const orgaId = this.resolveSpecificOrga(orgas, auth.orgaId);
 
 			//lista de roles del usuario en la organización seleccionada
 			//si la organización no está especificada entonces retorna undefined para los roles
@@ -76,7 +78,7 @@ export class AuthRepositoryImpl implements AuthRepository {
 			const newToken = generateJWT({userId:user.id, orgaId: orgaId, roles: rolesString}, 'lomba', 60*60);
 
 			//objeto que finalmente se retorna en el endpoint de autenticación y autorización.
-			const tokenModel = this.createToken(newToken, orgaId, orgas, pass.istemp ?? false);
+			const tokenModel = this.createToken(newToken, orgaId, orgas, pass.istemp);
 			return Either.right(ModelContainer.fromOneItem(tokenModel));
 		}
 		catch(error)
@@ -306,10 +308,13 @@ export class AuthRepositoryImpl implements AuthRepository {
 	private resolveSpecificOrga(orgas:OrgaModel[], orgaId:string):string
 	{
 		//si especifica orgaId y está contenida en las organizaciones asociadas al usuario entonces:
-		if(orgas.find(o=> o._id == orgaId))
+
+		const findedOrga = orgas.find(o=> o._id == orgaId);
+
+		if(findedOrga)
 		{
 			//se confirma que el orgaId es el especificado. La asignación es redundante.
-			return orgas.find(o=> o._id == orgaId)?._id ?? '';
+			return findedOrga._id;
 		} else if (orgaId == '')
 		{
 			//si el auth no especifica orgaId, pero el usuario tiene sólo una organización, pues entonces se le asigna esa organización al auth.

@@ -294,6 +294,27 @@ describe('Auth Repository Implementation', () => {
 			
 		});
 
+		test('debe entregar un token satisfactorio sin orgas asociadas', async () => {
+			//arrange
+			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listUsers[0])));
+			jest.spyOn(mockOrgaDataSource, 'getByOrgasIdArray').mockImplementation(() => Promise.resolve(new ModelContainer<OrgaModel>([])));
+			jest.spyOn(mockOrgaUserDataSource, 'getOneBy').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listOrgaUsers[0])));
+			jest.spyOn(mockPasswordDataSource, 'getByUserId').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listPasswords[0])));
+			//act
+			const result = await authRepository.getAuth(testAuth);
+			const value = result.getOrElse(ModelContainer.fromOneItem(testToken));
+
+			expect(result.isRight()).toBeTruthy();
+			expect(mockUserDataSource.getByUsernameEmail).toBeCalledTimes(1);
+			expect(mockOrgaDataSource.getByOrgasIdArray).toBeCalledTimes(1);
+			expect(mockPasswordDataSource.getByUserId).toBeCalledTimes(1);
+			expect(mockOrgaUserDataSource.getOneBy).toBeCalledTimes(0);
+			expect(value).toBeDefined();
+			expect(value?.currentItemCount).toStrictEqual(1);
+			expect(validJWT(value.items[0].value, 'lomba')).toBeDefined();
+			
+		});
+
 		test('deberá generar error de Database al buscar un token', async () => {
 			//arrange
 			jest.spyOn(mockUserDataSource, 'getByUsernameEmail').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));

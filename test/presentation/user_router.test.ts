@@ -715,7 +715,7 @@ describe('User Router', () => {
 			jest.spyOn(mockExistsUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<UserModel>(expectedData))));
 	
 			//act
-			const response = await request(server).get('/api/v1/user/if/exists/').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const response = await request(server).get('/api/v1/user/if/exists/?userId=&username=&email=').set({Authorization: 'Bearer ' + testTokenAdmin});
 			const roures = response.body as RouterResponse;
 	
 			//assert

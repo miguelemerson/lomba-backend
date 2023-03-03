@@ -42,7 +42,8 @@ export default function PostsRouter(
 				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',
 				params,
 				sort, 
-				(req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, (req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined
+				(req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, 
+				(req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined
 			);
 			//evaluate
 			post.fold(error => {

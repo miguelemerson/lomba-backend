@@ -84,7 +84,7 @@ export default function UsersRouter(
 			let valid_sort: [string, 1 | -1][] | undefined;
 			if(req.query.sort)
 			{
-				valid_sort = req.query.sort ? JSON.parse(req.query.sort.toString()) : undefined;
+				valid_sort = JSON.parse(req.query.sort.toString());
 			}
 			let pageIndex:number | undefined;
 			let itemsPerPage:number | undefined;
