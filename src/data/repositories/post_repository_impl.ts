@@ -24,6 +24,12 @@ export class PostRepositoryImpl implements PostRepository {
 		this.stageDataSource = stageDataSource;
 		this.flowDataSource = flowDataSource;
 	}
+	enablePost(postId: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>> {
+		throw new Error('Method not implemented.');
+	}
+	changeStage(postId: string, flowId: string, stageId: string): Promise<Either<Failure, ModelContainer<Post>>> {
+		throw new Error('Method not implemented.');
+	}
 
 	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, searchText: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
@@ -256,6 +262,35 @@ export class PostRepositoryImpl implements PostRepository {
 					return Either.right(resultUpdate);
 				} else {
 					return Either.left(new GenericFailure('no se realizó actualización'));
+				}
+			}
+
+			return Either.left(new GenericFailure('undetermined'));
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));	
+		}
+	}
+
+	async deletePost(postId: string, userId: string): Promise<Either<Failure, ModelContainer<Post>>> {
+		try
+		{
+			const resultPost = await this.dataSource.getById(postId);
+
+			if(resultPost.currentItemCount > 0) {
+
+				const resultDelete = await this.dataSource.delete(resultPost.items[0].id);
+
+				if(resultDelete) {
+					return Either.right(resultPost);
+				} else {
+					return Either.left(new GenericFailure('no se realizó la eliminación'));
 				}
 			}
 

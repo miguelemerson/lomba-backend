@@ -75,6 +75,7 @@ import firebase, { ServiceAccount } from 'firebase-admin';
 import { BlobStorageSourceImpl } from './data/datasources/blob_storage_source';
 import { GoogleAuth } from './core/google_auth';
 import { UpdatePost } from './domain/usecases/posts/update_post';
+import { DeletePost } from './domain/usecases/posts/delete_post';
 
 dotenv.config();
 
@@ -155,7 +156,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
 
-	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo) );
+	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);

@@ -10,6 +10,7 @@ import { RouterResponse } from '../../src/core/router_response';
 import { PostModel } from '../../src/data/models/flows/post_model';
 import { Post } from '../../src/domain/entities/flows/post';
 import { AddTextPostUseCase } from '../../src/domain/usecases/posts/add_text_post';
+import { DeletePostUseCase } from '../../src/domain/usecases/posts/delete_post';
 import { GetPostsUseCase } from '../../src/domain/usecases/posts/get_posts';
 import { SendVoteUseCase } from '../../src/domain/usecases/posts/send_vote';
 import { UpdatePostUseCase } from '../../src/domain/usecases/posts/update_post';
@@ -40,11 +41,18 @@ class MockUpdatePostUseCase implements UpdatePostUseCase {
 	}
 }
 
+class MockDeletePostUseCase implements DeletePostUseCase {
+	execute(): Promise<Either<Failure,ModelContainer<Post>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
 describe('Post Router', () => {
 	let mockAddTextPostUseCase: AddTextPostUseCase;
 	let mockGetPostsUseCase: GetPostsUseCase;
 	let mockSendVoteUseCase: SendVoteUseCase;
 	let mockUpdatePostUseCase: UpdatePostUseCase;
+	let mockDeletePostUseCase: DeletePostUseCase;
 
 	const UrlGetPost = '?orgaId=00000200-0200-0200-0200-000000000200&userId=00000005-0005-0005-0005-000000000005&flowId=00000111-0111-0111-0111-000000000111&stageId=00000AAA-0111-0111-0111-000000000111&boxPage=uploaded&searchText=post';
 
@@ -77,6 +85,11 @@ describe('Post Router', () => {
 		textContent:'contenido editado'
 	};
 
+	const fakeDeletePost = {
+		userId:'00000005-0005-0005-0005-000000000005',
+		postId:'00001AAA-0119-0111-0111-000000000000'
+	};
+
 	//carga de identificadores para las pruebas
 	const testUserIdUser = data_insert01.users[4].id;
 	const testUserIdRev1 = data_insert01.users[3].id;
@@ -91,8 +104,9 @@ describe('Post Router', () => {
 		mockGetPostsUseCase = new MockGetPostsUseCase();
 		mockSendVoteUseCase = new MockSendVoteUseCase();
 		mockUpdatePostUseCase = new MockUpdatePostUseCase();
+		mockDeletePostUseCase = new MockDeletePostUseCase();
 
-		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase));
+		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase, mockDeletePostUseCase));
 	});
 
 	beforeEach(() => {
@@ -413,6 +427,73 @@ describe('Post Router', () => {
 
 			expect(response.status).toBe(500);
 			expect(mockUpdatePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+
+	describe('DeletePost /post/', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			//const inputData = fakeAddTextPost;
+			jest.spyOn(mockDeletePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(fakeGetPost))));
+
+			//act
+			const response = await request(server).delete('/api/v1/post/').send(fakeDeletePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockDeletePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(1);
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 401 porque usuario no autenticado', async () => {
+			//arrange
+			jest.spyOn(mockDeletePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).delete('/api/v1/post/').send(fakeDeletePost);
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(401);
+			expect(mockDeletePostUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockDeletePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).delete('/api/v1/post/').send(fakeDeletePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockDeletePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockDeletePostUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).delete('/api/v1/post/').send(fakeDeletePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockDeletePostUseCase.execute).toBeCalledTimes(1);
 			expect(response.body as RouterResponse).toBeDefined();
 			expect(roures.error).toBeDefined();
 			expect(roures.data).toBeUndefined();
