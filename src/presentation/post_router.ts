@@ -119,7 +119,7 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.put('/update/',[isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
+	router.put('/',[isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
