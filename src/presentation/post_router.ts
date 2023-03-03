@@ -3,10 +3,10 @@ import { hasRole } from '../core/presentation/check_role_router';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
 import { TextContent } from '../domain/entities/flows/textcontent';
-import { AddTextPostUseCase } from '../domain/usecases/flows/add_text_post';
-import { GetPostsUseCase } from '../domain/usecases/flows/get_posts';
-import { SendVoteUseCase } from '../domain/usecases/flows/send_vote';
-import { UpdatePostUseCase } from '../domain/usecases/flows/update_post';
+import { AddTextPostUseCase } from '../domain/usecases/posts/add_text_post';
+import { GetPostsUseCase } from '../domain/usecases/posts/get_posts';
+import { SendVoteUseCase } from '../domain/usecases/posts/send_vote';
+import { UpdatePostUseCase } from '../domain/usecases/posts/update_post';
 
 export default function PostsRouter(
 	getPosts: GetPostsUseCase,

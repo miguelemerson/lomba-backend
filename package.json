@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --watchAll --collectCoverage",
+    "testall": "jest --watchAll --collectCoverage --collectCoverageFrom='src/**/*.ts'",
     "jest": "jest",
     "build": "tsc",
     "dev": "nodemon ./src/main.ts",

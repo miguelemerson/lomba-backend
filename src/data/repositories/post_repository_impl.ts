@@ -3,7 +3,6 @@ import { BoxPages } from '../../core/box_page';
 import { Either } from '../../core/either';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
-import { MongoQuery } from '../../core/wrappers/mongo_query';
 import { Post } from '../../domain/entities/flows/post';
 import { PostItem } from '../../domain/entities/flows/postitem';
 import { Stage } from '../../domain/entities/flows/stage';
@@ -29,8 +28,6 @@ export class PostRepositoryImpl implements PostRepository {
 	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, searchText: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			const query: MongoQuery = new MongoQuery();
-
 			if (boxPage == BoxPages.uploadedPosts) {
 
 				if(!sort)

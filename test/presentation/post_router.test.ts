@@ -9,10 +9,10 @@ import { ModelContainer } from '../../src/core/model_container';
 import { RouterResponse } from '../../src/core/router_response';
 import { PostModel } from '../../src/data/models/flows/post_model';
 import { Post } from '../../src/domain/entities/flows/post';
-import { AddTextPostUseCase } from '../../src/domain/usecases/flows/add_text_post';
-import { GetPostsUseCase } from '../../src/domain/usecases/flows/get_posts';
-import { SendVoteUseCase } from '../../src/domain/usecases/flows/send_vote';
-import { UpdatePostUseCase } from '../../src/domain/usecases/flows/update_post';
+import { AddTextPostUseCase } from '../../src/domain/usecases/posts/add_text_post';
+import { GetPostsUseCase } from '../../src/domain/usecases/posts/get_posts';
+import { SendVoteUseCase } from '../../src/domain/usecases/posts/send_vote';
+import { UpdatePostUseCase } from '../../src/domain/usecases/posts/update_post';
 import PostsRouter from '../../src/presentation/post_router';
 import server from '../../src/server';
 

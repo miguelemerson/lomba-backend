@@ -67,14 +67,14 @@ import { StageDataSourceImpl } from './data/datasources/stage_data_source';
 import { FlowDataSourceImpl } from './data/datasources/flow_data_source';
 import { PostDataSourceImpl } from './data/datasources/post_data_source';
 import { checkData02 } from './core/builtindata/load_data_02';
-import { GetPosts } from './domain/usecases/flows/get_posts';
-import { AddTextPost } from './domain/usecases/flows/add_text_post';
-import { SendVote } from './domain/usecases/flows/send_vote';
+import { GetPosts } from './domain/usecases/posts/get_posts';
+import { AddTextPost } from './domain/usecases/posts/add_text_post';
+import { SendVote } from './domain/usecases/posts/send_vote';
 import { PostRepositoryImpl } from './data/repositories/post_repository_impl';
 import firebase, { ServiceAccount } from 'firebase-admin';
 import { BlobStorageSourceImpl } from './data/datasources/blob_storage_source';
 import { GoogleAuth } from './core/google_auth';
-import { UpdatePost } from './domain/usecases/flows/update_post';
+import { UpdatePost } from './domain/usecases/posts/update_post';
 
 dotenv.config();
 
