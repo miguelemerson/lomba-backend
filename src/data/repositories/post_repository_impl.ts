@@ -243,6 +243,24 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
+	async updatePost(postId: string, userId: string, stageId: string, title: string, textContent: TextContent): Promise<Either<Failure, ModelContainer<Post>>> {
+		try
+		{
+			
+
+			return Either.left(new GenericFailure('undetermined'));
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));	
+		}
+	}
+
 
 	private async checkNextStage(stageId: string, postId: string, flowId: string, resultPost: ModelContainer<PostModel>) {
 

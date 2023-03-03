@@ -80,8 +80,6 @@ describe('Orga Router', () => {
 		new OrgaModel('rrr', 'Orga', 'orga', true, false),
 	];
 
-	const listOrgasVoid: OrgaModel[] = [];
-
 	//carga de identificadores para las pruebas
 	const testUserIdAdmin = data_insert01.users[1].id;
 	const testUserIdUser1 = data_insert01.users[4].id;
