@@ -12,6 +12,7 @@ import { Post } from '../../src/domain/entities/flows/post';
 import { AddTextPostUseCase } from '../../src/domain/usecases/flows/add_text_post';
 import { GetPostsUseCase } from '../../src/domain/usecases/flows/get_posts';
 import { SendVoteUseCase } from '../../src/domain/usecases/flows/send_vote';
+import { UpdatePostUseCase } from '../../src/domain/usecases/flows/update_post';
 import PostsRouter from '../../src/presentation/post_router';
 import server from '../../src/server';
 
@@ -33,15 +34,17 @@ class MockSendVoteUseCase implements SendVoteUseCase {
 	}
 }
 
+class MockUpdatePostUseCase implements UpdatePostUseCase {
+	execute(): Promise<Either<Failure,ModelContainer<Post>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
 describe('Post Router', () => {
 	let mockAddTextPostUseCase: AddTextPostUseCase;
 	let mockGetPostsUseCase: GetPostsUseCase;
 	let mockSendVoteUseCase: SendVoteUseCase;
-
-	/*const listUsers: UserModel[] = [
-		new UserModel('sss', 'Súper Admin', 'superadmin', 'sa@mp.com', true, true),
-		new UserModel('aaa', 'Admin', 'admin', 'adm@mp.com', true, false),
-	];*/
+	let mockUpdatePostUseCase: UpdatePostUseCase;
 
 	const UrlGetPost = '?orgaId=00000200-0200-0200-0200-000000000200&userId=00000005-0005-0005-0005-000000000005&flowId=00000111-0111-0111-0111-000000000111&stageId=00000AAA-0111-0111-0111-000000000111&boxPage=uploaded&searchText=post';
 
@@ -66,6 +69,14 @@ describe('Post Router', () => {
 		voteValue:'1'
 	};
 
+	const fakeUpdatePost = {
+		userId:'00000005-0005-0005-0005-000000000005',
+		postId:'00001AAA-0119-0111-0111-000000000000',
+		stageId:'00000AAA-0111-0111-0111-000000000111',
+		title:'titulo editado',
+		textContent:'contenido editado'
+	};
+
 	//carga de identificadores para las pruebas
 	const testUserIdUser = data_insert01.users[4].id;
 	const testUserIdRev1 = data_insert01.users[3].id;
@@ -79,8 +90,9 @@ describe('Post Router', () => {
 		mockAddTextPostUseCase = new MockAddTextPostUseCase();
 		mockGetPostsUseCase = new MockGetPostsUseCase();
 		mockSendVoteUseCase = new MockSendVoteUseCase();
+		mockUpdatePostUseCase = new MockUpdatePostUseCase();
 
-		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase));
+		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase));
 	});
 
 	beforeEach(() => {
@@ -334,6 +346,73 @@ describe('Post Router', () => {
 
 			expect(response.status).toBe(500);
 			expect(mockSendVoteUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+
+	describe('UpdataPost /post/', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			//const inputData = fakeAddTextPost;
+			jest.spyOn(mockUpdatePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(fakeGetPost))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/').send(fakeUpdatePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockUpdatePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(1);
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 401 porque usuario no autenticado', async () => {
+			//arrange
+			jest.spyOn(mockUpdatePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/').send(fakeUpdatePost);
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(401);
+			expect(mockUpdatePostUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockUpdatePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/').send(fakeUpdatePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockUpdatePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockUpdatePostUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).put('/api/v1/post/').send(fakeUpdatePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockUpdatePostUseCase.execute).toBeCalledTimes(1);
 			expect(response.body as RouterResponse).toBeDefined();
 			expect(roures.error).toBeDefined();
 			expect(roures.data).toBeUndefined();

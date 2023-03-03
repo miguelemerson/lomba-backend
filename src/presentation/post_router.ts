@@ -6,11 +6,13 @@ import { TextContent } from '../domain/entities/flows/textcontent';
 import { AddTextPostUseCase } from '../domain/usecases/flows/add_text_post';
 import { GetPostsUseCase } from '../domain/usecases/flows/get_posts';
 import { SendVoteUseCase } from '../domain/usecases/flows/send_vote';
+import { UpdatePostUseCase } from '../domain/usecases/flows/update_post';
 
 export default function PostsRouter(
 	getPosts: GetPostsUseCase,
 	addTextPost: AddTextPostUseCase,
 	sendVote: SendVoteUseCase,
+	updatePost: UpdatePostUseCase,
 ) {
 	const router = express.Router();
 
@@ -41,8 +43,8 @@ export default function PostsRouter(
 				(req.query.boxpage!=undefined)?req.query.boxpage.toString():'',
 				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',
 				params,
-				sort, 
-				(req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined, 
+				sort,
+				(req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined,
 				(req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined
 			);
 			//evaluate
@@ -112,6 +114,32 @@ export default function PostsRouter(
 			//something wrong
 			code = 500;
 			toSend = new RouterResponse('1.0', err as object, 'post', {id: req.params.postId}, 'vote was not do it');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.put('/',[isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			const bodypost = req.body as {postId: string, userId: string, stageId: string, title: string, textContent: TextContent};
+			//execution
+			const post = await updatePost.execute(bodypost.postId, bodypost.userId, bodypost.stageId, bodypost.title, bodypost.textContent);
+			//evaluate
+			post.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'post', undefined, 'post was not added');	
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'post', undefined, 'new post added');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'post', undefined, 'post was not added');
 		}
 		//respond cordially
 		res.status(code).send(toSend);

@@ -656,6 +656,25 @@ describe('Orga Router', () => {
 			expect(roures.error).toBeUndefined();
 		
 		});
+
+		test('debe retornar 200 y sin datos', async () => {
+			//arrange
+			const expectedData = listOrgas;
+			jest.spyOn(mockExistsOrgaUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaModel>(expectedData))));
+		
+			//act
+			const response = await request(server).get('/api/v1/orga/if/exists/').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+		
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockExistsOrgaUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(expectedData.length);
+			expect(roures.error).toBeUndefined();
+		
+		});
 		
 		test('debe retornar 200 y con datos, enviando valores por query', async () => {
 			//arrange
