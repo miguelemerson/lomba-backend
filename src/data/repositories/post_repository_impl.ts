@@ -24,6 +24,38 @@ export class PostRepositoryImpl implements PostRepository {
 		this.stageDataSource = stageDataSource;
 		this.flowDataSource = flowDataSource;
 	}
+	async enablePost(postId: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>> {
+		try{
+			const result = await this.dataSource.enable(postId, enableOrDisable);
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+		}
+	}
+	async changeStage(postId: string, flowId: string, stageId: string): Promise<Either<Failure, ModelContainer<Post>>> {
+		try{
+
+			const result = await this.dataSource.update(postId, {stageId:stageId});
+
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+		}
+	}
 
 	async getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, searchText: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
@@ -88,7 +120,6 @@ export class PostRepositoryImpl implements PostRepository {
 				const result = await this.dataSource.getVotedPosts(orgaId, userId, flowId, stageId, searchText, onlyWithVote, sort, pageIndex, itemsPerPage);
 				return Either.right(result);
 			}
-
 		
 			return Either.left(new GenericFailure('no boxpage found'));		
 		}
