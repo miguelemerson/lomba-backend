@@ -2,12 +2,15 @@ import express, { Request, Response } from 'express';
 import { hasRole } from '../core/presentation/check_role_router';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
-import { TextContent } from '../domain/entities/flows/textcontent';
+import { TextContent } from '../domain/entities/workflow/textcontent';
 import { AddTextPostUseCase } from '../domain/usecases/posts/add_text_post';
 import { DeletePostUseCase } from '../domain/usecases/posts/delete_post';
 import { GetPostsUseCase } from '../domain/usecases/posts/get_posts';
 import { SendVoteUseCase } from '../domain/usecases/posts/send_vote';
 import { UpdatePostUseCase } from '../domain/usecases/posts/update_post';
+import { EnablePostUseCase } from '../domain/usecases/posts/enable_post';
+import { ChangeStagePostUseCase } from '../domain/usecases/posts/change_stage_post';
+import { GetAdminViewPostsUseCase } from '../domain/usecases/posts/get_adminview_post';
 
 export default function PostsRouter(
 	getPosts: GetPostsUseCase,
@@ -15,6 +18,9 @@ export default function PostsRouter(
 	sendVote: SendVoteUseCase,
 	updatePost: UpdatePostUseCase,
 	deletePost: DeletePostUseCase,
+	enablePost: EnablePostUseCase,
+	changeStagePost: ChangeStagePostUseCase,
+	getAdminViewPosts: GetAdminViewPostsUseCase,
 ) {
 	const router = express.Router();
 
@@ -63,6 +69,55 @@ export default function PostsRouter(
 			//something wrong
 			code = 500;
 			toSend = new RouterResponse('1.0', err as object, 'get', {id: req.params.orgaId} as object, 'not obtained');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.get('/admin/',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId: string, userId: string, flowId: string, stageId: string, boxpage: string, searchtext: string, sort: string, pageindex: string, pagesize:string, paramvars: string}>, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+
+			let sort: [string, 1 | -1][] | undefined;
+			if(req.query.sort)
+			{
+				sort = JSON.parse(req.query.sort.toString()) as [string, 1 | -1][];
+			}
+
+			let params: {[x: string]: unknown} = {};
+			if(req.query.paramvars)
+			{
+				params = JSON.parse(req.query.paramvars.toString()) as {[x: string]: string};
+			}
+
+			//execution
+			const post = await getAdminViewPosts.execute(
+				(req.query.orgaId!=undefined)?req.query.orgaId.toString():'',
+				(req.query.userId!=undefined)?req.query.userId.toString():'',
+				(req.query.flowId!=undefined)?req.query.flowId.toString():'',
+				(req.query.stageId!=undefined)?req.query.stageId.toString():'',
+				(req.query.searchtext!=undefined)?req.query.searchtext.toString():'',
+				params,
+				sort,
+				(req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined,
+				(req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined
+			);
+			//evaluate
+			post.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error, 'get', {id: req.params.orgaId} as object, 'not obtained on admin view');	
+			}, value => {
+				//isOK
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'get', {id: req.params.orgaId} as object, 'geted list on admin view');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get', {id: req.params.orgaId} as object, 'not obtained on admin view');
 		}
 		//respond cordially
 		res.status(code).send(toSend);
@@ -168,6 +223,66 @@ export default function PostsRouter(
 			//something wrong
 			code = 500;
 			toSend = new RouterResponse('1.0', err as object, 'post', undefined, 'post was not added');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.put('/enable/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string}>, res: Response) => {
+		const text = (req.query.enable === 'false' ? false : true) ? 'enabled' : 'disabled';
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();		
+		try {
+			//execution
+			const result = await enablePost.execute(req.params.id, (req.query.enable === 'false' ? false : true));
+			//evaluate
+			result.fold(error => {
+			//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'put', {id: req.params.id, enable: req.query.enable}, 'post was not ' + text);	
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'put', {id: req.params.id, enable: req.query.enable}, 'post ' + text);
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'put', {id: req.params.id, enable: req.query.enable}, 'post was not ' + text);
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.put('/stage/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string}>, res: Response) => {
+		//definitions
+		let code = 500;
+		let flowId = '';
+		let stageId = '';
+		let toSend = RouterResponse.emptyResponse();		
+		try {
+
+			if(req.query.flowId)
+				flowId = req.query.flowId.toString();
+
+			if(req.query.stageId)
+				stageId = req.query.stageId.toString();
+
+			//execution
+			const result = await changeStagePost.execute(req.params.id, flowId, stageId);
+			//evaluate
+			result.fold(error => {
+			//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'put', {id: req.params.id, stageId: stageId}, 'post stage wat not changed');	
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'put', {id: req.params.id, stageId: stageId}, 'post stage changed ');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'put', {id: req.params.id, stageId: stageId}, 'post stage wat not changed');
 		}
 		//respond cordially
 		res.status(code).send(toSend);

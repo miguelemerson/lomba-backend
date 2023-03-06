@@ -1,4 +1,4 @@
-import { Stage } from '../../../domain/entities/flows/stage';
+import { Stage } from '../../../domain/entities/workflow/stage';
 
 export class StageModel implements Stage {
 	constructor(id:string, name:string,

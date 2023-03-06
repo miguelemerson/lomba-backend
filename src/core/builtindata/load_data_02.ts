@@ -1,16 +1,16 @@
 import { FlowDataSource } from '../../data/datasources/flow_data_source';
 import { PostDataSource } from '../../data/datasources/post_data_source';
 import { StageDataSource } from '../../data/datasources/stage_data_source';
-import { FlowModel } from '../../data/models/flows/flow_model';
-import { PostModel } from '../../data/models/flows/post_model';
-import { StageModel } from '../../data/models/flows/stage_model';
-import { Flow } from '../../domain/entities/flows/flow';
-import { Post } from '../../domain/entities/flows/post';
-import { PostItem } from '../../domain/entities/flows/postitem';
-import { Stage } from '../../domain/entities/flows/stage';
-import { TextContent } from '../../domain/entities/flows/textcontent';
-import { Total } from '../../domain/entities/flows/total';
-import { Vote } from '../../domain/entities/flows/vote';
+import { FlowModel } from '../../data/models/workflow/flow_model';
+import { PostModel } from '../../data/models/workflow/post_model';
+import { StageModel } from '../../data/models/workflow/stage_model';
+import { Flow } from '../../domain/entities/workflow/flow';
+import { Post } from '../../domain/entities/workflow/post';
+import { PostItem } from '../../domain/entities/workflow/postitem';
+import { Stage } from '../../domain/entities/workflow/stage';
+import { TextContent } from '../../domain/entities/workflow/textcontent';
+import { Total } from '../../domain/entities/workflow/total';
+import { Vote } from '../../domain/entities/workflow/vote';
 import { MongoWrapper } from '../wrappers/mongo_wrapper';
 import { data_insert01 } from './load_data_01';
 

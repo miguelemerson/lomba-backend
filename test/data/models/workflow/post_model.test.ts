@@ -1,5 +1,5 @@
-import { PostModel } from '../../../../src/data/models/flows/post_model';
-import { Post } from '../../../../src/domain/entities/flows/post';
+import { PostModel } from '../../../../src/data/models/workflow/post_model';
+import { Post } from '../../../../src/domain/entities/workflow/post';
 
 
 describe('Test de post model', () => {

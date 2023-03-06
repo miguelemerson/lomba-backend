@@ -1,4 +1,4 @@
-import { Total } from '../../../domain/entities/flows/total';
+import { Total } from '../../../domain/entities/workflow/total';
 
 export class TotalModel implements Total {
 	constructor(totalpositive:number, totalnegative:number,

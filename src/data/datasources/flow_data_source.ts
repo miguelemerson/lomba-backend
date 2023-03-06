@@ -1,4 +1,4 @@
-import { FlowModel } from '../models/flows/flow_model';
+import { FlowModel } from '../models/workflow/flow_model';
 import { MongoWrapper } from '../../core/wrappers/mongo_wrapper';
 import { ModelContainer } from '../../core/model_container';
 import crypto from 'crypto';
@@ -14,7 +14,7 @@ export interface FlowDataSource {
     delete(id: string): Promise<boolean>;
 	setId(obj: FlowModel): FlowModel;
 	updateDirect(id: string, flow: object): Promise<ModelContainer<FlowModel>>;
-
+	getAll(sort?: [string, 1 | -1][] | undefined): Promise<ModelContainer<FlowModel>>;
 	getById(flowId:string): Promise<ModelContainer<FlowModel>>;
 }
 
@@ -52,6 +52,11 @@ export class FlowDataSourceImpl implements FlowDataSource {
 	async delete(id: string): Promise<boolean>{
 		return await this.collection.delete(id);
 	}
+
+	async getAll(sort?: [string, 1 | -1][] | undefined): Promise<ModelContainer<FlowModel>> {
+		return await this.collection.getMany<FlowModel>({}, sort);
+	}
+
 	public setId(obj: FlowModel): FlowModel
 	{
 		if(obj.id.trim() == '')

@@ -1,4 +1,4 @@
-import { StageModel } from '../models/flows/stage_model';
+import { StageModel } from '../models/workflow/stage_model';
 import { MongoWrapper } from '../../core/wrappers/mongo_wrapper';
 import { ModelContainer } from '../../core/model_container';
 import crypto from 'crypto';
@@ -14,6 +14,7 @@ export interface StageDataSource {
     delete(id: string): Promise<boolean>;
 	setId(obj: StageModel): StageModel;
 
+	getAll(sort?: [string, 1 | -1][] | undefined): Promise<ModelContainer<StageModel>>;
 	getById(stageId:string): Promise<ModelContainer<StageModel>>;
 }
 
@@ -48,6 +49,11 @@ export class StageDataSourceImpl implements StageDataSource {
 	async delete(id: string): Promise<boolean>{
 		return await this.collection.delete(id);
 	}
+
+	async getAll(sort?: [string, 1 | -1][] | undefined): Promise<ModelContainer<StageModel>> {
+		return await this.collection.getMany<StageModel>({}, sort);
+	}
+
 	public setId(obj: StageModel): StageModel
 	{
 		if(obj.id.trim() == '')
