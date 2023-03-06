@@ -246,7 +246,7 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
-	async updatePost(postId: string, userId: string, stageId: string, title: string, textContent: TextContent): Promise<Either<Failure, ModelContainer<Post>>> {
+	async updatePost(postId: string, userId: string, title: string, textContent: TextContent): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			const resultPost = await this.dataSource.getById(postId);

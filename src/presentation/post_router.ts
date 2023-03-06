@@ -126,9 +126,9 @@ export default function PostsRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			const bodypost = req.body as {postId: string, userId: string, stageId: string, title: string, textContent: TextContent};
+			const bodypost = req.body as {postId: string, userId: string, title: string, textContent: TextContent};
 			//execution
-			const post = await updatePost.execute(bodypost.postId, bodypost.userId, bodypost.stageId, bodypost.title, bodypost.textContent);
+			const post = await updatePost.execute(bodypost.postId, bodypost.userId, bodypost.title, bodypost.textContent);
 			//evaluate
 			post.fold(error => {
 				//something wrong

@@ -80,7 +80,6 @@ describe('Post Router', () => {
 	const fakeUpdatePost = {
 		userId:'00000005-0005-0005-0005-000000000005',
 		postId:'00001AAA-0119-0111-0111-000000000000',
-		stageId:'00000AAA-0111-0111-0111-000000000111',
 		title:'titulo editado',
 		textContent:'contenido editado'
 	};
