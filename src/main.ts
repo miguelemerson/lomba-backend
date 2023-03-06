@@ -60,9 +60,9 @@ import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
 import { GetTokenGoogle } from './domain/usecases/auth/get_token_google';
 
 import { GetOrgasByUser } from './domain/usecases/orgas/get_orgas_by_user';
-import { StageModel } from './data/models/flows/stage_model';
-import { FlowModel } from './data/models/flows/flow_model';
-import { PostModel } from './data/models/flows/post_model';
+import { StageModel } from './data/models/workflow/stage_model';
+import { FlowModel } from './data/models/workflow/flow_model';
+import { PostModel } from './data/models/workflow/post_model';
 import { StageDataSourceImpl } from './data/datasources/stage_data_source';
 import { FlowDataSourceImpl } from './data/datasources/flow_data_source';
 import { PostDataSourceImpl } from './data/datasources/post_data_source';
@@ -75,6 +75,9 @@ import firebase, { ServiceAccount } from 'firebase-admin';
 import { BlobStorageSourceImpl } from './data/datasources/blob_storage_source';
 import { GoogleAuth } from './core/google_auth';
 import { UpdatePost } from './domain/usecases/posts/update_post';
+import { EnablePost } from './domain/usecases/posts/enable_post';
+import { ChangeStagePost } from './domain/usecases/posts/change_stage_post';
+import { GetAdminViewPosts } from './domain/usecases/posts/get_adminview_post';
 
 dotenv.config();
 
@@ -155,7 +158,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
 
-	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo) );
+	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo) );
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);

@@ -1,9 +1,9 @@
 import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
 import { ModelContainer } from '../../../core/model_container';
-import { Post } from '../../entities/flows/post';
+import { Post } from '../../entities/workflow/post';
 import { PostRepository } from '../../repositories/post_repository';
-import { TextContent } from '../../entities/flows/textcontent';
+import { TextContent } from '../../entities/workflow/textcontent';
 
 export interface AddTextPostUseCase {
     execute(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent, draft: boolean): Promise<Either<Failure,ModelContainer<Post>>>;

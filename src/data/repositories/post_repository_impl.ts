@@ -3,17 +3,17 @@ import { BoxPages } from '../../core/box_page';
 import { Either } from '../../core/either';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
-import { Post } from '../../domain/entities/flows/post';
-import { PostItem } from '../../domain/entities/flows/postitem';
-import { Stage } from '../../domain/entities/flows/stage';
-import { TextContent } from '../../domain/entities/flows/textcontent';
-import { Vote } from '../../domain/entities/flows/vote';
+import { Post } from '../../domain/entities/workflow/post';
+import { PostItem } from '../../domain/entities/workflow/postitem';
+import { Stage } from '../../domain/entities/workflow/stage';
+import { TextContent } from '../../domain/entities/workflow/textcontent';
+import { Vote } from '../../domain/entities/workflow/vote';
 import { PostRepository } from '../../domain/repositories/post_repository';
 import { FlowDataSource } from '../datasources/flow_data_source';
 import { PostDataSource } from '../datasources/post_data_source';
 import { StageDataSource } from '../datasources/stage_data_source';
-import { PostModel } from '../models/flows/post_model';
-import { TotalModel } from '../models/flows/total_model';
+import { PostModel } from '../models/workflow/post_model';
+import { TotalModel } from '../models/workflow/total_model';
 
 export class PostRepositoryImpl implements PostRepository {
 	dataSource: PostDataSource;
@@ -344,6 +344,30 @@ export class PostRepositoryImpl implements PostRepository {
 
 			}
 
+		}
+	}
+
+	async getAdminViewPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
+		try
+		{
+			if(!sort)
+			{
+				sort = [['created', -1]];
+			}
+			const onlyEnabledOrDisabled = (params['onlyEnables'] as string).toString() == '' ? undefined : (params['onlyEnables'] as string).toString() == 'true' ? true : false;
+
+			const result = await this.dataSource.getAdminViewPosts(orgaId, userId, flowId, stageId, searchText, sort, onlyEnabledOrDisabled, pageIndex, itemsPerPage);
+
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));	
 		}
 	}
 }

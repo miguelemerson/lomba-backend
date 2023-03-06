@@ -1,9 +1,9 @@
-import { Post } from '../../../domain/entities/flows/post';
-import { PostItem } from '../../../domain/entities/flows/postitem';
-import { Stage } from '../../../domain/entities/flows/stage';
-import { Total } from '../../../domain/entities/flows/total';
-import { Track } from '../../../domain/entities/flows/track';
-import { Vote } from '../../../domain/entities/flows/vote';
+import { Post } from '../../../domain/entities/workflow/post';
+import { PostItem } from '../../../domain/entities/workflow/postitem';
+import { Stage } from '../../../domain/entities/workflow/stage';
+import { Total } from '../../../domain/entities/workflow/total';
+import { Track } from '../../../domain/entities/workflow/track';
+import { Vote } from '../../../domain/entities/workflow/vote';
 
 export class PostModel implements Post {
 	constructor(

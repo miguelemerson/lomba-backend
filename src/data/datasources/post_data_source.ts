@@ -1,4 +1,4 @@
-import { PostModel } from '../models/flows/post_model';
+import { PostModel } from '../models/workflow/post_model';
 import { MongoWrapper } from '../../core/wrappers/mongo_wrapper';
 import { ModelContainer } from '../../core/model_container';
 import crypto from 'crypto';
@@ -34,6 +34,8 @@ export interface PostDataSource {
 
 	getVotedPosts(orgaId:string, userId:string, flowId:string, stageId:string, searchText: string, onlyWithVoteValue:number, sort:[string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>>;
 
+	getAdminViewPosts(orgaId:string, userId:string, flowId:string, stageId:string, searchText: string, sort:[string, 1 | -1][], onlyStatusEnable?: boolean, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>>;
+
 	getIfHasVote(userId: string, flowId: string, stageId: string, postId: string): Promise<ModelContainer<PostModel>>;	
 
 	getById(postId:string): Promise<ModelContainer<PostModel>>;
@@ -53,6 +55,28 @@ export class PostDataSourceImpl implements PostDataSource {
 
 	constructor(dbMongo: MongoWrapper<PostModel>){
 		this.collection = dbMongo;
+	}
+	async getAdminViewPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], onlyStatusEnable?: boolean | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
+		const query = {} as {[x: string]: unknown;};
+		query['orgaId'] = orgaId;
+		if(flowId != '')
+			query['flowId'] = flowId;
+		if(stageId != '')
+			query['stageId'] = stageId;			
+
+		if(onlyStatusEnable)
+		{
+			if(onlyStatusEnable === true)
+				query['enabled'] = true;
+			else
+				query['enabled'] = false;
+		}
+
+		if(searchText != '')
+		{
+			query['$text'] = {$search: searchText};
+		}
+		return await this.getManyWithOptions(query, {projection: this.getWithoutVotesProjection()}, sort, pageIndex, itemsPerPage);
 	}
 	async updateVote(postId: string, userId:string, flowId: string, stageId: string, voteValue: number): Promise<ModelContainer<PostModel>> {
 		

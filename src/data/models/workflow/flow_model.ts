@@ -1,5 +1,5 @@
-import { Flow } from '../../../domain/entities/flows/flow';
-import { Stage } from '../../../domain/entities/flows/stage';
+import { Flow } from '../../../domain/entities/workflow/flow';
+import { Stage } from '../../../domain/entities/workflow/stage';
 
 export class FlowModel implements Flow {
 	constructor(id:string, name: string, stages: (Stage[]), enabled: boolean, builtIn: boolean){

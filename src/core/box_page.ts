@@ -7,6 +7,7 @@ export class BoxPages {
 	static  latestPosts = 'latest';
 	static  popularPosts = 'popular';
 	static  votedPosts = 'voted';
+	
 	static List: string[] = [
 		BoxPages.uploadedPosts,
 		BoxPages.forApprovePosts,
@@ -14,6 +15,6 @@ export class BoxPages {
 		BoxPages.rejectedPosts,
 		BoxPages.latestPosts,
 		BoxPages.popularPosts,
-		BoxPages.votedPosts,
+		BoxPages.votedPosts
 	];
 }

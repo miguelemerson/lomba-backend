@@ -7,14 +7,17 @@ import { Failure, GenericFailure } from '../../src/core/errors/failures';
 import { generateJWT } from '../../src/core/jwt';
 import { ModelContainer } from '../../src/core/model_container';
 import { RouterResponse } from '../../src/core/router_response';
-import { PostModel } from '../../src/data/models/flows/post_model';
-import { Post } from '../../src/domain/entities/flows/post';
 import { AddTextPostUseCase } from '../../src/domain/usecases/posts/add_text_post';
 import { GetPostsUseCase } from '../../src/domain/usecases/posts/get_posts';
 import { SendVoteUseCase } from '../../src/domain/usecases/posts/send_vote';
 import { UpdatePostUseCase } from '../../src/domain/usecases/posts/update_post';
 import PostsRouter from '../../src/presentation/post_router';
 import server from '../../src/server';
+import { EnablePostUseCase } from '../../src/domain/usecases/posts/enable_post';
+import { ChangeStagePostUseCase } from '../../src/domain/usecases/posts/change_stage_post';
+import { GetAdminViewPostsUseCase } from '../../src/domain/usecases/posts/get_adminview_post';
+import { Post } from '../../src/domain/entities/workflow/post';
+import { PostModel } from '../../src/data/models/workflow/post_model';
 
 class MockAddTextPostUseCase implements AddTextPostUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<Post>>> {
@@ -40,11 +43,33 @@ class MockUpdatePostUseCase implements UpdatePostUseCase {
 	}
 }
 
+class MockEnablePostUseCase implements EnablePostUseCase {
+	execute(): Promise<Either<Failure, boolean>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
+class MockChangeStagePostUseCase implements ChangeStagePostUseCase{
+	execute(): Promise<Either<Failure, ModelContainer<Post>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
+class MockGetAdminViewPostUseCase implements GetAdminViewPostsUseCase{
+	execute(): Promise<Either<Failure, ModelContainer<Post>>> {
+		throw new Error('Method not implemented.');
+	}
+
+}
+
 describe('Post Router', () => {
 	let mockAddTextPostUseCase: AddTextPostUseCase;
 	let mockGetPostsUseCase: GetPostsUseCase;
 	let mockSendVoteUseCase: SendVoteUseCase;
 	let mockUpdatePostUseCase: UpdatePostUseCase;
+	let mockChangeStagePostUseCase: ChangeStagePostUseCase;
+	let mockEnablePostUseCase: EnablePostUseCase;
+	let mockGetAdminViewPostUseCase: GetAdminViewPostsUseCase;
 
 	const UrlGetPost = '?orgaId=00000200-0200-0200-0200-000000000200&userId=00000005-0005-0005-0005-000000000005&flowId=00000111-0111-0111-0111-000000000111&stageId=00000AAA-0111-0111-0111-000000000111&boxPage=uploaded&searchText=post';
 
@@ -84,15 +109,18 @@ describe('Post Router', () => {
 
 	const testTokenUser = generateJWT({userId:testUserIdUser, orgaId: testOrgaIdDefault, roles: 'user'}, 'lomba', 60*60);
 	const testTokenRev1 = generateJWT({userId:testUserIdRev1, orgaId: testOrgaIdDefault, roles: 'reviewer'}, 'lomba', 60*60);
-
+	const testTokenAdmin = generateJWT({userId:testUserIdUser, orgaId: testOrgaIdDefault, roles: 'admin'}, 'lomba', 60*60);
 
 	beforeAll(() => {
 		mockAddTextPostUseCase = new MockAddTextPostUseCase();
 		mockGetPostsUseCase = new MockGetPostsUseCase();
 		mockSendVoteUseCase = new MockSendVoteUseCase();
 		mockUpdatePostUseCase = new MockUpdatePostUseCase();
+		mockEnablePostUseCase = new MockEnablePostUseCase();
+		mockChangeStagePostUseCase = new MockChangeStagePostUseCase();
+		mockGetAdminViewPostUseCase = new MockGetAdminViewPostUseCase();
 
-		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase));
+		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase, mockEnablePostUseCase, mockChangeStagePostUseCase, mockGetAdminViewPostUseCase));
 	});
 
 	beforeEach(() => {
@@ -200,6 +228,7 @@ describe('Post Router', () => {
 			expect(roures.error).toBeDefined();
 			expect(roures.data).toBeUndefined();
 		});
+
 	});
 
 	//post de usuarios
@@ -418,5 +447,293 @@ describe('Post Router', () => {
 			expect(roures.data).toBeUndefined();
 		});
 	});
+
+
+	//get admin view de post
+	describe('GET /post/admin', () => {
+
+		test('debe retornar 200 y sin datos', async () => {
+			//arrange
+			const expectedData = fakeGetPost;
+			jest.spyOn(mockGetAdminViewPostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(expectedData))));
+			//act
+			const response = await request(server).get('/api/v1/post/admin/').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockGetAdminViewPostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.error).toBeUndefined();
+	
+		});
+	
+		test('debe retornar 200 y con sort y parámetros', async () => {
+			//arrange
+			const expectedData = fakeGetPost;
+			jest.spyOn(mockGetAdminViewPostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(expectedData))));
+			//act
+			const response = await request(server).get('/api/v1/post/admin/?sort=%5B%5B%22created%22,1%5D%5D&paramvars=%7B%22isdraft%22:false%7D&searchtext=&pageindex=1&pagesize=10').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockGetAdminViewPostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.error).toBeUndefined();
+	
+		});
+	
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			const expectedData = fakeGetPost;
+			jest.spyOn(mockGetAdminViewPostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(expectedData))));
+			//act
+			const response = await request(server).get(`/api/v1/post/admin/${UrlGetPost}`).set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockGetAdminViewPostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.error).toBeUndefined();
+	
+		});
+	
+			
+		test('debe retornar 401 porque usuario no autenticado', async () => {
+			//arrange
+			const expectedData = fakeGetPost;
+			jest.spyOn(mockGetAdminViewPostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(expectedData))));
+			//act
+			const response = await request(server).get(`/api/v1/post/admin/${UrlGetPost}`);
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(401);
+			expect(mockGetAdminViewPostUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeUndefined();
+			expect(roures.error).toBeDefined();
+	
+		});
+			
+	
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockGetAdminViewPostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+	
+			//act
+			const response = await request(server).get(`/api/v1/post/admin/${UrlGetPost}`).set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			expect(response.status).toBe(500);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockGetAdminViewPostUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+	
+			//act
+			const response = await request(server).get(`/api/v1/post/admin/${UrlGetPost}`).set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//asserts
+			expect(response.status).toBe(500);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	
+	});
+
+
+	//put de habilitación de post con id en ruta
+	describe('PUT /post/enable/:id', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			jest.spyOn(mockEnablePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(true)));
+
+			//act
+			const response = await request(server).put('/api/v1/post/enable/1?enable=false').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockEnablePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 401 porque usuario no identificado', async () => {
+			//arrange
+			jest.spyOn(mockEnablePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/enable/1?enable=true');
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(401);
+			expect(mockEnablePostUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 403 porque usuario no tiene el role', async () => {
+			//arrange
+			jest.spyOn(mockEnablePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/enable/1?enable=true').set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(403);
+			expect(mockEnablePostUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});		
+
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockEnablePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/enable/1?enable=true').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockEnablePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockEnablePostUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).put('/api/v1/post/enable/1?enable=false').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockEnablePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+
+	//put de cambio de etapa de post con id en ruta
+	describe('PUT /post/stage/:id', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+		//arrange
+			const expectedData = fakeGetPost;
+			jest.spyOn(mockChangeStagePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(expectedData))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/stage/1?flowId=1&stageId=2').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockChangeStagePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 200 y sin datos', async () => {
+			//arrange
+			const expectedData = fakeGetPost;
+			jest.spyOn(mockChangeStagePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(expectedData))));
+	
+			//act
+			const response = await request(server).put('/api/v1/post/stage/1').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+	
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockChangeStagePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.error).toBeUndefined();
+	
+		});
+
+		test('debe retornar 401 porque usuario no identificado', async () => {
+		//arrange
+			jest.spyOn(mockChangeStagePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/stage/1?flowId=1&stageId=2');
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(401);
+			expect(mockChangeStagePostUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 403 porque usuario no tiene el role', async () => {
+		//arrange
+			jest.spyOn(mockChangeStagePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/stage/1?flowId=1&stageId=2').set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(403);
+			expect(mockChangeStagePostUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});		
+
+		test('debe retornar 500 en caso de failure', async () => {
+		//arrange
+			jest.spyOn(mockChangeStagePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).put('/api/v1/post/stage/1?flowId=1&stageId=2').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockChangeStagePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de error', async () => {
+		//arrange
+			jest.spyOn(mockChangeStagePostUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).put('/api/v1/post/stage/1?flowId=1&stageId=2').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockChangeStagePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+
 
 });
