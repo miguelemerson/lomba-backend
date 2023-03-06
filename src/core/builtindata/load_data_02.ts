@@ -7,7 +7,6 @@ import { StageModel } from '../../data/models/flows/stage_model';
 import { Flow } from '../../domain/entities/flows/flow';
 import { Post } from '../../domain/entities/flows/post';
 import { PostItem } from '../../domain/entities/flows/postitem';
-import { PostVotes } from '../../domain/entities/flows/postvotes';
 import { Stage } from '../../domain/entities/flows/stage';
 import { TextContent } from '../../domain/entities/flows/textcontent';
 import { Total } from '../../domain/entities/flows/total';
@@ -135,7 +134,7 @@ export const data_insert02 = {
 		userId:data_insert01.users[5].id,
 		value:1, created: new Date()} as Vote],
 
-	postvotes:[{id: post04Id, _id:post04Id, votes:[]} as PostVotes],
+	//postvotes:[{id: post04Id, _id:post04Id, votes:[]} as PostVotes],
 
 	totals:[{totalpositive: 1,
 		totalnegative: 0,
