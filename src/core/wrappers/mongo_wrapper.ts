@@ -15,6 +15,8 @@ export interface NoSQLDatabaseWrapper<T>{
     updateDirect(id: string, obj: object): Promise<boolean>;	
 	updateArray(id: string, obj: object, arrayFilters:object): Promise<boolean>;
 	updateDirectByQuery(query: object, obj: object): Promise<boolean>;	
+	collectionName:string;
+	db:Db;
 }
 
 export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{

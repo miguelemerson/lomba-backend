@@ -9,7 +9,8 @@ module.exports = {
 		'mongo_wrapper.ts',
 		'config_env.ts',
 		'google_auth.ts',
-		'azblob.ts'
+		'azblob.ts',
+		'load_data_02.ts'
 	],
 	coverageThreshold: {
 		'global': {

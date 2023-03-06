@@ -11,7 +11,7 @@ import { Stage } from '../../domain/entities/workflow/stage';
 import { TextContent } from '../../domain/entities/workflow/textcontent';
 import { Total } from '../../domain/entities/workflow/total';
 import { Vote } from '../../domain/entities/workflow/vote';
-import { MongoWrapper } from '../wrappers/mongo_wrapper';
+import { MongoWrapper, NoSQLDatabaseWrapper } from '../wrappers/mongo_wrapper';
 import { data_insert01 } from './load_data_01';
 
 const flowId = '00000111-0111-0111-0111-000000000111';
@@ -24,7 +24,7 @@ const post02Id = '00002AAA-0119-0111-0111-000000000000';
 const post03Id = '00003AAA-0119-0111-0111-000000000000';
 const post04Id = '00004AAA-0119-0111-0111-000000000000';
 
-export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, postMongo: MongoWrapper<PostModel>) => {
+export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, postMongo: NoSQLDatabaseWrapper<PostModel>) => {
 
 	data_insert02.flows[0].stages = data_insert02.stages;
 
@@ -133,8 +133,6 @@ export const data_insert02 = {
 		stageId:stageId01Load,
 		userId:data_insert01.users[5].id,
 		value:1, created: new Date()} as Vote],
-
-	//postvotes:[{id: post04Id, _id:post04Id, votes:[]} as PostVotes],
 
 	totals:[{totalpositive: 1,
 		totalnegative: 0,
