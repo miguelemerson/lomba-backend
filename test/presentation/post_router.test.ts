@@ -8,6 +8,7 @@ import { generateJWT } from '../../src/core/jwt';
 import { ModelContainer } from '../../src/core/model_container';
 import { RouterResponse } from '../../src/core/router_response';
 import { AddTextPostUseCase } from '../../src/domain/usecases/posts/add_text_post';
+import { DeletePostUseCase } from '../../src/domain/usecases/posts/delete_post';
 import { GetPostsUseCase } from '../../src/domain/usecases/posts/get_posts';
 import { SendVoteUseCase } from '../../src/domain/usecases/posts/send_vote';
 import { UpdatePostUseCase } from '../../src/domain/usecases/posts/update_post';
@@ -43,6 +44,12 @@ class MockUpdatePostUseCase implements UpdatePostUseCase {
 	}
 }
 
+class MockDeletePostUseCase implements DeletePostUseCase {
+	execute(): Promise<Either<Failure,ModelContainer<Post>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
 class MockEnablePostUseCase implements EnablePostUseCase {
 	execute(): Promise<Either<Failure, boolean>> {
 		throw new Error('Method not implemented.');
@@ -67,6 +74,7 @@ describe('Post Router', () => {
 	let mockGetPostsUseCase: GetPostsUseCase;
 	let mockSendVoteUseCase: SendVoteUseCase;
 	let mockUpdatePostUseCase: UpdatePostUseCase;
+	let mockDeletePostUseCase: DeletePostUseCase;
 	let mockChangeStagePostUseCase: ChangeStagePostUseCase;
 	let mockEnablePostUseCase: EnablePostUseCase;
 	let mockGetAdminViewPostUseCase: GetAdminViewPostsUseCase;
@@ -97,9 +105,13 @@ describe('Post Router', () => {
 	const fakeUpdatePost = {
 		userId:'00000005-0005-0005-0005-000000000005',
 		postId:'00001AAA-0119-0111-0111-000000000000',
-		stageId:'00000AAA-0111-0111-0111-000000000111',
 		title:'titulo editado',
 		textContent:'contenido editado'
+	};
+
+	const fakeDeletePost = {
+		userId:'00000005-0005-0005-0005-000000000005',
+		postId:'00001AAA-0119-0111-0111-000000000000'
 	};
 
 	//carga de identificadores para las pruebas
@@ -116,11 +128,12 @@ describe('Post Router', () => {
 		mockGetPostsUseCase = new MockGetPostsUseCase();
 		mockSendVoteUseCase = new MockSendVoteUseCase();
 		mockUpdatePostUseCase = new MockUpdatePostUseCase();
+		mockDeletePostUseCase = new MockDeletePostUseCase();
 		mockEnablePostUseCase = new MockEnablePostUseCase();
 		mockChangeStagePostUseCase = new MockChangeStagePostUseCase();
 		mockGetAdminViewPostUseCase = new MockGetAdminViewPostUseCase();
 
-		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase, mockEnablePostUseCase, mockChangeStagePostUseCase, mockGetAdminViewPostUseCase));
+		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase, mockDeletePostUseCase, mockEnablePostUseCase, mockChangeStagePostUseCase, mockGetAdminViewPostUseCase));
 	});
 
 	beforeEach(() => {
@@ -448,7 +461,6 @@ describe('Post Router', () => {
 		});
 	});
 
-
 	//get admin view de post
 	describe('GET /post/admin', () => {
 
@@ -564,8 +576,7 @@ describe('Post Router', () => {
 			//act
 			const response = await request(server).put('/api/v1/post/enable/1?enable=false').set({Authorization: 'Bearer ' + testTokenAdmin});
 			const roures = response.body as RouterResponse;
-
-			//assert
+			
 			expect(response.status).toBe(200);
 			expect(mockEnablePostUseCase.execute).toBeCalledTimes(1);
 			expect(response.body as RouterResponse).toBeDefined();
@@ -620,7 +631,6 @@ describe('Post Router', () => {
 		});
 
 		test('debe retornar 500 en caso de error', async () => {
-			//arrange
 			jest.spyOn(mockEnablePostUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
 
 			//act
@@ -629,6 +639,73 @@ describe('Post Router', () => {
 
 			expect(response.status).toBe(500);
 			expect(mockEnablePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+
+	describe('DeletePost /post/', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			//const inputData = fakeAddTextPost;
+			jest.spyOn(mockDeletePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(fakeGetPost))));
+
+			//act
+			const response = await request(server).delete('/api/v1/post/').send(fakeDeletePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockDeletePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(1);
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 401 porque usuario no autenticado', async () => {
+			//arrange
+			jest.spyOn(mockDeletePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).delete('/api/v1/post/').send(fakeDeletePost);
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(401);
+			expect(mockDeletePostUseCase.execute).toBeCalledTimes(0);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockDeletePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).delete('/api/v1/post/').send(fakeDeletePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockDeletePostUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockDeletePostUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).delete('/api/v1/post/').send(fakeDeletePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockDeletePostUseCase.execute).toBeCalledTimes(1);
 			expect(response.body as RouterResponse).toBeDefined();
 			expect(roures.error).toBeDefined();
 			expect(roures.data).toBeUndefined();

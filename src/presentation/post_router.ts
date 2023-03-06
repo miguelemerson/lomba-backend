@@ -4,6 +4,7 @@ import { isAuth } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
 import { TextContent } from '../domain/entities/workflow/textcontent';
 import { AddTextPostUseCase } from '../domain/usecases/posts/add_text_post';
+import { DeletePostUseCase } from '../domain/usecases/posts/delete_post';
 import { GetPostsUseCase } from '../domain/usecases/posts/get_posts';
 import { SendVoteUseCase } from '../domain/usecases/posts/send_vote';
 import { UpdatePostUseCase } from '../domain/usecases/posts/update_post';
@@ -16,6 +17,7 @@ export default function PostsRouter(
 	addTextPost: AddTextPostUseCase,
 	sendVote: SendVoteUseCase,
 	updatePost: UpdatePostUseCase,
+	deletePost: DeletePostUseCase,
 	enablePost: EnablePostUseCase,
 	changeStagePost: ChangeStagePostUseCase,
 	getAdminViewPosts: GetAdminViewPostsUseCase,
@@ -179,9 +181,35 @@ export default function PostsRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			const bodypost = req.body as {postId: string, userId: string, stageId: string, title: string, textContent: TextContent};
+			const bodypost = req.body as {postId: string, userId: string, title: string, textContent: TextContent};
 			//execution
-			const post = await updatePost.execute(bodypost.postId, bodypost.userId, bodypost.stageId, bodypost.title, bodypost.textContent);
+			const post = await updatePost.execute(bodypost.postId, bodypost.userId, bodypost.title, bodypost.textContent);
+			//evaluate
+			post.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'post', undefined, 'post was not added');	
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'post', undefined, 'new post added');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'post', undefined, 'post was not added');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.delete('/',[isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			const bodypost = req.body as {postId: string, userId: string};
+			//execution
+			const post = await deletePost.execute(bodypost.postId, bodypost.userId);
 			//evaluate
 			post.fold(error => {
 				//something wrong

@@ -6,7 +6,7 @@ import { PostRepository } from '../../repositories/post_repository';
 import { TextContent } from '../../entities/workflow/textcontent';
 
 export interface UpdatePostUseCase {
-    execute(postId: string, userId: string, stageId: string, title: string, textContent: TextContent): Promise<Either<Failure,ModelContainer<Post>>>;
+    execute(postId: string, userId: string, title: string, textContent: TextContent): Promise<Either<Failure,ModelContainer<Post>>>;
 }
 
 export class UpdatePost implements UpdatePostUseCase {
@@ -15,7 +15,7 @@ export class UpdatePost implements UpdatePostUseCase {
 		this.repository = repository;
 	}
 
-	async execute(postId: string, userId: string, stageId: string, title: string, textContent: TextContent): Promise<Either<Failure,ModelContainer<Post>>> {
-		return await this.repository.updatePost(postId, userId, stageId, title, textContent);
+	async execute(postId: string, userId: string, title: string, textContent: TextContent): Promise<Either<Failure,ModelContainer<Post>>> {
+		return await this.repository.updatePost(postId, userId, title, textContent);
 	}
 }

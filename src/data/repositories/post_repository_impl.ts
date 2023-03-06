@@ -271,7 +271,7 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
-	async updatePost(postId: string, userId: string, stageId: string, title: string, textContent: TextContent): Promise<Either<Failure, ModelContainer<Post>>> {
+	async updatePost(postId: string, userId: string, title: string, textContent: TextContent): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			const resultPost = await this.dataSource.getById(postId);
@@ -287,6 +287,35 @@ export class PostRepositoryImpl implements PostRepository {
 					return Either.right(resultUpdate);
 				} else {
 					return Either.left(new GenericFailure('no se realizó actualización'));
+				}
+			}
+
+			return Either.left(new GenericFailure('undetermined'));
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));	
+		}
+	}
+
+	async deletePost(postId: string, userId: string): Promise<Either<Failure, ModelContainer<Post>>> {
+		try
+		{
+			const resultPost = await this.dataSource.getById(postId);
+
+			if(resultPost.currentItemCount > 0) {
+
+				const resultDelete = await this.dataSource.delete(resultPost.items[0].id);
+
+				if(resultDelete) {
+					return Either.right(resultPost);
+				} else {
+					return Either.left(new GenericFailure('no se realizó la eliminación'));
 				}
 			}
 
