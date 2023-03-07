@@ -14,6 +14,7 @@ import { PostDataSource } from '../datasources/post_data_source';
 import { StageDataSource } from '../datasources/stage_data_source';
 import { PostModel } from '../models/workflow/post_model';
 import { TotalModel } from '../models/workflow/total_model';
+import { Total } from '../../domain/entities/workflow/total';
 
 export class PostRepositoryImpl implements PostRepository {
 	dataSource: PostDataSource;
@@ -152,7 +153,7 @@ export class PostRepositoryImpl implements PostRepository {
 
 				const listStages:Stage[] = [];
 				const listVotes:Vote[] = [];
-
+				const listTotals:Total[] = [];
 
 				listStages.push(firstStage);
 
@@ -162,20 +163,27 @@ export class PostRepositoryImpl implements PostRepository {
 						flowId:flowId,
 						stageId:postStageId,
 						userId:userId,
+						key: `${userId}-${postStageId}-${flowId}`,
 						value:1, created: new Date()} as Vote;
 					listVotes.push(vote);
+
+					const newTotal:TotalModel = new TotalModel(1, 0, 1, flowId, postStageId);
+
+					listTotals.push(newTotal);
 
 					const secondStage = resultFlow.items[0].stages.filter(e=> e.order == firstStage.order + 1)[0];
 
 					postStageId = secondStage.id;
 					listStages.push(secondStage);
+
+
 				}
 
 				const resultAddPost = await this.dataSource.add(post);
 
 				if(resultAddPost.currentItemCount > 0)
 				{
-					const changes:object = {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes};
+					const changes:object = {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes, totals: listTotals};
 
 					const resultUpdatePost = await this.dataSource.update(resultAddPost.items[0].id, changes);
 
@@ -210,6 +218,7 @@ export class PostRepositoryImpl implements PostRepository {
 					flowId:flowId,
 					stageId:stageId,
 					userId:userId,
+					key: `${userId}-${stageId}-${flowId}`,
 					value:voteValue, 
 					created: new Date()} as Vote;
 	
@@ -220,9 +229,9 @@ export class PostRepositoryImpl implements PostRepository {
 				const resultPostComplete = await this.dataSource.getById(postId);
 
 				//actualiza los totales del post.
-				if(resultPostComplete.items[0].totals.length < 1)
+				if(resultPostComplete.items[0].totals.filter(t=> t.flowId == flowId && t.stageId == stageId).length < 1)
 				{
-					const newTotal:TotalModel = new TotalModel(voteValue == 1 ? voteValue : 0, voteValue == -1 ? voteValue : 0, 1, flowId, stageId);
+					const newTotal:TotalModel = new TotalModel(voteValue == 1 ? Math.abs(voteValue) : 0, voteValue == -1 ? Math.abs(voteValue) : 0, 1, flowId, stageId);
 
 					const resultTotal = await this.dataSource.pushToArrayField(postId, { totals: newTotal});
 				}

@@ -118,9 +118,9 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 
 export const data_insert02 = {
 
-	stages:[{name: 'Carga', order:1, queryOut: {'votes.value': 1},
+	stages:[{name: 'Carga', order:1, queryOut: {'votes.value': {$gte: 1}},
 		_id:stageId01Load, id:stageId01Load, enabled:true, builtIn:true, created: new Date()} as Stage,
-        {name: 'Aprobación', order:2, queryOut: {'totals.totalpositive': 2, 'totals.totalcount' : 2},_id:stageId02Approval, id:stageId02Approval, enabled:true, builtIn:true, created: new Date()} as Stage,{name: 'Votación', order:3, queryOut: undefined,_id:stageId03Voting, id:stageId03Voting, enabled:true, builtIn:true, created: new Date()} as Stage],
+        {name: 'Aprobación', order:2, queryOut: {'totals.totalpositive': { $gte: 2}, 'totals.totalcount' : {$gte: 2}, 'totals.stageId' : stageId02Approval},_id:stageId02Approval, id:stageId02Approval, enabled:true, builtIn:true, created: new Date()} as Stage,{name: 'Votación', order:3, queryOut: undefined,_id:stageId03Voting, id:stageId03Voting, enabled:true, builtIn:true, created: new Date()} as Stage],
 
 	flows:[{name: 'Flujo de Votación', stages:[], _id:flowId, id:flowId, enabled:true, builtIn:true, created: new Date()} as Flow],
 
@@ -132,6 +132,7 @@ export const data_insert02 = {
 		flowId:flowId,
 		stageId:stageId01Load,
 		userId:data_insert01.users[5].id,
+		key: `${data_insert01.users[5].id}-${stageId01Load}-${flowId}`,
 		value:1, created: new Date()} as Vote],
 
 	totals:[{totalpositive: 1,

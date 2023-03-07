@@ -84,8 +84,9 @@ export class PostDataSourceImpl implements PostDataSource {
 	}
 	async updateTotals(postId:string, flowId:string, stageId:string, voteValue: number): Promise<ModelContainer<PostModel>> {
 
-		const updateQuery = voteValue == 1 ? { $inc: {'totals.$[elem].totalpositive':1, 'totals.$[elem].totalcount':1}} : { $inc: {'totals.$[elem].totalnegative': 1, 'totals.$[elem].totalcount': 1}};
+		const updateQuery = voteValue == 1 ? { $inc: {'totals.$[elem].totalpositive':Math.abs(voteValue), 'totals.$[elem].totalcount':1}} : { $inc: {'totals.$[elem].totalnegative': Math.abs(voteValue), 'totals.$[elem].totalcount': 1}};
 
+		
 		return await this.collection.updateArray(postId, updateQuery, {arrayFilters: [{'elem.stageId':stageId, 'elem.flowId':flowId}]}).then(() => this.getById(postId));
 	}
 	async pushToArrayField(id: string, arrayAndValue: object): Promise<ModelContainer<PostModel>> {
@@ -132,12 +133,14 @@ export class PostDataSourceImpl implements PostDataSource {
 		query['orgaId'] = orgaId;
 		query['flowId'] = flowId;
 		query['stageId'] = stageId;
-		query['votes'] = {$elemMatch : {userId : {$ne: userId}, stageId : {$ne: stageId}}};
+		query['votes.key'] = {$ne: `${userId}-${stageId}-${flowId}`};
 
 		if(searchText != '')
 		{
 			query['$text'] = {$search: searchText};
 		}
+
+
 		return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getApprovedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
@@ -180,6 +183,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		}
 		sort = [['created', -1]];
 		
+
 		return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getPopularPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
