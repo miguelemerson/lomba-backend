@@ -79,6 +79,10 @@ import { DeletePost } from './domain/usecases/posts/delete_post';
 import { EnablePost } from './domain/usecases/posts/enable_post';
 import { ChangeStagePost } from './domain/usecases/posts/change_stage_post';
 import { GetAdminViewPosts } from './domain/usecases/posts/get_adminview_post';
+import { GetFlow } from './domain/usecases/flows/get_flow';
+import { GetFlows } from './domain/usecases/flows/get_flows';
+import { FlowRepositoryImpl } from './data/repositories/flow_repository_impl';
+import FlowsRouter from './presentation/flow_router';
 
 dotenv.config();
 
@@ -135,6 +139,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource, googleAuth);
 	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource);
+	const flowRepo = new FlowRepositoryImpl(flowDataSource);
 
 
 	//revisa que los datos estén cargados.
@@ -161,6 +166,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo));
 
+	const flowMiddleWare = FlowsRouter(new GetFlow(flowRepo), new GetFlows(flowRepo));
+
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
 	app.use('/api/v1/orga', orgaMiddleWare);
@@ -168,6 +175,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/auth', authMiddleWare);
 	app.use('/api/v1/password', passMiddleWare);
 	app.use('/api/v1/post', postMiddleWare);
+	app.use('/api/v1/flow', flowMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));
