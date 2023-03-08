@@ -83,6 +83,10 @@ import { GetFlow } from './domain/usecases/flows/get_flow';
 import { GetFlows } from './domain/usecases/flows/get_flows';
 import { FlowRepositoryImpl } from './data/repositories/flow_repository_impl';
 import FlowsRouter from './presentation/flow_router';
+import { StageRepositoryImpl } from './data/repositories/stage_repository_impl';
+import StagesRouter from './presentation/stage_router';
+import { GetStage } from './domain/usecases/stages/get_stage';
+import { GetStages } from './domain/usecases/stages/get_stages';
 
 dotenv.config();
 
@@ -140,6 +144,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource, googleAuth);
 	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource);
 	const flowRepo = new FlowRepositoryImpl(flowDataSource);
+	const stageRepo = new StageRepositoryImpl(stageDataSource);
 
 
 	//revisa que los datos estén cargados.
@@ -168,6 +173,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const flowMiddleWare = FlowsRouter(new GetFlow(flowRepo), new GetFlows(flowRepo));
 
+	const stageMiddleWare = StagesRouter(new GetStage(stageRepo), new GetStages(stageRepo));
+
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
 	app.use('/api/v1/orga', orgaMiddleWare);
@@ -176,6 +183,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/password', passMiddleWare);
 	app.use('/api/v1/post', postMiddleWare);
 	app.use('/api/v1/flow', flowMiddleWare);
+	app.use('/api/v1/stage', stageMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));
