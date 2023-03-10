@@ -228,14 +228,16 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.put('/enable/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string}>, res: Response) => {
+	router.put('/enable/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string, r_userId:string}>, res: Response) => {
 		const text = (req.query.enable === 'false' ? false : true) ? 'enabled' : 'disabled';
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();		
 		try {
+			const userId = req.params.r_userId;
+			console.log(req);
 			//execution
-			const result = await enablePost.execute(req.params.id, (req.query.enable === 'false' ? false : true));
+			const result = await enablePost.execute(req.params.id, userId, (req.query.enable === 'false' ? false : true));
 			//evaluate
 			result.fold(error => {
 			//something wrong
@@ -254,7 +256,7 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.put('/stage/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string}>, res: Response) => {
+	router.put('/stage/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string, r_userId:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let flowId = '';
@@ -268,8 +270,10 @@ export default function PostsRouter(
 			if(req.query.stageId)
 				stageId = req.query.stageId.toString();
 
+			const userId = req.params.r_userId;
+			console.log(req);
 			//execution
-			const result = await changeStagePost.execute(req.params.id, flowId, stageId);
+			const result = await changeStagePost.execute(req.params.id, userId, flowId, stageId);
 			//evaluate
 			result.fold(error => {
 			//something wrong
