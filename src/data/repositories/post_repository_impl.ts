@@ -207,6 +207,8 @@ export class PostRepositoryImpl implements PostRepository {
 	async sendVote(orgaId:string, userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
+			console.log(`voteValue : ${voteValue} - userId: ${userId} - stageId: ${stageId} - postId: ${postId} - `);
+
 			//busca si el usuario ya ha votado antes por el post en el stage
 			const resultPost = await this.dataSource.getIfHasVote(userId, flowId, stageId, postId);
 		
