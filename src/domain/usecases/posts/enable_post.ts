@@ -3,7 +3,7 @@ import { Failure } from '../../../core/errors/failures';
 import { PostRepository } from '../../repositories/post_repository';
 
 export interface EnablePostUseCase {
-    execute(postId:string, enableOrDisable: boolean): Promise<Either<Failure,boolean>>;
+    execute(postId:string, userId:string, enableOrDisable: boolean): Promise<Either<Failure,boolean>>;
 }
 
 export class EnablePost implements EnablePostUseCase {
@@ -12,7 +12,7 @@ export class EnablePost implements EnablePostUseCase {
 		this.repository = repository;
 	}
 
-	async execute(postId:string, enableOrDisable: boolean): Promise<Either<Failure,boolean>> {
-		return await this.repository.enablePost(postId, enableOrDisable);
+	async execute(postId:string, userId:string, enableOrDisable: boolean): Promise<Either<Failure,boolean>> {
+		return await this.repository.enablePost(postId, userId, enableOrDisable);
 	}
 }

@@ -71,6 +71,9 @@ class MockFlowDataSource implements FlowDataSource {
 	}
 }
 class MockPostDataSource implements PostDataSource {
+	addTrack(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
 	getMany(): Promise<ModelContainer<PostModel>> {
 		throw new Error('Method not implemented.');
 	}

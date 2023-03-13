@@ -10,7 +10,7 @@ export interface PostRepository {
     sendVote(orgaId:string, userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>>;
     updatePost(postId: string, userId: string, title: string, textContent: TextContent): Promise<Either<Failure, ModelContainer<Post>>>;
     deletePost(postId: string, userId: string): Promise<Either<Failure, ModelContainer<Post>>>;
-    enablePost(postId: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>>;
-    changeStage(postId:string, flowId: string, stageId:string): Promise<Either<Failure, ModelContainer<Post>>>;
+    enablePost(postId: string, userId:string, enableOrDisable: boolean): Promise<Either<Failure, boolean>>;
+    changeStage(postId:string, userId:string, flowId: string, stageId:string): Promise<Either<Failure, ModelContainer<Post>>>;
     getAdminViewPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>>;
 }

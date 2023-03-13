@@ -15,6 +15,7 @@ import { StageDataSource } from '../datasources/stage_data_source';
 import { PostModel } from '../models/workflow/post_model';
 import { TotalModel } from '../models/workflow/total_model';
 import { Total } from '../../domain/entities/workflow/total';
+import { Track } from '../../domain/entities/workflow/track';
 
 export class PostRepositoryImpl implements PostRepository {
 	dataSource: PostDataSource;
@@ -25,9 +26,13 @@ export class PostRepositoryImpl implements PostRepository {
 		this.stageDataSource = stageDataSource;
 		this.flowDataSource = flowDataSource;
 	}
-	async enablePost(postId: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>> {
+	async enablePost(postId: string, userId: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>> {
 		try{
 			const result = await this.dataSource.enable(postId, enableOrDisable);
+			if(result)
+			{
+				await this.dataSource.addTrack(enableOrDisable ? 'enabled' : 'disabled', enableOrDisable ? 'Habilita publicación': 'Deshabilita publicación', postId, userId, '', '', '', {'enabled' : enableOrDisable});
+			}
 			return Either.right(result);
 		}
 		catch(error)
@@ -40,10 +45,15 @@ export class PostRepositoryImpl implements PostRepository {
 			else return Either.left(new GenericFailure('undetermined', error));
 		}
 	}
-	async changeStage(postId: string, flowId: string, stageId: string): Promise<Either<Failure, ModelContainer<Post>>> {
+	async changeStage(postId: string, userId:string, flowId: string, stageId: string): Promise<Either<Failure, ModelContainer<Post>>> {
 		try{
 
 			const result = await this.dataSource.update(postId, {stageId:stageId});
+
+			if(result)
+			{
+				await this.dataSource.addTrack('changestage', 'Cambio de etapa', postId, userId, flowId, '', stageId, {stageId:stageId});
+			}
 
 			return Either.right(result);
 		}
@@ -154,8 +164,22 @@ export class PostRepositoryImpl implements PostRepository {
 				const listStages:Stage[] = [];
 				const listVotes:Vote[] = [];
 				const listTotals:Total[] = [];
+				const listTracks:Track[] = [];
 
 				listStages.push(firstStage);
+
+				//Track de entrada
+				const track = {
+					name: 'new',
+					description: `Se crea en ${firstStage.name}`,
+					userId: userId,
+					flowId: flowId,
+					stageIdNew: postStageId,
+					change: {},
+					created: new Date(),
+				} as unknown as Track;
+
+				listTracks.push(track);
 
 				if(!draft)
 				{
@@ -176,6 +200,19 @@ export class PostRepositoryImpl implements PostRepository {
 					postStageId = secondStage.id;
 					listStages.push(secondStage);
 
+					//Track de publicación a aprobación
+					const track2 = {
+						name: 'goforward',
+						description: `Avanza a ${secondStage.name}`,
+						userId: userId,
+						flowId: flowId,
+						stageIdOld: track.stageIdNew,
+						stageIdNew: postStageId,
+						change: {},
+						created: new Date(),
+					} as unknown as Track;
+
+					listTracks.push(track2);
 
 				}
 
@@ -183,7 +220,7 @@ export class PostRepositoryImpl implements PostRepository {
 
 				if(resultAddPost.currentItemCount > 0)
 				{
-					const changes:object = {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes, totals: listTotals};
+					const changes:object = {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes, totals: listTotals, tracks: listTracks};
 
 					const resultUpdatePost = await this.dataSource.update(resultAddPost.items[0].id, changes);
 
@@ -207,7 +244,6 @@ export class PostRepositoryImpl implements PostRepository {
 	async sendVote(orgaId:string, userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
-			console.log(`voteValue : ${voteValue} - userId: ${userId} - stageId: ${stageId} - postId: ${postId} - `);
 
 			//busca si el usuario ya ha votado antes por el post en el stage
 			const resultPost = await this.dataSource.getIfHasVote(userId, flowId, stageId, postId);
@@ -295,6 +331,9 @@ export class PostRepositoryImpl implements PostRepository {
 				const resultUpdate = await this.dataSource.update(resultPost.items[0].id, {title: title, postitems: listPostItem});
 
 				if(resultUpdate.currentItemCount > 0) {
+
+					await this.dataSource.addTrack('update', 'Modifica publicación', postId, userId, '','','',{title: title, postitems: listPostItem});
+
 					return Either.right(resultUpdate);
 				} else {
 					return Either.left(new GenericFailure('no se realizó actualización'));
@@ -379,6 +418,8 @@ export class PostRepositoryImpl implements PostRepository {
 
 					//aquí se actualizan las etapas y el stageId con la nueva etapa.
 					const resultUpdatePost = await this.dataSource.update(postId, { stageId: nextStage.id, stages: listStages });
+
+					await this.dataSource.addTrack('goforward', `Avanza a ${nextStage.name}`, postId, '', flowId, stageId, nextStage.id,{ stageId: nextStage.id, stages: nextStage });
 
 				}
 

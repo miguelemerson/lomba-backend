@@ -2,6 +2,7 @@ import { PostModel } from '../models/workflow/post_model';
 import { MongoWrapper } from '../../core/wrappers/mongo_wrapper';
 import { ModelContainer } from '../../core/model_container';
 import crypto from 'crypto';
+import { Track } from '../../domain/entities/workflow/track';
 
 
 export interface PostDataSource {
@@ -48,6 +49,7 @@ export interface PostDataSource {
 
 	updateVote(postId:string, userId:string, flowId:string, stageId:string, voteValue: number): Promise<ModelContainer<PostModel>>;
 
+	addTrack(name:string, description:string, postId:string, userId:string, flowId:string, stageIdOld:string, stageIdNew:string, change:object): Promise<boolean>;
 }
 
 export class PostDataSourceImpl implements PostDataSource {
@@ -55,6 +57,22 @@ export class PostDataSourceImpl implements PostDataSource {
 
 	constructor(dbMongo: MongoWrapper<PostModel>){
 		this.collection = dbMongo;
+	}
+	async addTrack(name: string, description: string, postId: string, userId: string, flowId: string, stageIdOld:string, stageIdNew:string, change: object): Promise<boolean> {
+		
+		const track = {
+			name: name,
+			description: description,
+			userId: userId,
+			flowId: flowId,
+			stageIdOld: stageIdOld,
+			stageIdNew: stageIdNew,
+			change: change,
+			created: new Date(),
+		} as unknown as Track;
+
+		return await this.collection.updateDirect(postId, {$push: {tracks: track}}).then(() => true);
+
 	}
 	async getAdminViewPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], onlyStatusEnable?: boolean | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 		const query = {} as {[x: string]: unknown;};
@@ -100,6 +118,13 @@ export class PostDataSourceImpl implements PostDataSource {
 		return options;
 	}
 
+	private getStandardFilteredTracksProjection(userId:string, flowId:string, stageId:string):object
+	{
+		const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:{$elemMatch: {'name': 'goforward', userId:userId, 'stageIdOld':stageId, 'flowId':flowId }}, updated:1, deleted:1, expires:1};
+
+		return options;
+	}
+
 	private getWithoutVotesProjection():object
 	{
 		const options = {id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1};
@@ -125,6 +150,9 @@ export class PostDataSourceImpl implements PostDataSource {
 		{
 			query['stages'] = {$elemMatch: {id:stageId}};
 		}
+
+
+
 		return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getForApprovePosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
@@ -224,7 +252,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		{
 			sort = [['created', -1]];
 		}
-		
+
 		return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getIfHasVote(userId: string, flowId: string, stageId: string, postId: string): Promise<ModelContainer<PostModel>> {
