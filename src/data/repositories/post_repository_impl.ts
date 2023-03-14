@@ -435,7 +435,7 @@ export class PostRepositoryImpl implements PostRepository {
 			{
 				sort = [['created', -1]];
 			}
-			const onlyEnabledOrDisabled = (params['onlyEnables']==undefined) ? undefined : (params['onlyEnables'] as string).toString() == 'true' ? true : false;
+			const onlyEnabledOrDisabled = (params['postEnabled']==undefined || params['postEnabled'] == '0') ? undefined : (params['postEnabled'] as string).toString() == '1' ? true : false;
 
 			const result = await this.dataSource.getAdminViewPosts(orgaId, userId, flowId, stageId, searchText, sort, onlyEnabledOrDisabled, pageIndex, itemsPerPage);
 
