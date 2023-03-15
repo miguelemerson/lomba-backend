@@ -39,9 +39,11 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 			const limit: number = (itemsPerPage == undefined ? 10 : itemsPerPage);
 			const skip: number = (pageIndex - 1) * limit;
 			result = await this.runFullQuery(result, query, options, sort, skip, limit);
+			
 
 			startIndex = ((pageIndex - 1) * limit) + 1;
-			totalPages = parseInt(Math.round((totalItems == undefined ? 0 : totalPages) / limit).toString());
+			totalPages = parseInt(Math.ceil((totalItems == undefined ? 1 : totalItems) / limit).toString());
+
 		}
 		return { totalItems, result, startIndex, totalPages };
 	}
