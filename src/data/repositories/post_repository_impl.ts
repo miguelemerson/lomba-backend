@@ -26,6 +26,21 @@ export class PostRepositoryImpl implements PostRepository {
 		this.stageDataSource = stageDataSource;
 		this.flowDataSource = flowDataSource;
 	}
+	async getPost(postId: string): Promise<Either<Failure, ModelContainer<Post>>> {
+		try{
+			const result = await this.dataSource.getById(postId);
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+		}
+	}
 	async enablePost(postId: string, userId: string, enableOrDisable: boolean): Promise<Either<Failure, boolean>> {
 		try{
 			const result = await this.dataSource.enable(postId, enableOrDisable);

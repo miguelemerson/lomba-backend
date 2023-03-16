@@ -11,6 +11,7 @@ import { UpdatePostUseCase } from '../domain/usecases/posts/update_post';
 import { EnablePostUseCase } from '../domain/usecases/posts/enable_post';
 import { ChangeStagePostUseCase } from '../domain/usecases/posts/change_stage_post';
 import { GetAdminViewPostsUseCase } from '../domain/usecases/posts/get_adminview_post';
+import { GetPostUseCase } from '../domain/usecases/posts/get_post';
 
 export default function PostsRouter(
 	getPosts: GetPostsUseCase,
@@ -21,6 +22,7 @@ export default function PostsRouter(
 	enablePost: EnablePostUseCase,
 	changeStagePost: ChangeStagePostUseCase,
 	getAdminViewPosts: GetAdminViewPostsUseCase,
+	getPost: GetPostUseCase,
 ) {
 	const router = express.Router();
 
@@ -287,6 +289,33 @@ export default function PostsRouter(
 			//something wrong
 			code = 500;
 			toSend = new RouterResponse('1.0', err as object, 'put', {id: req.params.id, stageId: stageId}, 'post stage wat not changed');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.get('/:id',[isAuth], async (req: Request<{id:string}>, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+
+			//execution
+			const post = await getPost.execute(req.query.id as string);
+			//evaluate
+			post.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error, 'get', {id: req.query.id} as object, 'not obtained by id');	
+			}, value => {
+				//isOK
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'get', {id: req.query.id} as object, 'geted by id');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get', {id: req.query.id} as object, 'not obtained by id');
 		}
 		//respond cordially
 		res.status(code).send(toSend);
