@@ -87,6 +87,7 @@ import { StageRepositoryImpl } from './data/repositories/stage_repository_impl';
 import StagesRouter from './presentation/stage_router';
 import { GetStage } from './domain/usecases/stages/get_stage';
 import { GetStages } from './domain/usecases/stages/get_stages';
+import { GetPost } from './domain/usecases/posts/get_post';
 
 dotenv.config();
 
@@ -169,7 +170,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
 
-	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo));
+	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo), new GetPost(postRepo));
 
 	const flowMiddleWare = FlowsRouter(new GetFlow(flowRepo), new GetFlows(flowRepo));
 
