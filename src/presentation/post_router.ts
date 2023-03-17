@@ -299,9 +299,8 @@ export default function PostsRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-
 			//execution
-			const post = await getPost.execute(req.query.id as string);
+			const post = await getPost.execute(req.params.id as string);
 			//evaluate
 			post.fold(error => {
 				//something wrong
