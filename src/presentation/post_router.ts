@@ -91,7 +91,6 @@ export default function PostsRouter(
 			{
 				params = JSON.parse(req.query.paramvars.toString()) as {[x: string]: string};
 			}
-
 			//execution
 			const post = await getAdminViewPosts.execute(
 				(req.query.orgaId!=undefined)?req.query.orgaId.toString():'',
