@@ -290,7 +290,7 @@ export class PostRepositoryImpl implements PostRepository {
 				}
 				else
 				{
-					const resultTotal = await this.dataSource.updateTotals(postId, flowId, stageId, voteValue);
+					const resultTotal = await this.dataSource.updateTotals(postId, flowId, stageId, voteValue, true);
 				}
 				
 				//revisión de cambio de etapa!
@@ -310,13 +310,16 @@ export class PostRepositoryImpl implements PostRepository {
 
 				//actualiza totales:
 				//se invierten los valores, solo si el voto tiene otro valor
-				const resultTotal = await this.dataSource.updateTotals(postId, flowId, stageId, voteValue);
+				const resultTotal = await this.dataSource.updateTotals(postId, flowId, stageId, voteValue, false);
 
 				//revisión de cambio de etapa!
 				//busca la etapa actual
 				await this.checkNextStage(stageId, postId, flowId, resultPost);
 				
 				return Either.right(result);
+			} else
+			{
+				return Either.right(resultPost);
 			}
 
 

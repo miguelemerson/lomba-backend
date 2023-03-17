@@ -45,7 +45,7 @@ export interface PostDataSource {
 
 	pushToArrayField(id: string, arrayAndValue: object): Promise<ModelContainer<PostModel>>;
 
-	updateTotals(postId:string, flowId:string, stageId:string, voteValue: number): Promise<ModelContainer<PostModel>>;			
+	updateTotals(postId:string, flowId:string, stageId:string, voteValue: number, isfirst:boolean): Promise<ModelContainer<PostModel>>;			
 
 	updateVote(postId:string, userId:string, flowId:string, stageId:string, voteValue: number): Promise<ModelContainer<PostModel>>;
 
@@ -100,10 +100,17 @@ export class PostDataSourceImpl implements PostDataSource {
 		
 		return await this.collection.updateArray(postId, { $set :{'votes.$[elem].updated': new Date(), 'votes.$[elem].value':voteValue}}, {arrayFilters: [{'elem.userId':userId, 'elem.stageId':stageId, 'elem.flowId':flowId}]}).then(() => this.getById(postId));
 	}
-	async updateTotals(postId:string, flowId:string, stageId:string, voteValue: number): Promise<ModelContainer<PostModel>> {
+	async updateTotals(postId:string, flowId:string, stageId:string, voteValue: number, isfirst:boolean): Promise<ModelContainer<PostModel>> {
 
-		const updateQuery = voteValue == 1 ? { $inc: {'totals.$[elem].totalpositive':Math.abs(voteValue), 'totals.$[elem].totalcount':1}} : { $inc: {'totals.$[elem].totalnegative': Math.abs(voteValue), 'totals.$[elem].totalcount': 1}};
-
+		let updateQuery = {};
+		if(isfirst)
+		{
+			//si es primera vez que vota esta publicación.
+			updateQuery = voteValue == 1 ? { $inc: {'totals.$[elem].totalpositive':Math.abs(voteValue), 'totals.$[elem].totalcount':1}} : { $inc: {'totals.$[elem].totalnegative': Math.abs(voteValue), 'totals.$[elem].totalcount': 1}};
+		} else {
+			//si no es primera vez que vota.
+			updateQuery = voteValue == 1 ? { $inc: {'totals.$[elem].totalpositive':Math.abs(voteValue), 'totals.$[elem].totalnegative':(Math.abs(voteValue) * -1)}} : { $inc: {'totals.$[elem].totalnegative': Math.abs(voteValue), 'totals.$[elem].totalpositive': (Math.abs(voteValue) * -1)}};
+		}
 		
 		return await this.collection.updateArray(postId, updateQuery, {arrayFilters: [{'elem.stageId':stageId, 'elem.flowId':flowId}]}).then(() => this.getById(postId));
 	}

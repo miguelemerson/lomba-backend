@@ -237,7 +237,6 @@ export default function PostsRouter(
 		let toSend = RouterResponse.emptyResponse();		
 		try {
 			const userId = req.params.r_userId;
-			console.log(req);
 			//execution
 			const result = await enablePost.execute(req.params.id, userId, (req.query.enable === 'false' ? false : true));
 			//evaluate
@@ -273,7 +272,6 @@ export default function PostsRouter(
 				stageId = req.query.stageId.toString();
 
 			const userId = req.params.r_userId;
-			console.log(req);
 			//execution
 			const result = await changeStagePost.execute(req.params.id, userId, flowId, stageId);
 			//evaluate
