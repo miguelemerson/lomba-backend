@@ -262,9 +262,8 @@ export class PostRepositoryImpl implements PostRepository {
 
 			//busca si el usuario ya ha votado antes por el post en el stage
 			const resultPost = await this.dataSource.getIfHasVote(userId, flowId, stageId, postId);
-		
 			//si no lo encuentra, entonces es primer voto del usuario al post
-			if (resultPost.currentItemCount < 1) {
+			if (resultPost.currentItemCount < 1 || resultPost.items[0].votes == undefined) {
 
 				//crea el voto nuevo
 				const newVote:Vote = {  
