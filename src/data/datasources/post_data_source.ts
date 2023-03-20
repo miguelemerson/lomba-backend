@@ -82,14 +82,14 @@ export class PostDataSourceImpl implements PostDataSource {
 		if(stageId != '')
 			query['stageId'] = stageId;			
 
-		if(onlyStatusEnable)
+		if(onlyStatusEnable!=undefined)
 		{
-			if(onlyStatusEnable === true)
+			if(onlyStatusEnable == true)
 				query['enabled'] = true;
 			else
 				query['enabled'] = false;
 		}
-
+		
 		if(searchText != '')
 		{
 			query['$text'] = {$search: searchText};
