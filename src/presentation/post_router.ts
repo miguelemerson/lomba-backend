@@ -305,8 +305,17 @@ export default function PostsRouter(
 				toSend = new RouterResponse('1.0', error, 'get', {id: req.query.id} as object, 'not obtained by id');	
 			}, value => {
 				//isOK
-				code = 200;
-				toSend = new RouterResponse('1.0', value, 'get', {id: req.query.id} as object, 'geted by id');
+				if(value.currentItemCount > 0)
+				{
+					code = 200;
+					toSend = new RouterResponse('1.0', value, 'get', {id: req.query.id} as object, 'geted by id');
+				}
+				else
+				{
+					//no encontrado
+					code = 404;
+					toSend = new RouterResponse('1.0', new Error('not found'), 'get', {id: req.query.id} as object, 'not obtained by id');	
+				}
 			});
 		} catch (err) {
 			//something wrong

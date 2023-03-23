@@ -302,6 +302,23 @@ describe('OrgaUser Router', () => {
 
 		});
 
+		test('debe retornar 404 no encontrado', async () => {
+			//arrange
+			jest.spyOn(mockGetOrgaUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<OrgaUserModel>([]))));
+
+			//act
+			const response = await request(server).get('/api/v1/orgauser/OrgaUserX/OuserX').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(404);
+			expect(mockGetOrgaUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeUndefined();
+			expect(roures.error).toBeDefined();
+
+		});		
+
 		test('debe retornar 401 porque usuario no autenticado', async () => {
 			//arrange
 			const expectedData = listOrgaUsers;

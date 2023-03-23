@@ -126,6 +126,22 @@ describe('User Router', () => {
 
 		});
 
+		test('debe retornar 404 no encontrado', async () => {
+			//arrange
+			jest.spyOn(mockGetUserUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<UserModel>([]))));
+			//act
+			const response = await request(server).get('/api/v1/user/99999').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(404);
+			expect(mockGetUserUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeUndefined();
+			expect(roures.error).toBeDefined();
+
+		});
+
 		test('debe retornar 401 porque usuario no autenticado', async () => {
 			//arrange
 			const expectedData = listUsers[0];

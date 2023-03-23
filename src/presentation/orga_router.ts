@@ -62,8 +62,17 @@ export default function OrgasRouter(
 				code = 500;
 				toSend = new RouterResponse('1.0', error as object, 'get', {orgaId: req.params.orgaId} as object, 'not obtained by orga id');
 			}, value => {
-				code = 200;
-				toSend = new RouterResponse('1.0', value, 'get', {orgaId: req.params.orgaId} as object, 'geted by orga id');				
+				if(value.currentItemCount > 0)
+				{
+					code = 200;
+					toSend = new RouterResponse('1.0', value, 'get', {orgaId: req.params.orgaId} as object, 'geted by orga id');	
+				}
+				else
+				{
+					//no encontrado
+					code = 404;
+					toSend = new RouterResponse('1.0', new Error('not found'), 'get', {orgaId: req.params.orgaId} as object, 'not obtained by orga id');
+				}			
 			});
 		} catch (err) {
 			//something wrong

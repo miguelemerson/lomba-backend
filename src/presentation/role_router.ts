@@ -40,21 +40,30 @@ export default function RolesRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/:id',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{id:string}>, res: Response) => {
+	router.get('/:name',[isAuth, hasRole(['admin', 'super'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
 			//execution
-			const roles = await getRole.execute(req.params.id);
+			const roles = await getRole.execute(req.params.name);
 			//evaluate
 			roles.fold(error => {
 				//something wrong
 				code = 500;
 				toSend = new RouterResponse('1.0', error as object, 'get', {id: req.params.id} as object, 'not obtained by orga id');
 			}, value => {
-				code = 200;
-				toSend = new RouterResponse('1.0', value, 'get', {id: req.params.id} as object, 'geted by orga id');				
+				if(value.currentItemCount > 0)
+				{
+					code = 200;
+					toSend = new RouterResponse('1.0', value, 'get', {id: req.params.id} as object, 'geted by orga id');	
+				}
+				else
+				{
+				//no encontrado
+					code = 404;
+					toSend = new RouterResponse('1.0', new Error('not found'), 'get', {id: req.params.id} as object, 'not obtained by orga id');	
+				}			
 			});
 		} catch (err) {
 			//something wrong

@@ -62,8 +62,8 @@ describe('Role Router', () => {
 		jest.clearAllMocks();
 	});
 
-	//get de rol por id
-	describe('GET /role:id', () => {
+	//get de rol por name
+	describe('GET /role:name', () => {
 
 		test('debe retornar 200 y con datos', async () => {
 			//arrange
@@ -80,6 +80,23 @@ describe('Role Router', () => {
 			expect(response.body as RouterResponse).toBeDefined();
 			expect(roures.data).toBeDefined();
 			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 404 no encontrado', async () => {
+			//arrange
+			jest.spyOn(mockGetRoleUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(new ModelContainer<RoleModel>([]))));
+
+			//act
+			const response = await request(server).get('/api/v1/role/xxxx').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(404);
+			expect(mockGetRoleUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeUndefined();
+			expect(roures.error).toBeDefined();
 
 		});
 

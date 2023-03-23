@@ -55,8 +55,17 @@ export default function FlowsRouter(
 				code = 500;
 				toSend = new RouterResponse('1.0', error as object, 'get', {flowId: req.params.flowId} as object, 'not obtained by flow id');
 			}, value => {
-				code = 200;
-				toSend = new RouterResponse('1.0', value, 'get', {flowId: req.params.flowId} as object, 'geted by flow id');				
+				if(value.currentItemCount > 0)
+				{
+					code = 200;
+					toSend = new RouterResponse('1.0', value, 'get', {flowId: req.params.flowId} as object, 'geted by flow id');
+				}
+				else
+				{
+					//no encontrado
+					code = 404;
+					toSend = new RouterResponse('1.0', new Error('not found'), 'get', {flowId: req.params.flowId} as object, 'not obtained by flow id');
+				}
 			});
 		} catch (err) {
 			//something wrong

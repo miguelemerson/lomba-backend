@@ -38,8 +38,17 @@ export default function UsersRouter(
 				toSend = new RouterResponse('1.0', error, 'get', {id: req.params.id} as object, 'not obtained');	
 			}, value => {
 				//isOK
-				code = 200;
-				toSend = new RouterResponse('1.0', value, 'get', {id: req.params.id} as object, 'geted by id');
+				if(value.currentItemCount > 0)
+				{
+					code = 200;
+					toSend = new RouterResponse('1.0', value, 'get', {id: req.params.id} as object, 'geted by id');
+				}
+				else
+				{
+				//no encontrado
+					code = 404;
+					toSend = new RouterResponse('1.0', new Error('not found'), 'get', {id: req.params.id} as object, 'not obtained');		
+				}
 			});
 		} catch (err) {
 			//something wrong

@@ -55,8 +55,17 @@ export default function StagesRouter(
 				code = 500;
 				toSend = new RouterResponse('1.0', error as object, 'get', {stageId: req.params.stageId} as object, 'not obtained by stage id');
 			}, value => {
-				code = 200;
-				toSend = new RouterResponse('1.0', value, 'get', {stageId: req.params.stageId} as object, 'geted by stage id');				
+				if(value.currentItemCount > 0)
+				{
+					code = 200;
+					toSend = new RouterResponse('1.0', value, 'get', {stageId: req.params.stageId} as object, 'geted by stage id');			
+				}
+				else
+				{
+					//no encontrado
+					code = 404;
+					toSend = new RouterResponse('1.0', new Error('not found'), 'get', {stageId: req.params.stageId} as object, 'not obtained by stage id');
+				}	
 			});
 		} catch (err) {
 			//something wrong
