@@ -208,25 +208,7 @@ describe('Post Router', () => {
 			expect(roures.data).toBeUndefined();
 
 		});
-		/*
-		test('debe retornar 403 porque usuario no el role', async () => {
-			//arrange
-			const expectedData = listPosts[0];
-			jest.spyOn(mockGetPostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(expectedData))));
 
-			//act
-			const response = await request(server).get('/api/v1/post/1').set({Authorization: 'Bearer ' + testTokenUser1});
-			const roures = response.body as RouterResponse;
-
-			//assert
-			expect(response.status).toBe(403);
-			expect(mockGetPostUseCase.execute).toBeCalledTimes(0);
-			expect(response.body as RouterResponse).toBeDefined();
-			expect(roures.error).toBeDefined();
-			expect(roures.data).toBeUndefined();
-
-		});
-*/
 		test('debe retornar 500 en caso de failure', async () => {
 			//arrange
 			jest.spyOn(mockGetPostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
