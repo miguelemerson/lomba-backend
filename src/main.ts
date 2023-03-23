@@ -1,93 +1,100 @@
-import { UpdatePassword } from './domain/usecases/password/update_password';
-import { AddPassword } from './domain/usecases/password/add_password';
+import * as dotenv from 'dotenv';
 import { MongoClient, ServerApiVersion } from 'mongodb';
+import { configEnv } from './config_env';
+import { checkData01 } from './core/builtindata/load_data_01';
 import { MongoWrapper } from './core/wrappers/mongo_wrapper';
-import { UserDataSourceImpl } from './data/datasources/user_data_source';
-import { UserRepositoryImpl } from './data/repositories/user_repository_impl';
-import { GetUser } from './domain/usecases/users/get_user';
-import UsersRouter from './presentation/user_router';
-import { UserModel } from './data/models/user_model';
-import { GetUsersByOrgaId } from './domain/usecases/users/get_users_by_orga';
-import { AddUser } from './domain/usecases/users/add_user';
-import { UpdateUser } from './domain/usecases/users/update_user';
-import { EnableUser } from './domain/usecases/users/enable_user';
-import { DeleteUser } from './domain/usecases/users/delete_user';
-import app from './server';
-import { RoleModel } from './data/models/role_model';
-import { PasswordModel } from './data/models/password_model';
-import { OrgaModel } from './data/models/orga_model';
-import { OrgaUserModel } from './data/models/orgauser_model';
-import { RoleDataSourceImpl } from './data/datasources/role_data_source';
-import { PasswordDataSourceImpl } from './data/datasources/password_data_source';
 import { OrgaDataSourceImpl } from './data/datasources/orga_data_source';
 import { OrgaUserDataSourceImpl } from './data/datasources/orgauser_data_source';
-import { RoleRepositoryImpl } from './data/repositories/role_repository_impl';
-import { PasswordRepositoryImpl } from './data/repositories/password_repository_impl';
+import { PasswordDataSourceImpl } from './data/datasources/password_data_source';
+import { RoleDataSourceImpl } from './data/datasources/role_data_source';
+import { UserDataSourceImpl } from './data/datasources/user_data_source';
+import { OrgaModel } from './data/models/orga_model';
+import { OrgaUserModel } from './data/models/orgauser_model';
+import { PasswordModel } from './data/models/password_model';
+import { RoleModel } from './data/models/role_model';
+import { UserModel } from './data/models/user_model';
+import { AuthRepositoryImpl } from './data/repositories/auth_repository_impl';
 import { OrgaRepositoryImpl } from './data/repositories/orga_repository_impl';
 import { OrgaUserRepositoryImpl } from './data/repositories/orgauser_repository_impl';
-import RolesRouter from './presentation/role_router';
-import { GetRole } from './domain/usecases/roles/get_role';
-import { GetRoles } from './domain/usecases/roles/get_roles';
-import { EnableRole } from './domain/usecases/roles/enable_role';
-import OrgasRouter from './presentation/orga_router';
+import { PasswordRepositoryImpl } from './data/repositories/password_repository_impl';
+import { RoleRepositoryImpl } from './data/repositories/role_repository_impl';
+import { UserRepositoryImpl } from './data/repositories/user_repository_impl';
+import { ChangeOrga } from './domain/usecases/auth/change_orga';
+import { GetToken } from './domain/usecases/auth/get_token';
+import { GetTokenGoogle } from './domain/usecases/auth/get_token_google';
+import { RegisterUser } from './domain/usecases/auth/register_user';
+import { AddOrga } from './domain/usecases/orgas/add_orga';
+import { AddOrgaUser } from './domain/usecases/orgas/add_orgauser';
+import { DeleteOrga } from './domain/usecases/orgas/delete_orga';
+import { DeleteOrgaUser } from './domain/usecases/orgas/delete_orgauser';
+import { EnableOrga } from './domain/usecases/orgas/enable_orga';
+import { EnableOrgaUser } from './domain/usecases/orgas/enable_orgauser';
+import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
 import { GetOrga } from './domain/usecases/orgas/get_orga';
 import { GetOrgas } from './domain/usecases/orgas/get_orgas';
-import { AddOrga } from './domain/usecases/orgas/add_orga';
-import { UpdateOrga } from './domain/usecases/orgas/update_orga';
-import { EnableOrga } from './domain/usecases/orgas/enable_orga';
-import { DeleteOrga } from './domain/usecases/orgas/delete_orga';
-import AuthRouter from './presentation/auth_router';
-import { GetToken } from './domain/usecases/auth/get_token';
-import { AuthRepositoryImpl } from './data/repositories/auth_repository_impl';
-import { RegisterUser } from './domain/usecases/auth/register_user';
-import { checkData01 } from './core/builtindata/load_data_01';
-import * as dotenv from 'dotenv';
-import { configEnv } from './config_env';
-import { ChangeOrga } from './domain/usecases/auth/change_orga';
-import OrgaUsersRouter from './presentation/orgauser_router';
 import { GetOrgaUser } from './domain/usecases/orgas/get_orgauser';
-import { AddOrgaUser } from './domain/usecases/orgas/add_orgauser';
-import { DeleteOrgaUser } from './domain/usecases/orgas/delete_orgauser';
-import { EnableOrgaUser } from './domain/usecases/orgas/enable_orgauser';
-import { UpdateOrgaUser } from './domain/usecases/orgas/update_orgauser';
 import { GetOrgaUserByOrga } from './domain/usecases/orgas/get_orgausers_by_orga';
 import { GetOrgaUserByUser } from './domain/usecases/orgas/get_orgausers_by_user';
+import { UpdateOrga } from './domain/usecases/orgas/update_orga';
+import { UpdateOrgaUser } from './domain/usecases/orgas/update_orgauser';
+import { AddPassword } from './domain/usecases/password/add_password';
+import { UpdatePassword } from './domain/usecases/password/update_password';
+import { EnableRole } from './domain/usecases/roles/enable_role';
+import { GetRole } from './domain/usecases/roles/get_role';
+import { GetRoles } from './domain/usecases/roles/get_roles';
+import { AddUser } from './domain/usecases/users/add_user';
+import { DeleteUser } from './domain/usecases/users/delete_user';
+import { EnableUser } from './domain/usecases/users/enable_user';
+import { ExistsUser } from './domain/usecases/users/exists_user';
+import { GetUser } from './domain/usecases/users/get_user';
+import { GetUsersByOrgaId } from './domain/usecases/users/get_users_by_orga';
 import { GetUsersNotInOrga } from './domain/usecases/users/get_users_notin_orga';
+import { UpdateUser } from './domain/usecases/users/update_user';
+import AuthRouter from './presentation/auth_router';
+import OrgasRouter from './presentation/orga_router';
+import OrgaUsersRouter from './presentation/orgauser_router';
 import PasswordsRouter from './presentation/password_router';
 import PostsRouter from './presentation/post_router';
-import { ExistsUser } from './domain/usecases/users/exists_user';
-import { ExistsOrga } from './domain/usecases/orgas/exists_orga';
-import { GetTokenGoogle } from './domain/usecases/auth/get_token_google';
+import RolesRouter from './presentation/role_router';
+import UsersRouter from './presentation/user_router';
+import app from './server';
 
-import { GetOrgasByUser } from './domain/usecases/orgas/get_orgas_by_user';
-import { StageModel } from './data/models/workflow/stage_model';
-import { FlowModel } from './data/models/workflow/flow_model';
-import { PostModel } from './data/models/workflow/post_model';
-import { StageDataSourceImpl } from './data/datasources/stage_data_source';
+import firebase, { ServiceAccount } from 'firebase-admin';
+import { checkData02 } from './core/builtindata/load_data_02';
+import { checkData03 } from './core/builtindata/load_data_03';
+import { GoogleAuth } from './core/google_auth';
+import { BlobStorageSourceImpl } from './data/datasources/blob_storage_source';
 import { FlowDataSourceImpl } from './data/datasources/flow_data_source';
 import { PostDataSourceImpl } from './data/datasources/post_data_source';
-import { checkData02 } from './core/builtindata/load_data_02';
-import { GetPosts } from './domain/usecases/posts/get_posts';
-import { AddTextPost } from './domain/usecases/posts/add_text_post';
-import { SendVote } from './domain/usecases/posts/send_vote';
+import { SettingDataSourceImpl } from './data/datasources/setting_data_source';
+import { StageDataSourceImpl } from './data/datasources/stage_data_source';
+import { SettingModel } from './data/models/setting_model';
+import { FlowModel } from './data/models/workflow/flow_model';
+import { PostModel } from './data/models/workflow/post_model';
+import { StageModel } from './data/models/workflow/stage_model';
+import { FlowRepositoryImpl } from './data/repositories/flow_repository_impl';
 import { PostRepositoryImpl } from './data/repositories/post_repository_impl';
-import firebase, { ServiceAccount } from 'firebase-admin';
-import { BlobStorageSourceImpl } from './data/datasources/blob_storage_source';
-import { GoogleAuth } from './core/google_auth';
-import { UpdatePost } from './domain/usecases/posts/update_post';
-import { DeletePost } from './domain/usecases/posts/delete_post';
-import { EnablePost } from './domain/usecases/posts/enable_post';
-import { ChangeStagePost } from './domain/usecases/posts/change_stage_post';
-import { GetAdminViewPosts } from './domain/usecases/posts/get_adminview_post';
+import { StageRepositoryImpl } from './data/repositories/stage_repository_impl';
 import { GetFlow } from './domain/usecases/flows/get_flow';
 import { GetFlows } from './domain/usecases/flows/get_flows';
-import { FlowRepositoryImpl } from './data/repositories/flow_repository_impl';
-import FlowsRouter from './presentation/flow_router';
-import { StageRepositoryImpl } from './data/repositories/stage_repository_impl';
-import StagesRouter from './presentation/stage_router';
+import { GetOrgasByUser } from './domain/usecases/orgas/get_orgas_by_user';
+import { AddTextPost } from './domain/usecases/posts/add_text_post';
+import { ChangeStagePost } from './domain/usecases/posts/change_stage_post';
+import { DeletePost } from './domain/usecases/posts/delete_post';
+import { EnablePost } from './domain/usecases/posts/enable_post';
+import { GetAdminViewPosts } from './domain/usecases/posts/get_adminview_post';
+import { GetPost } from './domain/usecases/posts/get_post';
+import { GetPosts } from './domain/usecases/posts/get_posts';
+import { SendVote } from './domain/usecases/posts/send_vote';
+import { UpdatePost } from './domain/usecases/posts/update_post';
+import { GetOrgaSettings } from './domain/usecases/settings/get_orga_settings';
+import { GetSuperSettings } from './domain/usecases/settings/get_super_settings';
 import { GetStage } from './domain/usecases/stages/get_stage';
 import { GetStages } from './domain/usecases/stages/get_stages';
-import { GetPost } from './domain/usecases/posts/get_post';
+import FlowsRouter from './presentation/flow_router';
+import SettingsRouter from './presentation/setting_router';
+import StagesRouter from './presentation/stage_router';
+import { SettingRepositoryImpl } from './data/repositories/setting_repository_impl';
 
 dotenv.config();
 
@@ -121,6 +128,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const stageMongo = new MongoWrapper<StageModel>('stage', db);
 	const flowMongo = new MongoWrapper<FlowModel>('flow', db);
 	const postMongo = new MongoWrapper<PostModel>('post', db);
+	const settingMongo = new MongoWrapper<SettingModel>('settings', db);
 
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
@@ -131,6 +139,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const stageDataSource = new StageDataSourceImpl(stageMongo);
 	const flowDataSource = new FlowDataSourceImpl(flowMongo);
 	const postDataSource = new PostDataSourceImpl(postMongo);
+	const settingDataSource = new SettingDataSourceImpl(settingMongo);
 
 
 	//repositorios
@@ -146,11 +155,13 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource);
 	const flowRepo = new FlowRepositoryImpl(flowDataSource);
 	const stageRepo = new StageRepositoryImpl(stageDataSource);
+	const settingRepo = new SettingRepositoryImpl(settingDataSource);
 
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
 	await checkData02(stageDataSource, flowDataSource, postDataSource, postMongo);
+	await checkData03(settingDataSource);
 
 	//routers
 	const roleMiddleWare = RolesRouter(new GetRole(roleRepo), new GetRoles(roleRepo), new EnableRole(roleRepo));
@@ -176,6 +187,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const stageMiddleWare = StagesRouter(new GetStage(stageRepo), new GetStages(stageRepo));
 
+	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo));
+
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
 	app.use('/api/v1/orga', orgaMiddleWare);
@@ -185,6 +198,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/post', postMiddleWare);
 	app.use('/api/v1/flow', flowMiddleWare);
 	app.use('/api/v1/stage', stageMiddleWare);
+	app.use('/api/v1/setting', settingMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));
