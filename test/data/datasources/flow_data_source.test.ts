@@ -24,6 +24,7 @@ describe('Flow MongoDB DataSource', () => {
 			update: jest.fn(),
 			enable: jest.fn(),
 			delete: jest.fn(),
+			updateDirect: jest.fn(),
 		} as unknown) as MongoWrapper<FlowModel>;
 
 		dataSource = new FlowDataSourceImpl(mongoWrapper);
@@ -155,7 +156,18 @@ describe('Flow MongoDB DataSource', () => {
 			expect(data).toEqual(new ModelContainer(listFlows));
 		});		
 
+		test('modificar un flow directo', async () => {
+			//arrange
+			jest.spyOn(mongoWrapper, 'updateDirect').mockImplementation(() => Promise.resolve(true));
+			jest.spyOn(mongoWrapper, 'getOne').mockImplementation(() => Promise.resolve(ModelContainer.fromOneItem(listFlows[0])));
+			//act
+			const data = await dataSource.updateDirect(listFlows[0].id, listFlows[0]);
 	
+			//assert
+			expect(mongoWrapper.updateDirect).toBeCalledWith(listFlows[0].id, listFlows[0]);
+			expect(data).toEqual(ModelContainer.fromOneItem(listFlows[0]));
+	
+		});	
 
 
 	});

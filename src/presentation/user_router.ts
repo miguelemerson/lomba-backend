@@ -239,15 +239,75 @@ export default function UsersRouter(
 			users.fold(error => {
 				//something wrong
 				code = 500;
-				toSend = new RouterResponse('1.0', error as object, 'get', {userId: req.params.userId} as object, 'not obtained by orga id');
+				toSend = new RouterResponse('1.0', error as object, 'get', {userId: req.params.userId} as object, 'not obtained if exists');
 			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', value, 'get', {userId: req.params.userId} as object, 'geted by orga id');				
+				toSend = new RouterResponse('1.0', value, 'get', {userId: req.params.userId} as object, 'geted if exists');				
 			});
 		} catch (err) {
 			//something wrong
 			code = 500;
-			toSend = new RouterResponse('1.0', err as object, 'get', {userId: req.params.userId} as object, 'not obtained by orga id');
+			toSend = new RouterResponse('1.0', err as object, 'get', {userId: req.params.userId} as object, 'not obtained if exists');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.put('/profile/:id',[isAuth], async (req: Request, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();		
+		try {
+			if(req.params.id !== req.params.r_userId)
+			{
+				code = 401;
+				toSend = new RouterResponse('1.0', new Error('user not allowed'), 'put', {id: req.params.id}, 'user was not edited');
+				res.status(code).send(toSend);
+				return;
+			}
+			//execution
+			const user = await updateUser.execute(req.params.id, req.body);
+			//evaluate
+			user.fold(error => {
+			//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'put', {id: req.params.id}, 'user was not edited');	
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'put', {id: req.params.id}, 'user edited');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'put', {id: req.params.id}, 'user was not edited');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.get('/if/exists/profile/',[isAuth], async (req: Request<{username:string,email:string, r_userId:string}>, res: Response) => {	
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			//execution
+			const users = await existsUser.execute(
+				req.params.r_userId.toString(),
+				(req.query.username!=undefined)?req.query.username.toString():'',
+				(req.query.email!=undefined)?req.query.email.toString():'');
+			//evaluate
+			users.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'get', {} as object, 'not obtained if exists');
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'get', {} as object, 'geted if exists');				
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get', {} as object, 'not obtained if exists');
 		}
 		//respond cordially
 		res.status(code).send(toSend);

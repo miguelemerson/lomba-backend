@@ -12,6 +12,7 @@ export interface SettingDataSource {
 	getAllSuper(): Promise<ModelContainer<SettingModel>>;
 	getById(settingId:string): Promise<ModelContainer<SettingModel>>;
 	getByCode(code:string): Promise<ModelContainer<SettingModel>>;
+	updateDirectByQuery(query: object, obj: object): Promise<boolean>;	
 }
 
 export class SettingDataSourceImpl implements SettingDataSource {
@@ -19,6 +20,9 @@ export class SettingDataSourceImpl implements SettingDataSource {
 
 	constructor(dbMongo: MongoWrapper<SettingModel>){
 		this.collection = dbMongo;
+	}
+	async updateDirectByQuery(query: object, obj: object): Promise<boolean> {
+		return await this.collection.updateDirectByQuery(query, obj);
 	}
 	async getAllByOrga(orgaId: string): Promise<ModelContainer<SettingModel>> {
 		return await this.collection.getMany({orgaId:orgaId});

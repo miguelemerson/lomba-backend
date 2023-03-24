@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { RouterResponse } from '../router_response';
 import { validJWT } from '../jwt';
 
+
 export const isAuth = async (req: Request, res: Response, next:NextFunction) => {
 	const authorization = req.header('Authorization')?.toString();
 	//si la cabecera no viene o ésta no incluye un espacio en medio entonces
@@ -23,6 +24,5 @@ export const isAuth = async (req: Request, res: Response, next:NextFunction) => 
 	req.params.r_userId = validToken.userId;
 	req.params.r_orgaId = validToken.orgaId;
 	req.params.r_roles = validToken.roles;
-
 	next();
 };

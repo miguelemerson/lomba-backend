@@ -11,6 +11,30 @@ export class SettingRepositoryImpl implements SettingRepository {
 	constructor(dataSource: SettingDataSource){
 		this.dataSource = dataSource;
 	}
+	async updateSettings(changes: { id: string; value: string; }[], orgaId:string | undefined): Promise<Either<Failure, boolean>> {
+		try{
+			changes.forEach(async element => {
+				if(orgaId == undefined)
+				{
+					await this.dataSource.update(element.id, {value: element.value});
+				}
+				else
+				{
+					await this.dataSource.updateDirectByQuery({_id: element.id, orgaId: orgaId}, {value: element.value, updated: new Date()});
+				}
+			});
+			return Either.right(true);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+		}
+	}
 	async getSettingsByOrga(orgaId: string): Promise<Either<Failure, ModelContainer<Setting>>> {
 		try
 		{

@@ -95,6 +95,7 @@ import FlowsRouter from './presentation/flow_router';
 import SettingsRouter from './presentation/setting_router';
 import StagesRouter from './presentation/stage_router';
 import { SettingRepositoryImpl } from './data/repositories/setting_repository_impl';
+import { UpdateSettings } from './domain/usecases/settings/update_settings';
 
 dotenv.config();
 
@@ -187,7 +188,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const stageMiddleWare = StagesRouter(new GetStage(stageRepo), new GetStages(stageRepo));
 
-	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo));
+	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo), new UpdateSettings(settingRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
