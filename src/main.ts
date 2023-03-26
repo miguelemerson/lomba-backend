@@ -96,14 +96,17 @@ import SettingsRouter from './presentation/setting_router';
 import StagesRouter from './presentation/stage_router';
 import { SettingRepositoryImpl } from './data/repositories/setting_repository_impl';
 import { UpdateSettings } from './domain/usecases/settings/update_settings';
+import { StorageRepositoryImpl } from './data/repositories/storage_repository_impl';
+import { FileCloudDataSourceImpl } from './data/datasources/filecloud_storage_source';
+import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
+import { UploadFileCloud } from './domain/usecases/storage/upload_filecloud';
+import StorageRouter from './presentation/storage_router';
 
 dotenv.config();
 
 export const googleApp = firebase.initializeApp({credential:firebase.credential.cert(JSON.parse(configEnv().FIREBASE_CERT) as ServiceAccount)});
 
 (async () => {
-	
-
 	console.log('NODE_ENV: ' + configEnv().NODE_ENV);
 	console.log('PORT: ' + configEnv().PORT);
 	console.log('DB: ' + configEnv().DB_NAME);
@@ -126,10 +129,11 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const passMongo = new MongoWrapper<PasswordModel>('passes', db);
 	const orgaMongo = new MongoWrapper<OrgaModel>('orgas', db);
 	const orgaUserMongo = new MongoWrapper<OrgaUserModel>('orgasusers', db);
-	const stageMongo = new MongoWrapper<StageModel>('stage', db);
-	const flowMongo = new MongoWrapper<FlowModel>('flow', db);
-	const postMongo = new MongoWrapper<PostModel>('post', db);
+	const stageMongo = new MongoWrapper<StageModel>('stages', db);
+	const flowMongo = new MongoWrapper<FlowModel>('flows', db);
+	const postMongo = new MongoWrapper<PostModel>('posts', db);
 	const settingMongo = new MongoWrapper<SettingModel>('settings', db);
+	const fileCloudMongo = new MongoWrapper<SettingModel>('cloudfiles', db);
 
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
@@ -141,7 +145,20 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const flowDataSource = new FlowDataSourceImpl(flowMongo);
 	const postDataSource = new PostDataSourceImpl(postMongo);
 	const settingDataSource = new SettingDataSourceImpl(settingMongo);
+	const fileCloudDataSource = new FileCloudDataSourceImpl(fileCloudMongo);
 
+
+	const account = configEnv().AZSTORAGEACCOUNT_NAME;
+	const accountKey = configEnv().AZSTORAGEACCOUNT_KEY;
+	const sharedKeyCredential = new StorageSharedKeyCredential(account, accountKey);
+
+	// List containers
+	const blobServiceClient = new BlobServiceClient(
+		`https://${account}.blob.core.windows.net`,
+		sharedKeyCredential
+	);
+
+	const blobStorageSource = new BlobStorageSourceImpl(blobServiceClient, 'sharmia');
 
 	//repositorios
 	const roleRepo = new RoleRepositoryImpl(roleDataSource);
@@ -157,7 +174,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const flowRepo = new FlowRepositoryImpl(flowDataSource);
 	const stageRepo = new StageRepositoryImpl(stageDataSource);
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
-
+	const storageRepo = new StorageRepositoryImpl(fileCloudDataSource, blobStorageSource);
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
@@ -190,6 +207,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo), new UpdateSettings(settingRepo));
 
+	const storageMiddleWare = StorageRouter(new UploadFileCloud(storageRepo));
+
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
 	app.use('/api/v1/orga', orgaMiddleWare);
@@ -200,6 +219,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/flow', flowMiddleWare);
 	app.use('/api/v1/stage', stageMiddleWare);
 	app.use('/api/v1/setting', settingMiddleWare);
+	app.use('/api/v1/storage', storageMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));
