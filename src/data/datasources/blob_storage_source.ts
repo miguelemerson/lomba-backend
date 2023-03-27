@@ -4,6 +4,8 @@ import { BlobServiceClient, ContainerClient, ContainerCreateOptions, StorageShar
 export interface BlobStorageSource {
     uploadBlob(dataBytes:Buffer, filename: string, path: string):Promise<boolean>;
     startContainer():void;
+	blobService: BlobServiceClient;
+	containerName: string;
 }
 
 export class BlobStorageSourceImpl implements BlobStorageSource {

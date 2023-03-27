@@ -1,3 +1,4 @@
+
 import { MongoError } from 'mongodb';
 import { Either } from '../../core/either';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
@@ -7,6 +8,7 @@ import { StorageRepository } from '../../domain/repositories/storage_repository'
 import { BlobStorageSource } from '../datasources/blob_storage_source';
 import { FileCloudDataSource } from '../datasources/filecloud_storage_source';
 import { FileCloudModel } from '../models/storage/filecloud_model';
+import crypto from 'crypto';
 
 export class StorageRepositoryImpl implements StorageRepository {
 	dataSource: FileCloudDataSource;
@@ -17,18 +19,28 @@ export class StorageRepositoryImpl implements StorageRepository {
 	}
 	async uploadFileCloud(dataBytes: Buffer, filename: string): Promise<Either<Failure, ModelContainer<FileCloud>>> {
 		try{
+           
+			const { fileTypeFromBuffer } = await (eval('import("file-type")') as Promise<typeof import('file-type')>);
+			const fileType = await fileTypeFromBuffer(dataBytes);
 
-			console.log(dataBytes.length);
-            
-			const fileCloud = new FileCloudModel('', filename, '','',0,'','',true, false);
+			const id = crypto.randomUUID();
+			const ext = (fileType?.ext ?? 'bin');
+			const newfilename = id + '.' + ext;
+
+			const fileCloud = new FileCloudModel(id, newfilename, '','',0,'',fileType?.mime.toString() ?? '',true, false);
+
 			const result = await this.dataSource.add(fileCloud);
 			if(result.currentItemCount > 0)
 			{
-				const checkUpload = await this.blobStorage.uploadBlob(dataBytes, result.items[0].id, filename);
+				const checkUpload = await this.blobStorage.uploadBlob(dataBytes, newfilename, fileType?.ext ?? 'bin');
 
 				if(checkUpload)
 				{
-					const resultUpdate = await this.dataSource.update(result.items[0].id, {size: dataBytes.length});
+					const path = `/${this.blobStorage.containerName}/${ext}`;
+					const account = this.blobStorage.blobService.accountName;
+					const url = `https://${account}.blob.core.windows.net${path}/${newfilename}`;
+
+					const resultUpdate = await this.dataSource.update(result.items[0].id, {size: dataBytes.length, path: path, url: url, account: account});
 
 					return Either.right(resultUpdate);
 				}
@@ -37,7 +49,6 @@ export class StorageRepositoryImpl implements StorageRepository {
 		}
 		catch(error)
 		{
-			console.log(error);
 			if(error instanceof MongoError)
 			{
 				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));

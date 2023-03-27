@@ -158,7 +158,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 		sharedKeyCredential
 	);
 
-	const blobStorageSource = new BlobStorageSourceImpl(blobServiceClient, 'sharmia');
+	const blobStorageSource = new BlobStorageSourceImpl(blobServiceClient, 'files');
 
 	//repositorios
 	const roleRepo = new RoleRepositoryImpl(roleDataSource);
