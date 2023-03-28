@@ -65,5 +65,33 @@ export default function PasswordsRouter(
 		res.status(code).send(toSend);
 	});
 
+	router.put('/profile/:userId',[isAuth], async (req: Request, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();		
+		try {
+
+			const bodyValid = req.body as {password:string};
+			//execution
+			const password = await updatePassword.execute(req.params.userId, bodyValid.password);
+
+			//evaluate
+			password.fold(error => {
+			//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'put', {userId: req.params.userId}, 'password was not edited');	
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'put', {userId: req.params.userId}, 'password edited');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'put', {userId: req.params.userId}, 'password was not edited');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
 	return router;
 }
