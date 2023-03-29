@@ -5,8 +5,12 @@ import { Entity } from '../entity';
 export interface FileCloud extends Entity, BuiltIn, Audit {  
     name:string;
     path:string;
+    host:string;
     url:string;
     size:number;
     account:string;
     filetype:string;
+    orgaId:string;
+    userId:string;
+    associated:boolean;
 }

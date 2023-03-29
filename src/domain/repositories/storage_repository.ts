@@ -4,5 +4,7 @@ import { ModelContainer } from '../../core/model_container';
 import { FileCloud } from '../entities/storage/filecloud';
 
 export interface StorageRepository {
-    uploadFileCloud(dataBytes:Buffer, filename: string): Promise<Either<Failure, ModelContainer<FileCloud>>>;
+    uploadFileCloud(fileCloudId:string, dataBytes:Buffer): Promise<Either<Failure, ModelContainer<FileCloud>>>;
+    getFileCloud(fileCloudId:string): Promise<Either<Failure, ModelContainer<FileCloud>>>;
+    registerFileCloud(orgaId: string, userId:string): Promise<Either<Failure, ModelContainer<FileCloud>>>;
 }

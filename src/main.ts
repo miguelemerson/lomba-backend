@@ -101,6 +101,8 @@ import { FileCloudDataSourceImpl } from './data/datasources/filecloud_storage_so
 import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
 import { UploadFileCloud } from './domain/usecases/storage/upload_filecloud';
 import StorageRouter from './presentation/storage_router';
+import { RegisterFileCloud } from './domain/usecases/storage/register_filecloud';
+import { GetFileCloud } from './domain/usecases/storage/get_filecloud';
 
 dotenv.config();
 
@@ -207,7 +209,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo), new UpdateSettings(settingRepo));
 
-	const storageMiddleWare = StorageRouter(new UploadFileCloud(storageRepo));
+	const storageMiddleWare = StorageRouter(new UploadFileCloud(storageRepo), new GetFileCloud(storageRepo), new RegisterFileCloud(storageRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);

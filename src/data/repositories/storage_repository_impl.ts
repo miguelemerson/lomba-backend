@@ -17,30 +17,62 @@ export class StorageRepositoryImpl implements StorageRepository {
 		this.dataSource = dataSource;
 		this.blobStorage = blobStorage;
 	}
-	async uploadFileCloud(dataBytes: Buffer, filename: string): Promise<Either<Failure, ModelContainer<FileCloud>>> {
+	async getFileCloud(fileCloudId: string): Promise<Either<Failure, ModelContainer<FileCloud>>> {
+		try{
+			const result = await this.dataSource.getById(fileCloudId);
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+			
+		}
+	}
+	async registerFileCloud(orgaId: string, userId: string): Promise<Either<Failure, ModelContainer<FileCloud>>> {
+		try{
+			const id = crypto.randomUUID();
+			const fileCloud = new FileCloudModel(id, '', '','','',0,'','',orgaId, userId, false, true, false);
+
+			const result = await this.dataSource.add(fileCloud);
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+			
+		}
+	}
+	async uploadFileCloud(fileCloudId: string, dataBytes: Buffer): Promise<Either<Failure, ModelContainer<FileCloud>>> {
 		try{
            
 			const { fileTypeFromBuffer } = await (eval('import("file-type")') as Promise<typeof import('file-type')>);
 			const fileType = await fileTypeFromBuffer(dataBytes);
 
-			const id = crypto.randomUUID();
 			const ext = (fileType?.ext ?? 'bin');
-			const newfilename = id + '.' + ext;
+			const newfilename = fileCloudId + '.' + ext;
 
-			const fileCloud = new FileCloudModel(id, newfilename, '','',0,'',fileType?.mime.toString() ?? '',true, false);
+			const resultUpdate = await this.dataSource.update(fileCloudId, {name: newfilename});
 
-			const result = await this.dataSource.add(fileCloud);
-			if(result.currentItemCount > 0)
+			if(resultUpdate.currentItemCount > 0)
 			{
-				const checkUpload = await this.blobStorage.uploadBlob(dataBytes, newfilename, fileType?.ext ?? 'bin');
+				const userId = resultUpdate.items[0].userId =='' ? 'default' : resultUpdate.items[0].userId;
+				
+				const secondPath = `${ext}/${userId}`;
+				const uploadData = await this.blobStorage.uploadBlob(dataBytes, newfilename, secondPath);
 
-				if(checkUpload)
+				if(uploadData != undefined)
 				{
-					const path = `/${this.blobStorage.containerName}/${ext}`;
-					const account = this.blobStorage.blobService.accountName;
-					const url = `https://${account}.blob.core.windows.net${path}/${newfilename}`;
-
-					const resultUpdate = await this.dataSource.update(result.items[0].id, {size: dataBytes.length, path: path, url: url, account: account});
+					const resultUpdate = await this.dataSource.update(fileCloudId, {size: dataBytes.length, path: uploadData.path, url: uploadData.url, account: uploadData.account, host: uploadData.host, filetype: fileType?.mime?? ''});
 
 					return Either.right(resultUpdate);
 				}

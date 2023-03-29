@@ -2,7 +2,7 @@ import { BlobServiceClient, ContainerClient, ContainerCreateOptions, StorageShar
 
 
 export interface BlobStorageSource {
-    uploadBlob(dataBytes:Buffer, filename: string, path: string):Promise<boolean>;
+    uploadBlob(dataBytes:Buffer, filename: string, secondpath: string):Promise<{account:string, path:string, host:string, url:string} | undefined>;
     startContainer():void;
 	blobService: BlobServiceClient;
 	containerName: string;
@@ -42,7 +42,7 @@ export class BlobStorageSourceImpl implements BlobStorageSource {
 		}
 	}
 
-	async uploadBlob(dataBytes:Buffer, filename: string, path: string):Promise<boolean>{
+	async uploadBlob(dataBytes:Buffer, filename: string, secondpath: string):Promise<{account:string, path:string, host:string, url:string} | undefined>{
 		try
 		{
 			let existContainer : boolean;
@@ -62,20 +62,20 @@ export class BlobStorageSourceImpl implements BlobStorageSource {
 			const containerClient: ContainerClient =
         this.blobService.getContainerClient(this.containerName);
 
-			const blobClient = containerClient.getBlockBlobClient(`${path}/${filename}`);
+			const blobClient = containerClient.getBlockBlobClient(`${secondpath}/${filename}`);
     
 			const resp = await blobClient.uploadData(dataBytes);
         
 			if(resp)
 			{
-				return true;
+				return {account:this.blobService.accountName, path:`/${this.containerName}/${secondpath}`, host:`https://${this.blobService.accountName}.blob.core.windows.net`, url:`https://${this.blobService.accountName}.blob.core.windows.net/${this.containerName}/${secondpath}/${filename}`};
 			}
 		}
 		catch(e)
 		{
-			return false;
+			return undefined;
 		}
-		return false;
+		return undefined;
 	}
 
 	static newBlobService(accountName:string, accountKey:string): BlobServiceClient

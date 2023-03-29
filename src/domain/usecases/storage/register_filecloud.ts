@@ -4,17 +4,17 @@ import { ModelContainer } from '../../../core/model_container';
 import { FileCloud } from '../../entities/storage/filecloud';
 import { StorageRepository } from '../../repositories/storage_repository';
 
-export interface UploadFileCloudUseCase {
-    execute(fileCloudId:string, dataBytes:Buffer): Promise<Either<Failure, ModelContainer<FileCloud>>>;
+export interface RegisterFileCloudUseCase {
+    execute(orgaId: string, userId:string): Promise<Either<Failure, ModelContainer<FileCloud>>>;
 }
 
-export class UploadFileCloud implements UploadFileCloudUseCase {
+export class RegisterFileCloud implements RegisterFileCloudUseCase {
 	repository: StorageRepository;
 	constructor(repository: StorageRepository) {
 		this.repository = repository;
 	}
 
-	async execute(fileCloudId:string, dataBytes:Buffer): Promise<Either<Failure,ModelContainer<FileCloud>>> {
-		return await this.repository.uploadFileCloud(fileCloudId, dataBytes);
+	async execute(orgaId: string, userId:string): Promise<Either<Failure,ModelContainer<FileCloud>>> {
+		return await this.repository.registerFileCloud(orgaId, userId);
 	}
 }
