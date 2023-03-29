@@ -1,6 +1,6 @@
-import { FileCloud } from '../../../domain/entities/storage/filecloud';
+import { CloudFile } from '../../../domain/entities/storage/cloudfile';
 
-export class FileCloudModel implements FileCloud {
+export class CloudFileModel implements CloudFile {
 	constructor(id: string, name: string, path: string, host:string,
 		url: string, size: number, account: string, filetype: string, orgaId:string, userId:string, associated:boolean, enabled: boolean, builtIn: boolean){
 		this.id = id;
@@ -38,7 +38,7 @@ export class FileCloudModel implements FileCloud {
 	deleted?: Date;
 	expires?: Date;
 
-	public toEntity(): FileCloud {
+	public toEntity(): CloudFile {
 		return {id: this.id, name: this.name, 
 			path: this.path, host:this.host, url: this.url, size: this.size, account: this.account, filetype:this.filetype, orgaId: this.orgaId, userId: this.userId, associated: this.associated, enabled: this.enabled, builtIn: this.builtIn, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
 	}

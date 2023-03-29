@@ -1,27 +1,27 @@
 import express, { Request, Response } from 'express';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
-import { UploadFileCloudUseCase } from '../domain/usecases/storage/upload_filecloud';
+import { UploadCloudFileUseCase } from '../domain/usecases/storage/upload_cloudfile';
 import multer from 'multer';
-import { GetFileCloudUseCase } from '../domain/usecases/storage/get_filecloud';
-import { RegisterFileCloudUseCase } from '../domain/usecases/storage/register_filecloud';
+import { GetCloudFileUseCase } from '../domain/usecases/storage/get_cloudfile';
+import { RegisterCloudFileUseCase } from '../domain/usecases/storage/register_cloudfile';
 import { hasRole } from '../core/presentation/check_role_router';
 
 export default function StorageRouter(
-	uploadFileCloud: UploadFileCloudUseCase,
-	getFileCloud: GetFileCloudUseCase,
-	registerFileCloud: RegisterFileCloudUseCase,
+	uploadCloudFile: UploadCloudFileUseCase,
+	getCloudFile: GetCloudFileUseCase,
+	registerCloudFile: RegisterCloudFileUseCase,
 ) {
 	const router = express.Router();
 	const upload = multer();
 
-	router.get('/:fileCloudId', [isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
+	router.get('/:cloudFileId', [isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
 			//execution
-			const registered = await getFileCloud.execute(req.params.fileCloudId);
+			const registered = await getCloudFile.execute(req.params.cloudFileId);
 			//evaluate
 			registered.fold(error => {
 				//something wrong
@@ -48,7 +48,7 @@ export default function StorageRouter(
 		try {
 			const data = req.body as {orgaId:string, userId:string};
 			//execution
-			const registered = await registerFileCloud.execute(data.orgaId, data.userId);
+			const registered = await registerCloudFile.execute(data.orgaId, data.userId);
 			//evaluate
 			registered.fold(error => {
 				//something wrong
@@ -75,7 +75,7 @@ export default function StorageRouter(
 		try {
 			const received = req.file;
 			//execution
-			const uploaded = await uploadFileCloud.execute(req.body.fileCloudId, received == undefined ? Buffer.from([]) : received.buffer);
+			const uploaded = await uploadCloudFile.execute(req.body.cloudFileId, received == undefined ? Buffer.from([]) : received.buffer);
 			//evaluate
 			uploaded.fold(error => {
 				//something wrong

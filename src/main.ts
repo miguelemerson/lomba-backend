@@ -97,12 +97,12 @@ import StagesRouter from './presentation/stage_router';
 import { SettingRepositoryImpl } from './data/repositories/setting_repository_impl';
 import { UpdateSettings } from './domain/usecases/settings/update_settings';
 import { StorageRepositoryImpl } from './data/repositories/storage_repository_impl';
-import { FileCloudDataSourceImpl } from './data/datasources/filecloud_storage_source';
+import { CloudFileDataSourceImpl } from './data/datasources/cloudfile_storage_source';
 import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
-import { UploadFileCloud } from './domain/usecases/storage/upload_filecloud';
+import { UploadCloudFile } from './domain/usecases/storage/upload_cloudfile';
 import StorageRouter from './presentation/storage_router';
-import { RegisterFileCloud } from './domain/usecases/storage/register_filecloud';
-import { GetFileCloud } from './domain/usecases/storage/get_filecloud';
+import { RegisterCloudFile } from './domain/usecases/storage/register_cloudfile';
+import { GetCloudFile } from './domain/usecases/storage/get_cloudfile';
 
 dotenv.config();
 
@@ -135,7 +135,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const flowMongo = new MongoWrapper<FlowModel>('flows', db);
 	const postMongo = new MongoWrapper<PostModel>('posts', db);
 	const settingMongo = new MongoWrapper<SettingModel>('settings', db);
-	const fileCloudMongo = new MongoWrapper<SettingModel>('cloudfiles', db);
+	const cloudFileMongo = new MongoWrapper<SettingModel>('cloudfiles', db);
 
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
@@ -147,7 +147,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const flowDataSource = new FlowDataSourceImpl(flowMongo);
 	const postDataSource = new PostDataSourceImpl(postMongo);
 	const settingDataSource = new SettingDataSourceImpl(settingMongo);
-	const fileCloudDataSource = new FileCloudDataSourceImpl(fileCloudMongo);
+	const cloudFileDataSource = new CloudFileDataSourceImpl(cloudFileMongo);
 
 
 	const account = configEnv().AZSTORAGEACCOUNT_NAME;
@@ -176,7 +176,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const flowRepo = new FlowRepositoryImpl(flowDataSource);
 	const stageRepo = new StageRepositoryImpl(stageDataSource);
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
-	const storageRepo = new StorageRepositoryImpl(fileCloudDataSource, blobStorageSource);
+	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
@@ -209,7 +209,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo), new UpdateSettings(settingRepo));
 
-	const storageMiddleWare = StorageRouter(new UploadFileCloud(storageRepo), new GetFileCloud(storageRepo), new RegisterFileCloud(storageRepo));
+	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);

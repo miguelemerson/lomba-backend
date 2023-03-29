@@ -3,23 +3,23 @@ import { MongoError } from 'mongodb';
 import { Either } from '../../core/either';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
-import { FileCloud } from '../../domain/entities/storage/filecloud';
+import { CloudFile } from '../../domain/entities/storage/cloudfile';
 import { StorageRepository } from '../../domain/repositories/storage_repository';
 import { BlobStorageSource } from '../datasources/blob_storage_source';
-import { FileCloudDataSource } from '../datasources/filecloud_storage_source';
-import { FileCloudModel } from '../models/storage/filecloud_model';
+import { CloudFileDataSource } from '../datasources/cloudfile_storage_source';
+import { CloudFileModel } from '../models/storage/cloudfile_model';
 import crypto from 'crypto';
 
 export class StorageRepositoryImpl implements StorageRepository {
-	dataSource: FileCloudDataSource;
+	dataSource: CloudFileDataSource;
 	blobStorage: BlobStorageSource;
-	constructor(dataSource: FileCloudDataSource, blobStorage: BlobStorageSource){
+	constructor(dataSource: CloudFileDataSource, blobStorage: BlobStorageSource){
 		this.dataSource = dataSource;
 		this.blobStorage = blobStorage;
 	}
-	async getFileCloud(fileCloudId: string): Promise<Either<Failure, ModelContainer<FileCloud>>> {
+	async getCloudFile(cloudFileId: string): Promise<Either<Failure, ModelContainer<CloudFile>>> {
 		try{
-			const result = await this.dataSource.getById(fileCloudId);
+			const result = await this.dataSource.getById(cloudFileId);
 			return Either.right(result);
 		}
 		catch(error)
@@ -33,12 +33,12 @@ export class StorageRepositoryImpl implements StorageRepository {
 			
 		}
 	}
-	async registerFileCloud(orgaId: string, userId: string): Promise<Either<Failure, ModelContainer<FileCloud>>> {
+	async registerCloudFile(orgaId: string, userId: string): Promise<Either<Failure, ModelContainer<CloudFile>>> {
 		try{
 			const id = crypto.randomUUID();
-			const fileCloud = new FileCloudModel(id, '', '','','',0,'','',orgaId, userId, false, true, false);
+			const cloudFile = new CloudFileModel(id, '', '','','',0,'','',orgaId, userId, false, true, false);
 
-			const result = await this.dataSource.add(fileCloud);
+			const result = await this.dataSource.add(cloudFile);
 			return Either.right(result);
 		}
 		catch(error)
@@ -52,16 +52,16 @@ export class StorageRepositoryImpl implements StorageRepository {
 			
 		}
 	}
-	async uploadFileCloud(fileCloudId: string, dataBytes: Buffer): Promise<Either<Failure, ModelContainer<FileCloud>>> {
+	async uploadCloudFile(cloudFileId: string, dataBytes: Buffer): Promise<Either<Failure, ModelContainer<CloudFile>>> {
 		try{
            
 			const { fileTypeFromBuffer } = await (eval('import("file-type")') as Promise<typeof import('file-type')>);
 			const fileType = await fileTypeFromBuffer(dataBytes);
 
 			const ext = (fileType?.ext ?? 'bin');
-			const newfilename = fileCloudId + '.' + ext;
+			const newfilename = cloudFileId + '.' + ext;
 
-			const resultUpdate = await this.dataSource.update(fileCloudId, {name: newfilename});
+			const resultUpdate = await this.dataSource.update(cloudFileId, {name: newfilename});
 
 			if(resultUpdate.currentItemCount > 0)
 			{
@@ -72,7 +72,7 @@ export class StorageRepositoryImpl implements StorageRepository {
 
 				if(uploadData != undefined)
 				{
-					const resultUpdate = await this.dataSource.update(fileCloudId, {size: dataBytes.length, path: uploadData.path, url: uploadData.url, account: uploadData.account, host: uploadData.host, filetype: fileType?.mime?? ''});
+					const resultUpdate = await this.dataSource.update(cloudFileId, {size: dataBytes.length, path: uploadData.path, url: uploadData.url, account: uploadData.account, host: uploadData.host, filetype: fileType?.mime?? ''});
 
 					return Either.right(resultUpdate);
 				}
