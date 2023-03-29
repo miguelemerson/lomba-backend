@@ -174,4 +174,71 @@ describe('Auth Router', () => {
 			expect(roures.data).toBeUndefined();
 		});
 	});
+
+	describe('PUT /profile/:id', () => {
+
+		test('debe retornar 200 y con datos', async () => {
+			//arrange
+			jest.spyOn(mockUpdatePasswordUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(true)));
+
+			//act
+			const response = await request(server).put('/api/v1/password/profile/aaa').send(testAuth).set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			//assert
+			expect(response.status).toBe(200);
+			expect(mockUpdatePasswordUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.data).toBeDefined();
+			expect(roures.data?.items?.length).toEqual(1);
+			expect(roures.error).toBeUndefined();
+
+		});
+
+		test('debe retornar 500 en caso de failure', async () => {
+			//arrange
+			jest.spyOn(mockUpdatePasswordUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
+
+			//act
+			const response = await request(server).put('/api/v1/password/profile/aaa').send(testAuth).set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockUpdatePasswordUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de error', async () => {
+			//arrange
+			jest.spyOn(mockUpdatePasswordUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).put('/api/v1/password/profile/aaa').send(testAuth).set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockUpdatePasswordUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+
+		test('debe retornar 500 en caso de no especificar password', async () => {
+			//arrange
+			jest.spyOn(mockUpdatePasswordUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
+
+			//act
+			const response = await request(server).put('/api/v1/password/profile/aaa').set({Authorization: 'Bearer ' + testTokenAdmin});
+			const roures = response.body as RouterResponse;
+
+			expect(response.status).toBe(500);
+			expect(mockUpdatePasswordUseCase.execute).toBeCalledTimes(1);
+			expect(response.body as RouterResponse).toBeDefined();
+			expect(roures.error).toBeDefined();
+			expect(roures.data).toBeUndefined();
+		});
+	});
+
 });
