@@ -15,7 +15,7 @@ export default function StorageRouter(
 	const router = express.Router();
 	const upload = multer();
 
-	router.get('/:cloudFileId', [isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
+	router.get('/:cloudFileId', [isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
