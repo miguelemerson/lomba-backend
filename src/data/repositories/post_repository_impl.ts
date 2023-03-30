@@ -86,7 +86,10 @@ export class PostRepositoryImpl implements PostRepository {
 
 			if(result)
 			{
-				await this.dataSource.addTrack('changestage', 'Cambio de etapa', postId, userId, flowId, '', stageId, {stageId:stageId});
+				await this.dataSource.addTrack('changestage', 'Cambio de etapa a ' + resultStage.items[0].name, postId, userId, flowId, '', stageId, {stageId:stageId});
+
+				const resulupd = await this.dataSource.getById(postId);
+				return Either.right(resulupd);
 			}
 
 			return Either.right(result);
