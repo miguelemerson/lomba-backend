@@ -97,7 +97,7 @@ import StagesRouter from './presentation/stage_router';
 import { SettingRepositoryImpl } from './data/repositories/setting_repository_impl';
 import { UpdateSettings } from './domain/usecases/settings/update_settings';
 import { StorageRepositoryImpl } from './data/repositories/storage_repository_impl';
-import { CloudFileDataSourceImpl } from './data/datasources/cloudfile_storage_source';
+import { CloudFileDataSourceImpl } from './data/datasources/cloudfile_data_source';
 import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob';
 import { UploadCloudFile } from './domain/usecases/storage/upload_cloudfile';
 import StorageRouter from './presentation/storage_router';

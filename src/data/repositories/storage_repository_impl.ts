@@ -6,7 +6,7 @@ import { ModelContainer } from '../../core/model_container';
 import { CloudFile } from '../../domain/entities/storage/cloudfile';
 import { StorageRepository } from '../../domain/repositories/storage_repository';
 import { BlobStorageSource } from '../datasources/blob_storage_source';
-import { CloudFileDataSource } from '../datasources/cloudfile_storage_source';
+import { CloudFileDataSource } from '../datasources/cloudfile_data_source';
 import { CloudFileModel } from '../models/storage/cloudfile_model';
 import crypto from 'crypto';
 
