@@ -66,7 +66,23 @@ export class PostRepositoryImpl implements PostRepository {
 	async changeStage(postId: string, userId:string, flowId: string, stageId: string): Promise<Either<Failure, ModelContainer<Post>>> {
 		try{
 
-			const result = await this.dataSource.update(postId, {stageId:stageId});
+			const resultPost = await this.dataSource.getById(postId);
+			const resultStage = await this.stageDataSource.getById(stageId);
+			const postStages = resultPost.items[0].stages;
+			let newStages:Stage[] = [];
+			
+			postStages.forEach((stage: Stage) => {
+				if(stage.order < resultStage.items[0].order)
+				{
+					newStages.push(stage);
+				}
+			});
+
+			newStages.push(resultStage.items[0]);
+
+			newStages = newStages.sort((a: Stage, b: Stage) => a.order - b.order);
+
+			const result = await this.dataSource.update(postId, {stageId:stageId,stages: newStages});
 
 			if(result)
 			{
