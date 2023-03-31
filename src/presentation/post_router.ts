@@ -12,6 +12,9 @@ import { EnablePostUseCase } from '../domain/usecases/posts/enable_post';
 import { ChangeStagePostUseCase } from '../domain/usecases/posts/change_stage_post';
 import { GetAdminViewPostsUseCase } from '../domain/usecases/posts/get_adminview_post';
 import { GetPostUseCase } from '../domain/usecases/posts/get_post';
+import { ImageContent } from '../domain/entities/workflow/imagecontent';
+import { VideoContent } from '../domain/entities/workflow/videocontent';
+import { AddMultiPostUseCase } from '../domain/usecases/posts/add_multi_post';
 
 export default function PostsRouter(
 	getPosts: GetPostsUseCase,
@@ -23,6 +26,7 @@ export default function PostsRouter(
 	changeStagePost: ChangeStagePostUseCase,
 	getAdminViewPosts: GetAdminViewPostsUseCase,
 	getPost: GetPostUseCase,
+	addMultiPost: AddMultiPostUseCase
 ) {
 	const router = express.Router();
 
@@ -150,6 +154,32 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 	
+	router.post('/multi/',[isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			const bodypost = req.body as {orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, isdraft: boolean};
+			//execution
+			const post = await addMultiPost.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.title, bodypost.textContent, bodypost.imageContent, bodypost.videoContent, bodypost.isdraft);
+			//evaluate
+			post.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error as object, 'post', undefined, 'post was not added');	
+			}, value => {
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'post', undefined, 'new post added');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'post', undefined, 'post was not added');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
 	router.post('/vote/',[isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;

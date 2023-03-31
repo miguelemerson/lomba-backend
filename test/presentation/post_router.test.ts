@@ -21,6 +21,7 @@ import { GetAdminViewPostsUseCase } from '../../src/domain/usecases/posts/get_ad
 import { Post } from '../../src/domain/entities/workflow/post';
 import { PostModel } from '../../src/data/models/workflow/post_model';
 import { GetPostUseCase } from '../../src/domain/usecases/posts/get_post';
+import { AddMultiPostUseCase } from '../../src/domain/usecases/posts/add_multi_post';
 
 class MockAddTextPostUseCase implements AddTextPostUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<Post>>> {
@@ -76,6 +77,12 @@ class MockGetPostUseCase implements GetPostUseCase{
 	}
 }
 
+class MockAddMultiPostUseCase implements AddMultiPostUseCase{
+	execute(): Promise<Either<Failure, ModelContainer<Post>>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
 
 describe('Post Router', () => {
 	let mockAddTextPostUseCase: AddTextPostUseCase;
@@ -87,6 +94,7 @@ describe('Post Router', () => {
 	let mockEnablePostUseCase: EnablePostUseCase;
 	let mockGetAdminViewPostUseCase: GetAdminViewPostsUseCase;
 	let mockGetPostUseCase: GetPostUseCase;
+	let mockAddMultiPostUseCase: AddMultiPostUseCase;
 
 	const UrlGetPost = '?orgaId=00000200-0200-0200-0200-000000000200&userId=00000005-0005-0005-0005-000000000005&flowId=00000111-0111-0111-0111-000000000111&stageId=00000AAA-0111-0111-0111-000000000111&boxPage=uploaded&searchText=post';
 
@@ -146,8 +154,9 @@ describe('Post Router', () => {
 		mockChangeStagePostUseCase = new MockChangeStagePostUseCase();
 		mockGetAdminViewPostUseCase = new MockGetAdminViewPostUseCase();
 		mockGetPostUseCase = new MockGetPostUseCase();
+		mockAddMultiPostUseCase = new MockAddMultiPostUseCase();
 
-		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase, mockDeletePostUseCase, mockEnablePostUseCase, mockChangeStagePostUseCase, mockGetAdminViewPostUseCase, mockGetPostUseCase));
+		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase, mockDeletePostUseCase, mockEnablePostUseCase, mockChangeStagePostUseCase, mockGetAdminViewPostUseCase, mockGetPostUseCase, mockAddMultiPostUseCase));
 	});
 
 	beforeEach(() => {

@@ -3,44 +3,76 @@ import { MongoError } from 'mongodb';
 import { Either } from '../../core/either';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
-import { FileCloud } from '../../domain/entities/storage/filecloud';
+import { CloudFile } from '../../domain/entities/storage/cloudfile';
 import { StorageRepository } from '../../domain/repositories/storage_repository';
 import { BlobStorageSource } from '../datasources/blob_storage_source';
-import { FileCloudDataSource } from '../datasources/filecloud_storage_source';
-import { FileCloudModel } from '../models/storage/filecloud_model';
+import { CloudFileDataSource } from '../datasources/cloudfile_data_source';
+import { CloudFileModel } from '../models/storage/cloudfile_model';
 import crypto from 'crypto';
 
 export class StorageRepositoryImpl implements StorageRepository {
-	dataSource: FileCloudDataSource;
+	dataSource: CloudFileDataSource;
 	blobStorage: BlobStorageSource;
-	constructor(dataSource: FileCloudDataSource, blobStorage: BlobStorageSource){
+	constructor(dataSource: CloudFileDataSource, blobStorage: BlobStorageSource){
 		this.dataSource = dataSource;
 		this.blobStorage = blobStorage;
 	}
-	async uploadFileCloud(dataBytes: Buffer, filename: string): Promise<Either<Failure, ModelContainer<FileCloud>>> {
+	async getCloudFile(cloudFileId: string): Promise<Either<Failure, ModelContainer<CloudFile>>> {
+		try{
+			const result = await this.dataSource.getById(cloudFileId);
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+			
+		}
+	}
+	async registerCloudFile(orgaId: string, userId: string): Promise<Either<Failure, ModelContainer<CloudFile>>> {
+		try{
+			const id = crypto.randomUUID();
+			const cloudFile = new CloudFileModel(id, '', '','','',0,'','',orgaId, userId, false, true, false);
+
+			const result = await this.dataSource.add(cloudFile);
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+			
+		}
+	}
+	async uploadCloudFile(cloudFileId: string, dataBytes: Buffer): Promise<Either<Failure, ModelContainer<CloudFile>>> {
 		try{
            
 			const { fileTypeFromBuffer } = await (eval('import("file-type")') as Promise<typeof import('file-type')>);
 			const fileType = await fileTypeFromBuffer(dataBytes);
 
-			const id = crypto.randomUUID();
 			const ext = (fileType?.ext ?? 'bin');
-			const newfilename = id + '.' + ext;
+			const newfilename = cloudFileId + '.' + ext;
 
-			const fileCloud = new FileCloudModel(id, newfilename, '','',0,'',fileType?.mime.toString() ?? '',true, false);
+			const resultUpdate = await this.dataSource.update(cloudFileId, {name: newfilename});
 
-			const result = await this.dataSource.add(fileCloud);
-			if(result.currentItemCount > 0)
+			if(resultUpdate.currentItemCount > 0)
 			{
-				const checkUpload = await this.blobStorage.uploadBlob(dataBytes, newfilename, fileType?.ext ?? 'bin');
+				const userId = resultUpdate.items[0].userId =='' ? 'default' : resultUpdate.items[0].userId;
+				
+				const secondPath = `${ext}/${userId}`;
+				const uploadData = await this.blobStorage.uploadBlob(dataBytes, newfilename, secondPath);
 
-				if(checkUpload)
+				if(uploadData != undefined)
 				{
-					const path = `/${this.blobStorage.containerName}/${ext}`;
-					const account = this.blobStorage.blobService.accountName;
-					const url = `https://${account}.blob.core.windows.net${path}/${newfilename}`;
-
-					const resultUpdate = await this.dataSource.update(result.items[0].id, {size: dataBytes.length, path: path, url: url, account: account});
+					const resultUpdate = await this.dataSource.update(cloudFileId, {size: dataBytes.length, path: uploadData.path, url: uploadData.url, account: uploadData.account, host: uploadData.host, filetype: fileType?.mime?? ''});
 
 					return Either.right(resultUpdate);
 				}

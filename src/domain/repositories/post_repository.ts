@@ -1,8 +1,10 @@
 import { Either } from '../../core/either';
 import { Failure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
+import { ImageContent } from '../entities/workflow/imagecontent';
 import { Post } from '../entities/workflow/post';
 import { TextContent } from '../entities/workflow/textcontent';
+import { VideoContent } from '../entities/workflow/videocontent';
 
 export interface PostRepository {
     getPosts(orgaId: string, userId: string, flowId: string, stageId: string, boxPage: string, searchText: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>>;
@@ -14,4 +16,5 @@ export interface PostRepository {
     changeStage(postId:string, userId:string, flowId: string, stageId:string): Promise<Either<Failure, ModelContainer<Post>>>;
     getAdminViewPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<Post>>>;
     getPost(postId:string): Promise<Either<Failure, ModelContainer<Post>>>;
+    addMultiPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, draft: boolean): Promise<Either<Failure, ModelContainer<Post>>>;
 }

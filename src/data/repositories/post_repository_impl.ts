@@ -3,10 +3,14 @@ import { BoxPages } from '../../core/box_page';
 import { Either } from '../../core/either';
 import { DatabaseFailure, Failure, GenericFailure, NetworkFailure } from '../../core/errors/failures';
 import { ModelContainer } from '../../core/model_container';
+import { ImageContent } from '../../domain/entities/workflow/imagecontent';
 import { Post } from '../../domain/entities/workflow/post';
 import { PostItem } from '../../domain/entities/workflow/postitem';
 import { Stage } from '../../domain/entities/workflow/stage';
 import { TextContent } from '../../domain/entities/workflow/textcontent';
+import { Total } from '../../domain/entities/workflow/total';
+import { Track } from '../../domain/entities/workflow/track';
+import { VideoContent } from '../../domain/entities/workflow/videocontent';
 import { Vote } from '../../domain/entities/workflow/vote';
 import { PostRepository } from '../../domain/repositories/post_repository';
 import { FlowDataSource } from '../datasources/flow_data_source';
@@ -14,8 +18,6 @@ import { PostDataSource } from '../datasources/post_data_source';
 import { StageDataSource } from '../datasources/stage_data_source';
 import { PostModel } from '../models/workflow/post_model';
 import { TotalModel } from '../models/workflow/total_model';
-import { Total } from '../../domain/entities/workflow/total';
-import { Track } from '../../domain/entities/workflow/track';
 
 export class PostRepositoryImpl implements PostRepository {
 	dataSource: PostDataSource;
@@ -26,6 +28,7 @@ export class PostRepositoryImpl implements PostRepository {
 		this.stageDataSource = stageDataSource;
 		this.flowDataSource = flowDataSource;
 	}
+	
 	async getPost(postId: string): Promise<Either<Failure, ModelContainer<Post>>> {
 		try{
 			const result = await this.dataSource.getById(postId);
@@ -63,11 +66,30 @@ export class PostRepositoryImpl implements PostRepository {
 	async changeStage(postId: string, userId:string, flowId: string, stageId: string): Promise<Either<Failure, ModelContainer<Post>>> {
 		try{
 
-			const result = await this.dataSource.update(postId, {stageId:stageId});
+			const resultPost = await this.dataSource.getById(postId);
+			const resultStage = await this.stageDataSource.getById(stageId);
+			const postStages = resultPost.items[0].stages;
+			let newStages:Stage[] = [];
+			
+			postStages.forEach((stage: Stage) => {
+				if(stage.order < resultStage.items[0].order)
+				{
+					newStages.push(stage);
+				}
+			});
+
+			newStages.push(resultStage.items[0]);
+
+			newStages = newStages.sort((a: Stage, b: Stage) => a.order - b.order);
+
+			const result = await this.dataSource.update(postId, {stageId:stageId,stages: newStages});
 
 			if(result)
 			{
-				await this.dataSource.addTrack('changestage', 'Cambio de etapa', postId, userId, flowId, '', stageId, {stageId:stageId});
+				await this.dataSource.addTrack('changestage', 'Cambio de etapa a ' + resultStage.items[0].name, postId, userId, flowId, '', stageId, {stageId:stageId});
+
+				const resulupd = await this.dataSource.getById(postId);
+				return Either.right(resulupd);
 			}
 
 			return Either.right(result);
@@ -255,6 +277,126 @@ export class PostRepositoryImpl implements PostRepository {
 			else return Either.left(new GenericFailure('undetermined', error));	
 		}
 	}
+
+	async addMultiPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
+		try
+		{
+			if(textContent == undefined && imageContent == undefined && videoContent == undefined)
+			{
+				return Either.left(new GenericFailure('none', 'no content'));
+			}
+
+			const resultFlow = await this.flowDataSource.getById(flowId);
+			
+			if(resultFlow.currentItemCount > 0)
+			{
+				const firstStage = resultFlow.items[0].stages.filter(e=> e.order == 1)[0];
+
+				const postItems:PostItem[] = [];
+				let order = 1;
+				if(textContent != undefined)
+				{
+					const postItem1 = {order:order, content: textContent, type:'text', format:'text/plain', builtIn:false, created: new Date()} as PostItem;
+					postItems.push(postItem1);
+					order++;
+				}
+				if(imageContent != undefined)
+				{
+					const postItem2 = {order:order, content: imageContent, type:'image', format:imageContent.filetype, builtIn:false, created: new Date()} as PostItem;
+					postItems.push(postItem2);
+					order++;
+				}
+				if(videoContent != undefined)
+				{
+					const postItem3 = {order:order, content: videoContent, type:'video', format:videoContent.filetype, builtIn:false, created: new Date()} as PostItem;
+					postItems.push(postItem3);
+					order++;
+				}
+				
+				let postStageId = firstStage.id;
+
+				const post = new PostModel('', postItems, title, orgaId, userId, flowId, postStageId, true, false);
+
+				const listStages:Stage[] = [];
+				const listVotes:Vote[] = [];
+				const listTotals:Total[] = [];
+				const listTracks:Track[] = [];
+
+				listStages.push(firstStage);
+
+				//Track de entrada
+				const track = {
+					name: 'new',
+					description: `Se crea en ${firstStage.name}`,
+					userId: userId,
+					flowId: flowId,
+					stageIdNew: postStageId,
+					change: {},
+					created: new Date(),
+				} as unknown as Track;
+
+				listTracks.push(track);
+
+				if(!draft)
+				{
+					const vote = {  
+						flowId:flowId,
+						stageId:postStageId,
+						userId:userId,
+						key: `${userId}-${postStageId}-${flowId}`,
+						value:1, created: new Date()} as Vote;
+					listVotes.push(vote);
+
+					const newTotal:TotalModel = new TotalModel(1, 0, 1, flowId, postStageId);
+
+					listTotals.push(newTotal);
+
+					const secondStage = resultFlow.items[0].stages.filter(e=> e.order == firstStage.order + 1)[0];
+
+					postStageId = secondStage.id;
+					listStages.push(secondStage);
+
+					//Track de publicación a aprobación
+					const track2 = {
+						name: 'goforward',
+						description: `Avanza a ${secondStage.name}`,
+						userId: userId,
+						flowId: flowId,
+						stageIdOld: track.stageIdNew,
+						stageIdNew: postStageId,
+						change: {},
+						created: new Date(),
+					} as unknown as Track;
+
+					listTracks.push(track2);
+
+				}
+
+				const resultAddPost = await this.dataSource.add(post);
+
+				if(resultAddPost.currentItemCount > 0)
+				{
+					const changes:object = {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes, totals: listTotals, tracks: listTracks};
+
+					const resultUpdatePost = await this.dataSource.update(resultAddPost.items[0].id, changes);
+
+					return Either.right(resultUpdatePost);	
+				}
+			}
+
+			return Either.left(new GenericFailure('undetermined'));
+		}
+		catch(error)
+		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));	
+		}
+	}
+
 
 	async sendVote(orgaId:string, userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
