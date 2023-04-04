@@ -59,13 +59,27 @@ export default function UsersRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/byorga/:orgaId',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId:string}>, res: Response) => {
+	router.get('/byorga/:orgaId',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId:string, searchtext: string, sort: string, pageindex: string, pagesize:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
+			//parameters settings
+			let valid_sort: [string, 1 | -1][] | undefined;
+			if(req.query.sort)
+			{
+				valid_sort = JSON.parse(req.query.sort.toString());
+			}
+			let pageIndex:number | undefined;
+			let pageSize:number | undefined;
+
+			if(req.query.pageindex)
+				pageIndex = Number(req.query.pageindex);
+			if(req.query.pagesize)
+				pageSize = Number(req.query.pagesize);
+
 			//execution
-			const users = await getUsersByOrgaId.execute(req.params.orgaId);
+			const users = await getUsersByOrgaId.execute((req.query.searchtext!=undefined)?req.query.searchtext.toString():'', req.params.orgaId, valid_sort, pageIndex, pageSize);
 			//evaluate
 			users.fold(error => {
 				//something wrong
@@ -84,7 +98,7 @@ export default function UsersRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/notinorga/:orgaId',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId:string, sort?:string, pageIndex?: string, itemsPerPage?: string}>, res: Response) => {
+	router.get('/notinorga/:orgaId',[isAuth, hasRole(['admin', 'super'])], async (req: Request<{orgaId:string, searchtext: string, sort: string, pageindex: string, pagesize:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
@@ -96,17 +110,18 @@ export default function UsersRouter(
 				valid_sort = JSON.parse(req.query.sort.toString());
 			}
 			let pageIndex:number | undefined;
-			let itemsPerPage:number | undefined;
+			let pageSize:number | undefined;
 
-			if(req.query.pageIndex)
-				pageIndex = Number(req.params.pageIndex);
-			if(req.query.itemsPerPage)
-				itemsPerPage = Number(req.params.itemsPerPage);
+			if(req.query.pageindex)
+				pageIndex = Number(req.query.pageindex);
+			if(req.query.pagesize)
+				pageSize = Number(req.query.pagesize);
 
 			//execution
-			const users = await getUsersNotInOrga.execute(req.params.orgaId, valid_sort, pageIndex, itemsPerPage);
+			const users = await getUsersNotInOrga.execute((req.query.searchtext!=undefined)?req.query.searchtext.toString():'', req.params.orgaId, valid_sort, pageIndex, pageSize);
 			//evaluate
 			users.fold(error => {
+				console.log(error);
 				//something wrong
 				code = 500;
 				toSend = new RouterResponse('1.0', error as object, 'get', {orgaId: req.params.orgaId} as object, 'not obtained not in orga');

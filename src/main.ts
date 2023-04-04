@@ -180,7 +180,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
 
 	//revisa que los datos estén cargados.
-	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
+	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);
 	await checkData02(stageDataSource, flowDataSource, postDataSource, postMongo);
 	await checkData03(settingDataSource);
 

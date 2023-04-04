@@ -13,14 +13,14 @@ export class UserRepositoryImpl implements UserRepository {
 		this.dataSource = dataSource;
 	}
 
-	async getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure,ModelContainer<User>>> {
+	async getUsersByOrgaId(searchText: string, orgaId: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure,ModelContainer<User>>> {
 		try
 		{
 			if(!sort)
-				sort = [['name', 1]];
+				sort = [['email', 1]];
 
 			const result = await this.dataSource
-				.getByOrgaId(orgaId, sort);
+				.getByOrgaId(searchText, orgaId, sort, pageIndex, itemsPerPage);
 			
 			return Either.right(result);		
 		}
@@ -35,14 +35,14 @@ export class UserRepositoryImpl implements UserRepository {
 		}
 	}
 
-	async getUsersNotInOrga(orgaId: string, sort?: [string, 1 | -1][], pageIndex?: number, itemsPerPage?: number): Promise<Either<Failure, ModelContainer<User>>>{
+	async getUsersNotInOrga(searchText: string, orgaId: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<User>>>{
 		try
 		{
 			if(!sort)
-				sort = [['name', 1]];
+				sort = [['email', 1]];
 
 			const result = await this.dataSource
-				.getWhoAreNotInOrga(orgaId, sort, pageIndex, itemsPerPage);
+				.getWhoAreNotInOrga(searchText, orgaId, sort, pageIndex, itemsPerPage);
 			
 			return Either.right(result);		
 		}
