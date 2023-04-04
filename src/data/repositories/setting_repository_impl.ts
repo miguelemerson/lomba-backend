@@ -20,7 +20,7 @@ export class SettingRepositoryImpl implements SettingRepository {
 				}
 				else
 				{
-					await this.dataSource.updateDirectByQuery({_id: element.id, orgaId: orgaId}, {value: element.value, updated: new Date()});
+					await this.dataSource.update(element.id, {value: element.value});
 				}
 			});
 			return Either.right(true);

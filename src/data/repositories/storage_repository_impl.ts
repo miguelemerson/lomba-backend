@@ -62,18 +62,17 @@ export class StorageRepositoryImpl implements StorageRepository {
 			const newfilename = cloudFileId + '.' + ext;
 
 			const resultUpdate = await this.dataSource.update(cloudFileId, {name: newfilename});
-
+			
 			if(resultUpdate.currentItemCount > 0)
 			{
 				const userId = resultUpdate.items[0].userId =='' ? 'default' : resultUpdate.items[0].userId;
 				
 				const secondPath = `${ext}/${userId}`;
 				const uploadData = await this.blobStorage.uploadBlob(dataBytes, newfilename, secondPath);
-
+				
 				if(uploadData != undefined)
 				{
 					const resultUpdate = await this.dataSource.update(cloudFileId, {size: dataBytes.length, path: uploadData.path, url: uploadData.url, account: uploadData.account, host: uploadData.host, filetype: fileType?.mime?? ''});
-
 					return Either.right(resultUpdate);
 				}
 			}
