@@ -66,7 +66,7 @@ describe('User Repository Implementation', () => {
 			const expectedData = listUsers;
 			jest.spyOn(mockUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
 			//act
-			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
+			const result = await userRepository.getUsersByOrgaId('text', 'aaa', undefined);
 			//assert
 			expect(result.isRight()).toBeTruthy();
 			
@@ -76,7 +76,7 @@ describe('User Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
-			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
+			const result = await userRepository.getUsersByOrgaId('text', 'aaa', undefined);
 			let failure:unknown;
 			let value:unknown;
 
@@ -90,7 +90,7 @@ describe('User Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
-			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
+			const result = await userRepository.getUsersByOrgaId('text', 'aaa', undefined);
 			let failure:unknown;
 			let value:unknown;
 
@@ -104,7 +104,7 @@ describe('User Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockUserDataSource, 'getByOrgaId').mockImplementation(() => Promise.reject('generic'));
 			//act
-			const result = await userRepository.getUsersByOrgaId('aaa', undefined);
+			const result = await userRepository.getUsersByOrgaId('text', 'aaa', undefined);
 			let failure:unknown;
 			let value:unknown;
 
@@ -416,7 +416,7 @@ describe('User Repository Implementation', () => {
 			const expectedData = listUsers;
 			jest.spyOn(mockUserDataSource, 'getWhoAreNotInOrga').mockImplementation(() => Promise.resolve(new ModelContainer(expectedData)));
 			//act
-			const result = await userRepository.getUsersNotInOrga('aaa', undefined);
+			const result = await userRepository.getUsersNotInOrga('text', 'aaa', undefined);
 			//assert
 			expect(result.isRight()).toBeTruthy();
 			
@@ -426,7 +426,7 @@ describe('User Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockUserDataSource, 'getWhoAreNotInOrga').mockImplementation(() => Promise.reject(new MongoError('mongoerror')));
 			//act
-			const result = await userRepository.getUsersNotInOrga('aaa', undefined);
+			const result = await userRepository.getUsersNotInOrga('text', 'aaa', undefined);
 			let failure:unknown;
 			let value:unknown;
 
@@ -440,7 +440,7 @@ describe('User Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockUserDataSource, 'getWhoAreNotInOrga').mockImplementation(() => Promise.reject(new Error('neterror')));
 			//act
-			const result = await userRepository.getUsersNotInOrga('aaa', undefined);
+			const result = await userRepository.getUsersNotInOrga('text', 'aaa', undefined);
 			let failure:unknown;
 			let value:unknown;
 
@@ -454,7 +454,7 @@ describe('User Repository Implementation', () => {
 			//arrange
 			jest.spyOn(mockUserDataSource, 'getWhoAreNotInOrga').mockImplementation(() => Promise.reject('generic'));
 			//act
-			const result = await userRepository.getUsersNotInOrga('aaa', undefined);
+			const result = await userRepository.getUsersNotInOrga('text', 'aaa', undefined);
 			let failure:unknown;
 			let value:unknown;
 

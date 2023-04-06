@@ -1,3 +1,4 @@
+import { Db } from 'mongodb';
 import {checkData01, data_insert01} from '../../../src/core/builtindata/load_data_01';
 import { ModelContainer } from '../../../src/core/model_container';
 import { OrgaDataSource } from '../../../src/data/datasources/orga_data_source';
@@ -10,6 +11,8 @@ import { OrgaUserModel } from '../../../src/data/models/orgauser_model';
 import { PasswordModel } from '../../../src/data/models/password_model';
 import { RoleModel } from '../../../src/data/models/role_model';
 import { UserModel } from '../../../src/data/models/user_model';
+import { PostModel } from '../../../src/data/models/workflow/post_model';
+import { NoSQLDatabaseWrapper } from '../../../src/core/wrappers/mongo_wrapper';
 
 class MockUserDataSource implements UserDataSource {
 	getIfExistsByUsernameEmail(): Promise<ModelContainer<UserModel>> {
@@ -171,6 +174,48 @@ class MockPasswordDataSource implements PasswordDataSource {
 	setId():PasswordModel{throw new Error('Method not implemented.');}
 }
 
+class MockWrapper implements NoSQLDatabaseWrapper<UserModel> {
+	getMany(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getManyWithOptions(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getOne(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getOneWithOptions(): Promise<ModelContainer<UserModel>> {
+		throw new Error('Method not implemented.');
+	}
+	add(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	update(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	enable(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	delete(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	updateDirect(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	updateArray(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	updateDirectByQuery(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	collectionName:string;
+	db:Db;
+	constructor(collectionName: string, dbMongo: Db){
+		this.collectionName = collectionName;
+		this.db = dbMongo;
+	}
+}
+
 describe('Test del load data 01', () => {
 
 	let mockUserDataSource: UserDataSource;
@@ -178,6 +223,7 @@ describe('Test del load data 01', () => {
 	let mockOrgaDataSource: OrgaDataSource;
 	let mockOrgaUserDataSource: OrgaUserDataSource;
 	let mockPasswordDataSource: PasswordDataSource;
+	let mockWrapper: MockWrapper;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -187,6 +233,7 @@ describe('Test del load data 01', () => {
 		mockOrgaDataSource = new MockOrgaDataSource();
 		mockOrgaUserDataSource = new MockOrgaUserDataSource();
 		mockPasswordDataSource = new MockPasswordDataSource();
+		mockWrapper = new MockWrapper('users', (jest.fn() as unknown) as Db);
 
 	});
 
@@ -287,7 +334,7 @@ describe('Test del load data 01', () => {
 		jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_orus));
 
 		
-		await checkData01(mockRoleDataSource, mockUserDataSource, mockPasswordDataSource, mockOrgaDataSource, mockOrgaUserDataSource);
+		await checkData01(mockRoleDataSource, mockUserDataSource, mockPasswordDataSource, mockOrgaDataSource, mockOrgaUserDataSource, mockWrapper);
 
 		expect(mockRoleDataSource.getOne).toBeCalledTimes(5);
 		expect(mockRoleDataSource.add).toBeCalledTimes(5);

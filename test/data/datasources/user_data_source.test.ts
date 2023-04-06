@@ -133,7 +133,7 @@ describe('User MongoDB DataSource', () => {
 			jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listUsers)));
 	
 			//act
-			const data = await dataSource.getByOrgaId('aaa');
+			const data = await dataSource.getByOrgaId('text','aaa');
 	
 			//assert
 			expect(mongoWrapper.getMany).toBeCalledTimes(1);
@@ -145,7 +145,7 @@ describe('User MongoDB DataSource', () => {
 			jest.spyOn(mongoWrapper, 'getMany').mockImplementation(() => Promise.resolve(new ModelContainer(listUsers)));
 	
 			//act
-			const data = await dataSource.getWhoAreNotInOrga('aaa');
+			const data = await dataSource.getWhoAreNotInOrga('text','aaa');
 	
 			//assert
 			expect(mongoWrapper.getMany).toBeCalledTimes(1);

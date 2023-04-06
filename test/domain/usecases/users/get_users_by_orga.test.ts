@@ -25,7 +25,7 @@ describe('Conseguir usuario por orga - Caso de uso', () => {
 
 		//act
 		const useCase = new GetUsersByOrgaId(mockUserRepository);
-		const result = await useCase.execute('aaa');
+		const result = await useCase.execute('text','aaa');
 		//assert
 		expect(mockUserRepository.getUsersByOrgaId).toBeCalledTimes(1);
 		expect(result.isRight());
@@ -38,7 +38,7 @@ describe('Conseguir usuario por orga - Caso de uso', () => {
 
 		//act
 		const useCase = new GetUsersByOrgaId(mockUserRepository);
-		const result = await useCase.execute('aaa');
+		const result = await useCase.execute('text','aaa');
 		//assert
 		expect(mockUserRepository.getUsersByOrgaId).toBeCalledTimes(1);
 		expect(result.isLeft());
