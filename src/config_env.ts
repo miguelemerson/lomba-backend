@@ -8,6 +8,8 @@ export const configEnv = () => {
 		TOKEN_EXP: process.env.TOKEN_EXP ? process.env.TOKEN_EXP : 3600,
 		FIREBASE_CERT:process.env.FIREBASE_CERT ? process.env.FIREBASE_CERT : '{}',
 		AZSTORAGEACCOUNT_NAME:process.env.AZSTORAGEACCOUNT_NAME ? process.env.AZSTORAGEACCOUNT_NAME : '',
-		AZSTORAGEACCOUNT_KEY:process.env.AZSTORAGEACCOUNT_KEY ? process.env.AZSTORAGEACCOUNT_KEY : ''
+		AZSTORAGEACCOUNT_KEY:process.env.AZSTORAGEACCOUNT_KEY ? process.env.AZSTORAGEACCOUNT_KEY : '',
+		REDIS_HOST:process.env.REDIS_HOST ? process.env.REDIS_HOST : '',
+		REDIS_PASSWORD:process.env.REDIS_PASSWORD ? process.env.REDIS_PASSWORD : '',
 	};
 };
