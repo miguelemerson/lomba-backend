@@ -103,7 +103,7 @@ export default function StorageRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			if(req.params.id !== req.params.r_userId)
+			if(req.params.userId !== req.params.r_userId)
 			{
 				code = 401;
 				toSend = new RouterResponse('1.0', new Error('user not allowed'), 'put', {id: req.params.id}, 'user was not edited');
@@ -138,7 +138,7 @@ export default function StorageRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			if(req.params.id !== req.params.r_userId)
+			if(req.params.userId !== req.params.r_userId)
 			{
 				code = 401;
 				toSend = new RouterResponse('1.0', new Error('user not allowed'), 'put', {id: req.params.id}, 'user was not edited');

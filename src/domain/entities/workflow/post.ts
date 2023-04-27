@@ -17,5 +17,8 @@ export interface Post extends Entity, BuiltIn, Audit {
     stages:(Stage[]);
     totals:(Total[]);
     tracks:(Track[]);
-    votes:(Vote[]);    
+    votes:(Vote[]);
+    totalsave: number;
+    totalfav: number;
+    totalreport: number;
 }
