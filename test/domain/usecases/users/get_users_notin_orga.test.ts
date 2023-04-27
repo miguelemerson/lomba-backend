@@ -25,7 +25,7 @@ describe('Conseguir usuarios que no estén en una organización - Caso de uso', 
 
 		//act
 		const useCase = new GetUsersNotInOrga(mockUserRepository);
-		const result = await useCase.execute('aaa');
+		const result = await useCase.execute('text','aaa');
 		//assert
 		expect(mockUserRepository.getUsersNotInOrga).toBeCalledTimes(1);
 		expect(result.isRight());
@@ -38,7 +38,7 @@ describe('Conseguir usuarios que no estén en una organización - Caso de uso', 
 
 		//act
 		const useCase = new GetUsersNotInOrga(mockUserRepository);
-		const result = await useCase.execute('aaa');
+		const result = await useCase.execute('text','aaa');
 		//assert
 		expect(mockUserRepository.getUsersNotInOrga).toBeCalledTimes(1);
 		expect(result.isLeft());

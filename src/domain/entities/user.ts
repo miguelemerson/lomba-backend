@@ -7,4 +7,8 @@ export interface User extends Entity, BuiltIn, Audit {
   username: string;
   email: string;
   orgas?: ({id:string, code:string}[]);
+  pictureUrl?: string;
+  pictureCloudFileId?: string;
+  pictureThumbnailUrl?: string;
+  pictureThumbnailCloudFileId?: string;
 }

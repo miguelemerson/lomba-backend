@@ -5,7 +5,7 @@ import { Auth } from '../domain/entities/auth';
 import { GetTokenUseCase } from '../domain/usecases/auth/get_token';
 import { RegisterUserUseCase } from '../domain/usecases/auth/register_user';
 import { ChangeOrgaUseCase } from '../domain/usecases/auth/change_orga';
-import { isAuth } from '../core/presentation/valid_token_router';
+import { isAuth, isAuthWithoutOrga } from '../core/presentation/valid_token_router';
 import { GetTokenGoogleUseCase } from '../domain/usecases/auth/get_token_google';
 import { User } from '../domain/entities/user';
 
@@ -69,7 +69,7 @@ export default function AuthRouter(
 		res.status(code).send(toSend);
 	});
  
-	router.put('/',[isAuth], async (req: Request, res: Response) => {
+	router.put('/',[isAuthWithoutOrga], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();

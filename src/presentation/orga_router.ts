@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { hasRole } from '../core/presentation/check_role_router';
-import { isAuth } from '../core/presentation/valid_token_router';
+import { isAuth, isAuthWithoutOrga } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
 import { AddOrgaUseCase } from '../domain/usecases/orgas/add_orga';
 import { DeleteOrgaUseCase } from '../domain/usecases/orgas/delete_orga';
@@ -212,7 +212,7 @@ export default function OrgasRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/byuser/:userId',[isAuth], async (req: Request, res: Response) => {
+	router.get('/byuser/:userId',[isAuthWithoutOrga], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();

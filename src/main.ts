@@ -104,6 +104,8 @@ import StorageRouter from './presentation/storage_router';
 import { RegisterCloudFile } from './domain/usecases/storage/register_cloudfile';
 import { GetCloudFile } from './domain/usecases/storage/get_cloudfile';
 import { AddMultiPost } from './domain/usecases/posts/add_multi_post';
+import { RegisterUserPicture } from './domain/usecases/users/register_userpicture';
+import { UploadUserPicture } from './domain/usecases/users/upload_userpicture';
 
 dotenv.config();
 
@@ -180,7 +182,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
 
 	//revisa que los datos estén cargados.
-	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource);
+	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);
 	await checkData02(stageDataSource, flowDataSource, postDataSource, postMongo);
 	await checkData03(settingDataSource);
 
@@ -210,7 +212,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo), new UpdateSettings(settingRepo));
 
-	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo));
+	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);

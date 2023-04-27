@@ -4,8 +4,8 @@ import { ModelContainer } from '../../core/model_container';
 import { User } from '../entities/user';
 
 export interface UserRepository {
-    getUsersByOrgaId(orgaId: string, sort?: [string, 1 | -1][]): Promise<Either<Failure, ModelContainer<User>>>;
-    getUsersNotInOrga(orgaId: string, sort?: [string, 1 | -1][], pageIndex?: number, itemsPerPage?: number): Promise<Either<Failure, ModelContainer<User>>>;
+    getUsersByOrgaId(searchText: string, orgaId: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<User>>>;
+    getUsersNotInOrga(searchText: string, orgaId: string, sort?: [string, 1 | -1][], pageIndex?: number, itemsPerPage?: number): Promise<Either<Failure, ModelContainer<User>>>;
     getUser(id: string): Promise<Either<Failure, ModelContainer<User>>>;
     addUser(id: string, name: string, username: string, email: string,
 		enabled: boolean, builtIn: boolean) : Promise<Either<Failure, ModelContainer<User>>>;

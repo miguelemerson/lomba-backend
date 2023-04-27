@@ -9,8 +9,9 @@ import { PasswordModel } from '../../data/models/password_model';
 import { RoleModel } from '../../data/models/role_model';
 import { UserModel } from '../../data/models/user_model';
 import { HashPassword } from '../password_hash';
+import { NoSQLDatabaseWrapper } from '../wrappers/mongo_wrapper';
 
-export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDataSource, passSource: PasswordDataSource, orgaSource: OrgaDataSource, orgaUserSource: OrgaUserDataSource) => {
+export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDataSource, passSource: PasswordDataSource, orgaSource: OrgaDataSource, orgaUserSource: OrgaUserDataSource, userMongo: NoSQLDatabaseWrapper<UserModel>) => {
 	
 	//roles
 	data_insert01.roles.forEach(async role => {
@@ -67,6 +68,26 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 			await orgaUserSource.add(ou);
 		}
 	});
+
+	try{
+
+		const sleep = (ms: number | undefined) => new Promise(r => setTimeout(r, ms));
+		await sleep(1500);
+		if(!await userMongo.db.collection(userMongo.collectionName).indexExists('name_username_email_text'))
+		{
+			userMongo.db.collection(userMongo.collectionName).createIndex(
+				{
+					'name': 'text',
+					'username': 'text',
+					'email': 'text'
+				},{
+					name: 'name_username_email_text'
+				}
+			);
+		}
+	}catch(e){
+		console.log('no index');
+	}
 
 };
 
