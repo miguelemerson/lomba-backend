@@ -40,6 +40,7 @@ export interface PostDataSource {
 	getIfHasVote(userId: string, flowId: string, stageId: string, postId: string): Promise<ModelContainer<PostModel>>;	
 
 	getById(postId:string): Promise<ModelContainer<PostModel>>;
+	getByIdWithUser(postId:string, userId: string, flowId: string, stageId: string): Promise<ModelContainer<PostModel>>;
 
 	getByQueryOut(postId:string, flowId:string, stageId:string, queryOut:{[x: string]: unknown}): Promise<ModelContainer<PostModel>>;
 
@@ -271,6 +272,11 @@ export class PostDataSourceImpl implements PostDataSource {
 	}
 	async getById(postId: string): Promise<ModelContainer<PostModel>> {
 		return await this.collection.getOneWithOptions({_id:postId}, {projection: this.getWithoutVotesProjection()});
+	}
+	async getByIdWithUser(postId: string, userId: string, flowId: string, stageId: string): Promise<ModelContainer<PostModel>> {
+
+		const options = this.getStandardProjection(userId, flowId, stageId);
+		return await this.collection.getOneWithOptions({_id:postId}, {projection: options});
 	}
 	async getByQueryOut(postId: string, flowId: string, stageId: string, queryOut: { [x: string]: unknown; }): Promise<ModelContainer<PostModel>> {
 		queryOut['_id'] = postId;

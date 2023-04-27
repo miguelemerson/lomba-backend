@@ -106,6 +106,7 @@ import { GetCloudFile } from './domain/usecases/storage/get_cloudfile';
 import { AddMultiPost } from './domain/usecases/posts/add_multi_post';
 import { RegisterUserPicture } from './domain/usecases/users/register_userpicture';
 import { UploadUserPicture } from './domain/usecases/users/upload_userpicture';
+import { GetPostWithUser } from './domain/usecases/posts/get_withuser_post';
 
 dotenv.config();
 
@@ -204,7 +205,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
 
-	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo), new GetPost(postRepo), new AddMultiPost(postRepo));
+	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo), new GetPost(postRepo), new AddMultiPost(postRepo), new GetPostWithUser(postRepo));
 
 	const flowMiddleWare = FlowsRouter(new GetFlow(flowRepo), new GetFlows(flowRepo));
 
