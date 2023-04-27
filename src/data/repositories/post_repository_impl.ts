@@ -379,7 +379,7 @@ export class PostRepositoryImpl implements PostRepository {
 					const changes:object = {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes, totals: listTotals, tracks: listTracks};
 
 					const resultUpdatePost = await this.dataSource.update(resultAddPost.items[0].id, changes);
-
+					
 					return Either.right(resultUpdatePost);	
 				}
 			}
