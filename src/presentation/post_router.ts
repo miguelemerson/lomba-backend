@@ -15,6 +15,7 @@ import { GetPostUseCase } from '../domain/usecases/posts/get_post';
 import { ImageContent } from '../domain/entities/workflow/imagecontent';
 import { VideoContent } from '../domain/entities/workflow/videocontent';
 import { AddMultiPostUseCase } from '../domain/usecases/posts/add_multi_post';
+import { GetPostWithUserUseCase } from '../domain/usecases/posts/get_withuser_post';
 
 export default function PostsRouter(
 	getPosts: GetPostsUseCase,
@@ -26,7 +27,8 @@ export default function PostsRouter(
 	changeStagePost: ChangeStagePostUseCase,
 	getAdminViewPosts: GetAdminViewPostsUseCase,
 	getPost: GetPostUseCase,
-	addMultiPost: AddMultiPostUseCase
+	addMultiPost: AddMultiPostUseCase,
+	getPostWithUser: GetPostWithUserUseCase
 ) {
 	const router = express.Router();
 
@@ -321,7 +323,42 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/:id',[isAuth], async (req: Request<{id:string}>, res: Response) => {
+	router.get('/:id',[isAuth], async (req: Request<{id:string, userId:string, flowId:string, stageId:string}>, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			//execution
+			const post = await getPostWithUser.execute(req.params.id as string, req.params.userId as string, req.params.flowId as string, req.params.stageId as string);
+			//evaluate
+			post.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error, 'get', {id: req.query.id} as object, 'not obtained by post and user');	
+			}, value => {
+				//isOK
+				if(value.currentItemCount > 0)
+				{
+					code = 200;
+					toSend = new RouterResponse('1.0', value, 'get', {id: req.query.id} as object, 'geted by id and user');
+				}
+				else
+				{
+					//no encontrado
+					code = 404;
+					toSend = new RouterResponse('1.0', new Error('not found'), 'get', {id: req.query.id} as object, 'not obtained by id and user');	
+				}
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'get', {id: req.query.id} as object, 'not obtained by id and user');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
+	router.get('/:id', async (req: Request<{id:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();

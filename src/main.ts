@@ -106,6 +106,12 @@ import { GetCloudFile } from './domain/usecases/storage/get_cloudfile';
 import { AddMultiPost } from './domain/usecases/posts/add_multi_post';
 import { RegisterUserPicture } from './domain/usecases/users/register_userpicture';
 import { UploadUserPicture } from './domain/usecases/users/upload_userpicture';
+import { GetPostWithUser } from './domain/usecases/posts/get_withuser_post';
+import BookmarksRouter from './presentation/bookmark_router';
+import { GiveMarkPost } from './domain/usecases/posts/give_mark_post';
+import { BookmarkRepositoryImpl } from './data/repositories/bookmark_repository_impl';
+import { BookmarkDataSourceImpl } from './data/datasources/bookmark_data_source';
+import { BookmarkModel } from './data/models/workflow/bookmark_model';
 
 dotenv.config();
 
@@ -139,7 +145,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const postMongo = new MongoWrapper<PostModel>('posts', db);
 	const settingMongo = new MongoWrapper<SettingModel>('settings', db);
 	const cloudFileMongo = new MongoWrapper<SettingModel>('cloudfiles', db);
-
+	const bookmarkMongo = new MongoWrapper<BookmarkModel>('bookmarks', db);
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
 	const userDataSource = new UserDataSourceImpl(userMongo);
@@ -151,7 +157,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const postDataSource = new PostDataSourceImpl(postMongo);
 	const settingDataSource = new SettingDataSourceImpl(settingMongo);
 	const cloudFileDataSource = new CloudFileDataSourceImpl(cloudFileMongo);
-
+	const bookmarkDataSource = new BookmarkDataSourceImpl(bookmarkMongo);
 
 	const account = configEnv().AZSTORAGEACCOUNT_NAME;
 	const accountKey = configEnv().AZSTORAGEACCOUNT_KEY;
@@ -180,6 +186,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const stageRepo = new StageRepositoryImpl(stageDataSource);
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
 	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
+	const bookmarkRepo = new BookmarkRepositoryImpl(bookmarkDataSource, postDataSource);
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);
@@ -204,7 +211,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
 
-	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo), new GetPost(postRepo), new AddMultiPost(postRepo));
+	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo), new GetPost(postRepo), new AddMultiPost(postRepo), new GetPostWithUser(postRepo));
 
 	const flowMiddleWare = FlowsRouter(new GetFlow(flowRepo), new GetFlows(flowRepo));
 
@@ -213,6 +220,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo), new UpdateSettings(settingRepo));
 
 	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo));
+
+	const bookmarkMiddleWare = BookmarksRouter(new GiveMarkPost(bookmarkRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
@@ -225,6 +234,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/stage', stageMiddleWare);
 	app.use('/api/v1/setting', settingMiddleWare);
 	app.use('/api/v1/storage', storageMiddleWare);
+	app.use('/api/v1/bookmark', bookmarkMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));
