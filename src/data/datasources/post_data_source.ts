@@ -9,7 +9,9 @@ export interface PostDataSource {
     getMany(query: object, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;
 	getManyWithOptions(query: object, options?: object | undefined, sort?: [string, 1 | -1][],
-			pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;		
+			pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;	
+	getManyWithOptionsAndBookmarks(userId:string, query: object, options?: object | undefined, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;
     getOne(query: object): Promise<ModelContainer<PostModel>>;
     getOneWithOptions(query: object, options: object | undefined): Promise<ModelContainer<PostModel>>;	
     add(post: PostModel) : Promise<ModelContainer<PostModel>>;
@@ -51,6 +53,8 @@ export interface PostDataSource {
 	updateVote(postId:string, userId:string, flowId:string, stageId:string, voteValue: number): Promise<ModelContainer<PostModel>>;
 
 	addTrack(name:string, description:string, postId:string, userId:string, flowId:string, stageIdOld:string, stageIdNew:string, change:object): Promise<boolean>;
+
+	updateBookmarksTotals(postId:string, markType: 'save' | 'fav' | 'report' | 'comment' | 'download', value:number): Promise<boolean>;
 }
 
 export class PostDataSourceImpl implements PostDataSource {
@@ -58,6 +62,27 @@ export class PostDataSourceImpl implements PostDataSource {
 
 	constructor(dbMongo: MongoWrapper<PostModel>){
 		this.collection = dbMongo;
+	}
+	async updateBookmarksTotals(postId: string, markType: 'save' | 'fav' | 'report' | 'comment' | 'download', value: number): Promise<boolean> {
+
+		let updateQuery = {};
+		if(markType == 'save')
+		{
+			updateQuery = { $inc: {'totalsaves':value}};
+		} else if(markType == 'fav')
+		{
+			updateQuery = { $inc: {'totalfavs':value}};
+		} else if(markType == 'report')
+		{
+			updateQuery = { $inc: {'totalreports':value}};
+		} else if(markType == 'comment'){
+			updateQuery = { $inc: {'totalcomments':value}};
+		} else if(markType == 'download'){
+			updateQuery = { $inc: {'totaldownloads':value}};
+		} else {
+			return false;
+		}
+		return await this.collection.updateDirect(postId, updateQuery);
 	}
 	async addTrack(name: string, description: string, postId: string, userId: string, flowId: string, stageIdOld:string, stageIdNew:string, change: object): Promise<boolean> {
 		
@@ -121,7 +146,14 @@ export class PostDataSourceImpl implements PostDataSource {
 
 	private getStandardProjection(userId:string, flowId:string, stageId:string):object
 	{
-		const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1};
+		const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, totalsave:1, totalfav:1, totalreport:1};
+
+		return options;
+	}
+
+	private getBookmarksProjection(userId:string, flowId:string, stageId:string):object
+	{
+		const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, totalsave:1, totalfav:1, totalreport:1, bookmarks:1};
 
 		return options;
 	}
@@ -158,8 +190,6 @@ export class PostDataSourceImpl implements PostDataSource {
 		{
 			query['stages'] = {$elemMatch: {id:stageId}};
 		}
-
-
 
 		return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
@@ -220,7 +250,9 @@ export class PostDataSourceImpl implements PostDataSource {
 		sort = [['created', -1]];
 		
 
-		return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+
+		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getPopularPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 		const query = {} as {[x: string]: unknown;};
@@ -233,7 +265,9 @@ export class PostDataSourceImpl implements PostDataSource {
 		}
 		sort = [['totals.totalpositive',-1]];
 		
-		return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+
+		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getVotedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, onlyWithVoteValue: number, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 		const query = {} as {[x: string]: unknown;};
@@ -261,7 +295,9 @@ export class PostDataSourceImpl implements PostDataSource {
 			sort = [['created', -1]];
 		}
 
-		return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+
+		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getIfHasVote(userId: string, flowId: string, stageId: string, postId: string): Promise<ModelContainer<PostModel>> {
 		const query = {id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId};
@@ -296,6 +332,39 @@ export class PostDataSourceImpl implements PostDataSource {
 	async getManyWithOptions(query: object, options: object | undefined, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>{
 		return await this.collection.getManyWithOptions<PostModel>(query, options, sort, pageIndex, itemsPerPage);
+	}
+	async getManyWithOptionsAndBookmarks(userId: string, query: object, options: object | undefined, sort?: [string, 1 | -1][],
+		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>{
+		const limit: number = (itemsPerPage == undefined ? 10 : itemsPerPage);
+		const skip: number = (pageIndex == undefined ? 1 : pageIndex - 1) * limit;
+		
+		let totalItems:number | undefined=0;
+
+		totalItems = await this.collection.setTotalItems(pageIndex, totalItems, query);
+
+		const result = await this.collection.db.collection(this.collection.collectionName).aggregate<PostModel>([{$match:query}, {$sort:{'created':-1}}, {
+			$lookup:
+		{
+			from: 'bookmarks',
+			let: { post_postId: '$id' },
+			pipeline: [
+				{ $match: { $expr: {
+					$and: [{ $eq: [ '$$post_postId', '$postId' ] },
+						{ $eq: [ '$userId', userId ] }]
+				} 
+				} 
+				},
+				{ $project: { _id: 1, postId: 1, userId:1, markType:1, enabled:1,builtIn:1, created:1, updated:1 } }],
+			as: 'bookmarks'
+		}}, {$skip:skip}, {$limit:limit}], options).toArray();
+
+		const startIndex = ((pageIndex ?? 1 - 1) * limit) + 1;
+		const totalPages = parseInt(Math.ceil((totalItems == undefined ? 1 : totalItems) / limit).toString());
+
+
+		const contains_many = this.collection.createModelContainer<PostModel>(result, itemsPerPage, pageIndex, startIndex, totalItems, totalPages);
+
+		return contains_many;
 	}	
 	async getOne(query: object): Promise<ModelContainer<PostModel>>{
 		return await this.collection.getOneWithOptions(query, {projection: this.getWithoutVotesProjection()});

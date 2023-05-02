@@ -5,5 +5,5 @@ import { Entity } from '../entity';
 export interface Bookmark extends Entity, BuiltIn, Audit {
     userId: string;
     postId: string;
-    markType: 'save' | 'fav' | 'report';
+    markType: 'save' | 'fav' | 'report' | 'comment' | 'download';
 }
