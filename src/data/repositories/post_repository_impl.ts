@@ -183,6 +183,24 @@ export class PostRepositoryImpl implements PostRepository {
 				const result = await this.dataSource.getVotedPosts(orgaId, userId, flowId, stageId, searchText, onlyWithVote, sort, pageIndex, itemsPerPage);
 				return Either.right(result);
 			}
+			if (boxPage == BoxPages.favedPosts) {
+				if(!sort)
+				{
+					sort = [['created', -1]];
+				}
+				
+				const result = await this.dataSource.getFavedPosts(orgaId, userId, flowId, stageId, searchText, sort, pageIndex, itemsPerPage);
+				return Either.right(result);
+			}
+			if (boxPage == BoxPages.savedPosts) {
+				if(!sort)
+				{
+					sort = [['created', -1]];
+				}
+				
+				const result = await this.dataSource.getSavedPosts(orgaId, userId, flowId, stageId, searchText, sort, pageIndex, itemsPerPage);
+				return Either.right(result);
+			}			
 		
 			return Either.left(new GenericFailure('no boxpage found'));		
 		}

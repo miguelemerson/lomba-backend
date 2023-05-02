@@ -55,6 +55,10 @@ export interface PostDataSource {
 	addTrack(name:string, description:string, postId:string, userId:string, flowId:string, stageIdOld:string, stageIdNew:string, change:object): Promise<boolean>;
 
 	updateBookmarksTotals(postId:string, markType: 'save' | 'fav' | 'report' | 'comment' | 'download', value:number): Promise<boolean>;
+
+	getFavedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>>;
+
+	getSavedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>>;
 }
 
 export class PostDataSourceImpl implements PostDataSource {
@@ -299,6 +303,50 @@ export class PostDataSourceImpl implements PostDataSource {
 
 		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
+	async getFavedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
+		const query = {} as {[x: string]: unknown;};
+		query['orgaId'] = orgaId;
+		query['flowId'] = flowId;
+		query['stageId'] = stageId;
+		if(searchText != '')
+		{
+			query['$text'] = {$search: searchText};
+		}
+		
+		query['bookmarks'] = {$elemMatch: {userId:userId, markType: 'fav', enabled: true}};
+
+		if(!sort)
+		{
+			sort = [['created', -1]];
+		}
+
+		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+
+		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+	}
+
+	async getSavedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
+		const query = {} as {[x: string]: unknown;};
+		query['orgaId'] = orgaId;
+		query['flowId'] = flowId;
+		query['stageId'] = stageId;
+		if(searchText != '')
+		{
+			query['$text'] = {$search: searchText};
+		}
+		
+		query['bookmarks'] = {$elemMatch: {userId:userId, markType: 'save', enabled: true}};
+
+		if(!sort)
+		{
+			sort = [['created', -1]];
+		}
+
+		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+
+		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+	}
+
 	async getIfHasVote(userId: string, flowId: string, stageId: string, postId: string): Promise<ModelContainer<PostModel>> {
 		const query = {id: postId, 'votes.userId':userId, 'votes.stageId':stageId, 'votes.flowId':flowId};
 
