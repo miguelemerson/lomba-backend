@@ -2,11 +2,11 @@ import { Either } from '../../../core/either';
 import { Failure } from '../../../core/errors/failures';
 import { CommentRepository } from '../../repositories/comment_repository';
 
-export interface DeleteCommentPostUseCase {
+export interface DeletePostCommentUseCase {
     execute(commentId: string, userId: string): Promise<Either<Failure,boolean>>;
 }
 
-export class DeleteCommentPost implements DeleteCommentPostUseCase {
+export class DeletePostComment implements DeletePostCommentUseCase {
 	repository: CommentRepository;
 	constructor(repository: CommentRepository) {
 		this.repository = repository;
