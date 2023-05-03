@@ -14,6 +14,7 @@ export interface PostDataSource {
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;
     getOne(query: object): Promise<ModelContainer<PostModel>>;
     getOneWithOptions(query: object, options: object | undefined): Promise<ModelContainer<PostModel>>;	
+	getOneWithOptionsAndBookmarks(userId:string, query: object, options: object | undefined): Promise<ModelContainer<PostModel>>;	
     add(post: PostModel) : Promise<ModelContainer<PostModel>>;
     update(id: string, post: object): Promise<ModelContainer<PostModel>>;
     enable(id: string, enableOrDisable: boolean): Promise<boolean>;
@@ -359,8 +360,8 @@ export class PostDataSourceImpl implements PostDataSource {
 	}
 	async getByIdWithUser(postId: string, userId: string, flowId: string, stageId: string): Promise<ModelContainer<PostModel>> {
 
-		const options = this.getStandardProjection(userId, flowId, stageId);
-		return await this.collection.getOneWithOptions({_id:postId}, {projection: options});
+		const options = this.getBookmarksProjection(userId, flowId, stageId);
+		return await this.getOneWithOptionsAndBookmarks(userId, {_id:postId}, {projection: options});
 	}
 	async getByQueryOut(postId: string, flowId: string, stageId: string, queryOut: { [x: string]: unknown; }): Promise<ModelContainer<PostModel>> {
 		queryOut['_id'] = postId;
@@ -420,6 +421,28 @@ export class PostDataSourceImpl implements PostDataSource {
 	async getOneWithOptions(query: object, options: object | undefined): Promise<ModelContainer<PostModel>>{
 	
 		return await this.collection.getOneWithOptions(query, options);
+	}
+	async getOneWithOptionsAndBookmarks(userId: string, query: object, options: object | undefined): Promise<ModelContainer<PostModel>>{
+	
+		const result = await this.collection.db.collection(this.collection.collectionName).aggregate<PostModel>([{$match:query}, {
+			$lookup:
+		{
+			from: 'bookmarks',
+			let: { post_postId: '$id' },
+			pipeline: [
+				{ $match: { $expr: {
+					$and: [{ $eq: [ '$$post_postId', '$postId' ] },
+						{ $eq: [ '$userId', userId ] }]
+				} 
+				} 
+				},
+				{ $project: { _id: 1, postId: 1, userId:1, markType:1, enabled:1,builtIn:1, created:1, updated:1 } }],
+			as: 'bookmarks'
+		}}], options).toArray();
+
+		const contains_one = ModelContainer.fromOneItem(result[0]);
+
+		return contains_one;
 	}
 	async add(post: PostModel) : Promise<ModelContainer<PostModel>>{
 		post = this.setId(post);
