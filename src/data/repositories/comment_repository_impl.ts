@@ -5,11 +5,14 @@ import { ModelContainer } from '../../core/model_container';
 import { CommentRepository } from '../../domain/repositories/comment_repository';
 import { CommentDataSource } from '../datasources/comment_data_source';
 import { CommentModel } from '../models/workflow/comment_model';
+import { PostDataSource } from '../datasources/post_data_source';
 
 export class CommentRepositoryImpl implements CommentRepository {
 	dataSource: CommentDataSource;
-	constructor(dataSource: CommentDataSource){
+	postDataSource: PostDataSource;
+	constructor(dataSource: CommentDataSource, postDataSource: PostDataSource){
 		this.dataSource = dataSource;
+		this.postDataSource = postDataSource;
 	}
 	async getComments(postId: string, params: { [x: string]: unknown; }, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<CommentModel>>> {
 		try
@@ -32,6 +35,11 @@ export class CommentRepositoryImpl implements CommentRepository {
 		try{
 			const comment = new CommentModel('', userId, postId, text, true, false);
 			const result = await this.dataSource.add(comment);
+			if(result.currentItemCount > 0
+			){
+				await this.postDataSource.updateBookmarksTotals(postId, 'comment', 1);
+			}
+
 			return Either.right(result);
 		}
 		catch(error)
@@ -45,9 +53,15 @@ export class CommentRepositoryImpl implements CommentRepository {
 			
 		}
 	}
-	async deleteComment(commentId: string, userId: string): Promise<Either<Failure, boolean>> {
+	async deleteComment(commentId: string, userId: string, postId:string): Promise<Either<Failure, boolean>> {
 		try{
 			const result = await this.dataSource.delete(commentId, userId);
+
+			if(result)
+			{
+				await this.postDataSource.updateBookmarksTotals(postId, 'comment', -1);
+			}
+
 			return Either.right(result);
 		}
 		catch(error)

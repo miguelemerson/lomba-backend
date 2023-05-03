@@ -5,6 +5,6 @@ import { CommentModel } from '../../data/models/workflow/comment_model';
 
 export interface CommentRepository {
     addComment(userId: string, postId: string, text: string): Promise<Either<Failure, ModelContainer<CommentModel>>>;
-    deleteComment(commentId: string, userId:string): Promise<Either<Failure, boolean>>;
+    deleteComment(commentId: string, userId:string, postId:string): Promise<Either<Failure, boolean>>;
     getComments(postId: string, params: {[x: string]: unknown}, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<CommentModel>>>;
 }

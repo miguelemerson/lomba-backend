@@ -3,7 +3,7 @@ import { Failure } from '../../../core/errors/failures';
 import { CommentRepository } from '../../repositories/comment_repository';
 
 export interface DeletePostCommentUseCase {
-    execute(commentId: string, userId: string): Promise<Either<Failure,boolean>>;
+    execute(commentId: string, userId: string, postId:string): Promise<Either<Failure,boolean>>;
 }
 
 export class DeletePostComment implements DeletePostCommentUseCase {
@@ -12,7 +12,7 @@ export class DeletePostComment implements DeletePostCommentUseCase {
 		this.repository = repository;
 	}
 
-	async execute(commentId: string, userId: string): Promise<Either<Failure,boolean>> {
-		return await this.repository.deleteComment(commentId, userId);
+	async execute(commentId: string, userId: string, postId:string): Promise<Either<Failure,boolean>> {
+		return await this.repository.deleteComment(commentId, userId, postId);
 	}
 }

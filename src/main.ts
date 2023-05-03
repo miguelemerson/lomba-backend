@@ -196,7 +196,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
 	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
 	const bookmarkRepo = new BookmarkRepositoryImpl(bookmarkDataSource, postDataSource);
-	const commentRepo = new CommentRepositoryImpl(commentDataSource);
+	const commentRepo = new CommentRepositoryImpl(commentDataSource, postDataSource);
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);

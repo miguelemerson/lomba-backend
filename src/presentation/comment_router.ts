@@ -45,7 +45,7 @@ export default function CommentsRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			const bodypost = req.body as {userId: string, commentId: string};
+			const bodypost = req.body as {userId: string, commentId: string, postId: string};
 
 			if(bodypost.userId !== req.params.r_userId)
 			{
@@ -56,7 +56,7 @@ export default function CommentsRouter(
 			}
 
 			//execution
-			const orga = await deleteCommentPost.execute(bodypost.commentId, bodypost.userId);
+			const orga = await deleteCommentPost.execute(bodypost.commentId, bodypost.userId, bodypost.postId);
 			//evaluate
 			orga.fold(error => {
 				//something wrong
