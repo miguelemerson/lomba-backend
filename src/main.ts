@@ -232,10 +232,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo));
 
 	const bookmarkMiddleWare = BookmarksRouter(new GiveMarkPost(bookmarkRepo));
+
 	const commentMiddleWare = CommentsRouter(new AddPostComment(commentRepo), new DeletePostComment(commentRepo), new GetPostComments(commentRepo));
-
-
-	const commentMiddleWare = CommentsRouter(new AddCommentPost(commentRepo), new DeleteCommentPost(commentRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
