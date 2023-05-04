@@ -112,6 +112,12 @@ import { GiveMarkPost } from './domain/usecases/posts/give_mark_post';
 import { BookmarkRepositoryImpl } from './data/repositories/bookmark_repository_impl';
 import { BookmarkDataSourceImpl } from './data/datasources/bookmark_data_source';
 import { BookmarkModel } from './data/models/workflow/bookmark_model';
+import { CommentModel } from './data/models/workflow/comment_model';
+import { CommentDataSourceImpl } from './data/datasources/comment_data_source';
+import { CommentRepositoryImpl } from './data/repositories/comment_repository_impl';
+import CommentsRouter from './presentation/comment_router';
+import { AddCommentPost } from './domain/usecases/posts/add_comment_post';
+import { DeleteCommentPost } from './domain/usecases/posts/delete_comment_post';
 
 dotenv.config();
 
@@ -146,6 +152,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const settingMongo = new MongoWrapper<SettingModel>('settings', db);
 	const cloudFileMongo = new MongoWrapper<SettingModel>('cloudfiles', db);
 	const bookmarkMongo = new MongoWrapper<BookmarkModel>('bookmarks', db);
+	const commentMongo = new MongoWrapper<CommentModel>('comments', db);
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
 	const userDataSource = new UserDataSourceImpl(userMongo);
@@ -158,6 +165,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const settingDataSource = new SettingDataSourceImpl(settingMongo);
 	const cloudFileDataSource = new CloudFileDataSourceImpl(cloudFileMongo);
 	const bookmarkDataSource = new BookmarkDataSourceImpl(bookmarkMongo);
+	const commentDataSource = new CommentDataSourceImpl(commentMongo);
 
 	const account = configEnv().AZSTORAGEACCOUNT_NAME;
 	const accountKey = configEnv().AZSTORAGEACCOUNT_KEY;
@@ -187,6 +195,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
 	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
 	const bookmarkRepo = new BookmarkRepositoryImpl(bookmarkDataSource, postDataSource);
+	const commentRepo = new CommentRepositoryImpl(commentDataSource);
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);
@@ -223,6 +232,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const bookmarkMiddleWare = BookmarksRouter(new GiveMarkPost(bookmarkRepo));
 
+	const commentMiddleWare = CommentsRouter(new AddCommentPost(commentRepo), new DeleteCommentPost(commentRepo));
+
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
 	app.use('/api/v1/orga', orgaMiddleWare);
@@ -235,6 +246,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/setting', settingMiddleWare);
 	app.use('/api/v1/storage', storageMiddleWare);
 	app.use('/api/v1/bookmark', bookmarkMiddleWare);
+	app.use('/api/v1/comment', commentMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));

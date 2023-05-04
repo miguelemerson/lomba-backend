@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import { hasRole } from '../core/presentation/check_role_router';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
 import { AddCommentPostUseCase } from '../domain/usecases/posts/add_comment_post';
