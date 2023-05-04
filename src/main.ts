@@ -115,9 +115,10 @@ import { BookmarkModel } from './data/models/workflow/bookmark_model';
 import { CommentModel } from './data/models/workflow/comment_model';
 import { CommentDataSourceImpl } from './data/datasources/comment_data_source';
 import { CommentRepositoryImpl } from './data/repositories/comment_repository_impl';
+import { AddPostComment } from './domain/usecases/comments/add_post_comment';
+import { DeletePostComment } from './domain/usecases/comments/delete_post_comment';
+import { GetPostComments } from './domain/usecases/comments/get_post_comments';
 import CommentsRouter from './presentation/comment_router';
-import { AddCommentPost } from './domain/usecases/posts/add_comment_post';
-import { DeleteCommentPost } from './domain/usecases/posts/delete_comment_post';
 
 dotenv.config();
 
@@ -195,7 +196,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
 	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
 	const bookmarkRepo = new BookmarkRepositoryImpl(bookmarkDataSource, postDataSource);
-	const commentRepo = new CommentRepositoryImpl(commentDataSource);
+	const commentRepo = new CommentRepositoryImpl(commentDataSource, postDataSource);
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);
@@ -231,6 +232,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo));
 
 	const bookmarkMiddleWare = BookmarksRouter(new GiveMarkPost(bookmarkRepo));
+	const commentMiddleWare = CommentsRouter(new AddPostComment(commentRepo), new DeletePostComment(commentRepo), new GetPostComments(commentRepo));
+
 
 	const commentMiddleWare = CommentsRouter(new AddCommentPost(commentRepo), new DeleteCommentPost(commentRepo));
 

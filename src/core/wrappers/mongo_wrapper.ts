@@ -27,6 +27,7 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		this.collectionName = collectionName;
 		this.db = dbMongo;
 	}
+	
 	async upsert(query: object, obj: object): Promise<boolean> {
 		const options = { upsert: true };
 		const result = await this.db.collection<Document>(this.collectionName).updateOne(query, obj, options);
@@ -56,7 +57,6 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 
 	private async runFullQuery(result: unknown, query: object, options: object | undefined, sort: [string, 1 | -1][], skip: number, limit: number) {
 
-		console.log(sort);
 		result = await this.db.collection<Document>(this.collectionName).aggregate([{$match:query}, {$sort:{'created':-1}}, {$skip:skip}, {$limit:limit}], options).toArray();
 
 		//result = await this.db.collection<Document>(this.collectionName)
@@ -198,4 +198,5 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		}
 		return false;
 	}    
+	
 }

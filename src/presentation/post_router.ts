@@ -329,7 +329,7 @@ export default function PostsRouter(
 		let toSend = RouterResponse.emptyResponse();
 		try {
 			//execution
-			const post = await getPostWithUser.execute(req.params.id as string, req.params.userId as string, req.params.flowId as string, req.params.stageId as string);
+			const post = await getPostWithUser.execute(req.params.id as string, req.query.userId as string, req.query.flowId as string, req.query.stageId as string);
 			//evaluate
 			post.fold(error => {
 				//something wrong
