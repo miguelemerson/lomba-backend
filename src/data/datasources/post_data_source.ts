@@ -10,7 +10,7 @@ export interface PostDataSource {
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;
 	getManyWithOptions(query: object, options?: object | undefined, sort?: [string, 1 | -1][],
 			pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;	
-	getManyWithOptionsAndBookmarks(userId:string, query: object, options?: object | undefined, sort?: [string, 1 | -1][],
+	getManyWithOptionsAndBookmarks(userId:string, query: object, queryToCount: object | undefined, options?: object | undefined, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>;
     getOne(query: object): Promise<ModelContainer<PostModel>>;
     getOneWithOptions(query: object, options: object | undefined): Promise<ModelContainer<PostModel>>;	
@@ -163,6 +163,13 @@ export class PostDataSourceImpl implements PostDataSource {
 		return options;
 	}
 
+	private getBookmarksRestrictionProjection(userId:string, flowId:string, stageId:string, markType: 'fav' | 'save'):object
+	{
+		const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, totalsave:1, totalfav:1, totalreport:1, bookmarks:{$elemMatch: {userId:userId, markType: 'fav', enabled: true}}};
+
+		return options;
+	}
+
 	private getStandardFilteredTracksProjection(userId:string, flowId:string, stageId:string):object
 	{
 		const options = {votes: { $elemMatch: {'userId':userId, 'stageId':stageId, 'flowId':flowId }}, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:{$elemMatch: {'name': 'goforward', userId:userId, 'stageIdOld':stageId, 'flowId':flowId }}, updated:1, deleted:1, expires:1};
@@ -256,8 +263,9 @@ export class PostDataSourceImpl implements PostDataSource {
 		
 
 		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
-
-		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+		console.log(query);
+		console.log({projection: this.getBookmarksProjection(userId, flowId, stageId)});
+		return await this.getManyWithOptionsAndBookmarks(userId, query, undefined, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getPopularPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 		const query = {} as {[x: string]: unknown;};
@@ -272,7 +280,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		
 		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 
-		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+		return await this.getManyWithOptionsAndBookmarks(userId, query, undefined, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getVotedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, onlyWithVoteValue: number, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 		const query = {} as {[x: string]: unknown;};
@@ -302,10 +310,12 @@ export class PostDataSourceImpl implements PostDataSource {
 
 		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 
-		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+		return await this.getManyWithOptionsAndBookmarks(userId, query, undefined, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 	async getFavedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 		const query = {} as {[x: string]: unknown;};
+		
+
 		query['orgaId'] = orgaId;
 		query['flowId'] = flowId;
 		query['stageId'] = stageId;
@@ -316,14 +326,16 @@ export class PostDataSourceImpl implements PostDataSource {
 		
 		query['bookmarks'] = {$elemMatch: {userId:userId, markType: 'fav', enabled: true}};
 
+		const queryToCount = {userId:userId, markType: 'fav', enabled: true};
+
 		if(!sort)
 		{
 			sort = [['created', -1]];
 		}
 
 		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
-
-		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+		
+		return await this.getManyWithOptionsAndBookmarks(userId, query, queryToCount, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 
 	async getSavedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
@@ -338,6 +350,8 @@ export class PostDataSourceImpl implements PostDataSource {
 		
 		query['bookmarks'] = {$elemMatch: {userId:userId, markType: 'save', enabled: true}};
 
+		const queryToCount = {userId:userId, markType: 'save', enabled: true};
+
 		if(!sort)
 		{
 			sort = [['created', -1]];
@@ -345,7 +359,7 @@ export class PostDataSourceImpl implements PostDataSource {
 
 		//return await this.getManyWithOptions(query, {projection: this.getStandardProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 
-		return await this.getManyWithOptionsAndBookmarks(userId, query, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
+		return await this.getManyWithOptionsAndBookmarks(userId, query, queryToCount, {projection: this.getBookmarksProjection(userId, flowId, stageId)}, sort, pageIndex, itemsPerPage);
 	}
 
 	async getIfHasVote(userId: string, flowId: string, stageId: string, postId: string): Promise<ModelContainer<PostModel>> {
@@ -382,16 +396,23 @@ export class PostDataSourceImpl implements PostDataSource {
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>{
 		return await this.collection.getManyWithOptions<PostModel>(query, options, sort, pageIndex, itemsPerPage);
 	}
-	async getManyWithOptionsAndBookmarks(userId: string, query: object, options: object | undefined, sort?: [string, 1 | -1][],
+	async getManyWithOptionsAndBookmarks(userId: string, query: object, queryToCount: object | undefined, options: object | undefined, sort?: [string, 1 | -1][],
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<PostModel>>{
 		const limit: number = (itemsPerPage == undefined ? 10 : itemsPerPage);
 		const skip: number = (pageIndex == undefined ? 1 : pageIndex - 1) * limit;
 		
 		let totalItems:number | undefined=0;
 
-		totalItems = await this.collection.setTotalItems(pageIndex, totalItems, query);
+		if(queryToCount == undefined)
+		{
+			totalItems = await this.collection.setTotalItems(pageIndex, totalItems, query);
+		}
+		else
+		{
+			totalItems = (await this.collection.db.collection('bookmarks').count(queryToCount));
+		}
 
-		const result = await this.collection.db.collection(this.collection.collectionName).aggregate<PostModel>([{$match:query}, {$sort:{'created':-1}}, {
+		const result = await this.collection.db.collection(this.collection.collectionName).aggregate<PostModel>([{
 			$lookup:
 		{
 			from: 'bookmarks',
@@ -405,9 +426,9 @@ export class PostDataSourceImpl implements PostDataSource {
 				},
 				{ $project: { _id: 1, postId: 1, userId:1, markType:1, enabled:1,builtIn:1, created:1, updated:1 } }],
 			as: 'bookmarks'
-		}}, {$skip:skip}, {$limit:limit}], options).toArray();
+		}},{$match:query}, {$sort:{'created':-1}}, {$skip:skip}, {$limit:limit}], options).toArray();
 
-		const startIndex = ((pageIndex ?? 1 - 1) * limit) + 1;
+		const startIndex = ((pageIndex == undefined ? 1 : pageIndex - 1) * limit) + 1;
 		const totalPages = parseInt(Math.ceil((totalItems == undefined ? 1 : totalItems) / limit).toString());
 
 
