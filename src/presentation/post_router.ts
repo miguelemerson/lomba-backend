@@ -2,25 +2,23 @@ import express, { Request, Response } from 'express';
 import { hasRole } from '../core/presentation/check_role_router';
 import { isAuth } from '../core/presentation/valid_token_router';
 import { RouterResponse } from '../core/router_response';
-import { TextContent } from '../domain/entities/workflow/textcontent';
-import { AddTextPostUseCase } from '../domain/usecases/posts/add_text_post';
-import { DeletePostUseCase } from '../domain/usecases/posts/delete_post';
-import { GetPostsUseCase } from '../domain/usecases/posts/get_posts';
-import { SendVoteUseCase } from '../domain/usecases/posts/send_vote';
-import { UpdatePostUseCase } from '../domain/usecases/posts/update_post';
-import { EnablePostUseCase } from '../domain/usecases/posts/enable_post';
-import { ChangeStagePostUseCase } from '../domain/usecases/posts/change_stage_post';
-import { GetAdminViewPostsUseCase } from '../domain/usecases/posts/get_adminview_post';
-import { GetPostUseCase } from '../domain/usecases/posts/get_post';
 import { ImageContent } from '../domain/entities/workflow/imagecontent';
+import { TextContent } from '../domain/entities/workflow/textcontent';
 import { VideoContent } from '../domain/entities/workflow/videocontent';
 import { AddMultiPostUseCase } from '../domain/usecases/posts/add_multi_post';
+import { AddTextPostUseCase } from '../domain/usecases/posts/add_text_post';
+import { ChangeStagePostUseCase } from '../domain/usecases/posts/change_stage_post';
+import { DeletePostUseCase } from '../domain/usecases/posts/delete_post';
+import { EnablePostUseCase } from '../domain/usecases/posts/enable_post';
+import { GetAdminViewPostsUseCase } from '../domain/usecases/posts/get_adminview_post';
+import { GetPostUseCase } from '../domain/usecases/posts/get_post';
+import { GetPostsUseCase } from '../domain/usecases/posts/get_posts';
 import { GetPostWithUserUseCase } from '../domain/usecases/posts/get_withuser_post';
+import { UpdatePostUseCase } from '../domain/usecases/posts/update_post';
 
 export default function PostsRouter(
 	getPosts: GetPostsUseCase,
 	addTextPost: AddTextPostUseCase,
-	sendVote: SendVoteUseCase,
 	updatePost: UpdatePostUseCase,
 	deletePost: DeletePostUseCase,
 	enablePost: EnablePostUseCase,
@@ -177,33 +175,6 @@ export default function PostsRouter(
 			//something wrong
 			code = 500;
 			toSend = new RouterResponse('1.0', err as object, 'post', undefined, 'post was not added');
-		}
-		//respond cordially
-		res.status(code).send(toSend);
-	});
-
-	router.post('/vote/',[isAuth], async (req: Request, res: Response) => {
-		//definitions
-		let code = 500;
-		let toSend = RouterResponse.emptyResponse();		
-		try {
-			//execution
-			const bodypost = req.body as {userId: string, flowId: string, stageId: string, postId: string, orgaId:string, voteValue: number};
-			//execution
-			const post = await sendVote.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.stageId, bodypost.postId,bodypost.voteValue);
-			//evaluate
-			post.fold(error => {
-			//something wrong
-				code = 500;
-				toSend = new RouterResponse('1.0', error as object, 'post', {id: req.params.postId}, 'vote was not do it');	
-			}, value => {
-				code = 200;
-				toSend = new RouterResponse('1.0', value, 'post', {id: req.params.postId}, 'vote do it');
-			});
-		} catch (err) {
-			//something wrong
-			code = 500;
-			toSend = new RouterResponse('1.0', err as object, 'post', {id: req.params.postId}, 'vote was not do it');
 		}
 		//respond cordially
 		res.status(code).send(toSend);

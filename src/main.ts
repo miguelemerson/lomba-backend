@@ -85,7 +85,7 @@ import { EnablePost } from './domain/usecases/posts/enable_post';
 import { GetAdminViewPosts } from './domain/usecases/posts/get_adminview_post';
 import { GetPost } from './domain/usecases/posts/get_post';
 import { GetPosts } from './domain/usecases/posts/get_posts';
-import { SendVote } from './domain/usecases/posts/send_vote';
+import { SendVote } from './domain/usecases/votes/send_vote';
 import { UpdatePost } from './domain/usecases/posts/update_post';
 import { GetOrgaSettings } from './domain/usecases/settings/get_orga_settings';
 import { GetSuperSettings } from './domain/usecases/settings/get_super_settings';
@@ -119,6 +119,10 @@ import { AddPostComment } from './domain/usecases/comments/add_post_comment';
 import { DeletePostComment } from './domain/usecases/comments/delete_post_comment';
 import { GetPostComments } from './domain/usecases/comments/get_post_comments';
 import CommentsRouter from './presentation/comment_router';
+import { VoteModel } from './data/models/workflow/vote_model';
+import { VoteDataSourceImpl } from './data/datasources/vote_data_source';
+import { VoteRepositoryImpl } from './data/repositories/vote_repository_impl';
+import VotesRouter from './presentation/vote_router';
 
 dotenv.config();
 
@@ -154,6 +158,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const cloudFileMongo = new MongoWrapper<SettingModel>('cloudfiles', db);
 	const bookmarkMongo = new MongoWrapper<BookmarkModel>('bookmarks', db);
 	const commentMongo = new MongoWrapper<CommentModel>('comments', db);
+	const voteMongo = new MongoWrapper<VoteModel>('votes', db);
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
 	const userDataSource = new UserDataSourceImpl(userMongo);
@@ -167,6 +172,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const cloudFileDataSource = new CloudFileDataSourceImpl(cloudFileMongo);
 	const bookmarkDataSource = new BookmarkDataSourceImpl(bookmarkMongo);
 	const commentDataSource = new CommentDataSourceImpl(commentMongo);
+	const voteDataSource = new VoteDataSourceImpl(voteMongo);
 
 	const account = configEnv().AZSTORAGEACCOUNT_NAME;
 	const accountKey = configEnv().AZSTORAGEACCOUNT_KEY;
@@ -190,17 +196,18 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const googleAuth = new GoogleAuth(googleApp);
 
 	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource, googleAuth);
-	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource);
+	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource, voteDataSource);
 	const flowRepo = new FlowRepositoryImpl(flowDataSource);
 	const stageRepo = new StageRepositoryImpl(stageDataSource);
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
 	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
 	const bookmarkRepo = new BookmarkRepositoryImpl(bookmarkDataSource, postDataSource);
 	const commentRepo = new CommentRepositoryImpl(commentDataSource, postDataSource);
+	const voteRepo = new VoteRepositoryImpl(voteDataSource, postDataSource, flowDataSource, stageDataSource);
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);
-	await checkData02(stageDataSource, flowDataSource, postDataSource, postMongo);
+	await checkData02(stageDataSource, flowDataSource, postDataSource, voteDataSource, postMongo);
 	await checkData03(settingDataSource);
 
 	//routers
@@ -221,7 +228,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
 
-	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo), new GetPost(postRepo), new AddMultiPost(postRepo), new GetPostWithUser(postRepo));
+	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo), new GetPost(postRepo), new AddMultiPost(postRepo), new GetPostWithUser(postRepo));
 
 	const flowMiddleWare = FlowsRouter(new GetFlow(flowRepo), new GetFlows(flowRepo));
 
@@ -232,8 +239,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo));
 
 	const bookmarkMiddleWare = BookmarksRouter(new GiveMarkPost(bookmarkRepo));
-
 	const commentMiddleWare = CommentsRouter(new AddPostComment(commentRepo), new DeletePostComment(commentRepo), new GetPostComments(commentRepo));
+	const voteMiddleWare = VotesRouter(new SendVote(voteRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
@@ -248,6 +255,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/storage', storageMiddleWare);
 	app.use('/api/v1/bookmark', bookmarkMiddleWare);
 	app.use('/api/v1/comment', commentMiddleWare);
+	app.use('/api/v1/vote', voteMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));
