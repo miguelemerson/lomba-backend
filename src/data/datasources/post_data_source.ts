@@ -426,7 +426,22 @@ export class PostDataSourceImpl implements PostDataSource {
 				},
 				{ $project: { _id: 1, postId: 1, userId:1, markType:1, enabled:1,builtIn:1, created:1, updated:1 } }],
 			as: 'bookmarks'
-		}},{$match:query}, {$sort:{'created':-1}}, {$skip:skip}, {$limit:limit}], options).toArray();
+		}},
+		{
+			$lookup: {
+				from: 'users',
+				let: { post_userId: '$userId' },
+				pipeline: [
+					{ $match: { $expr: {
+						$and: [{ $eq: [ '$$post_userId', '$id' ] }]
+					}
+					}
+					},
+					{ $project: { _id: 1, id:1, name:1, username:1, email: 1, pictureUrl:1, pictureThumbnailUrl:1, enabled:1,builtIn:1, created:1 } }],
+				as: 'users'
+			}
+		}
+		,{$match:query}, {$sort:{'created':-1}}, {$skip:skip}, {$limit:limit}], options).toArray();
 
 		const startIndex = ((pageIndex == undefined ? 1 : pageIndex - 1) * limit) + 1;
 		const totalPages = parseInt(Math.ceil((totalItems == undefined ? 1 : totalItems) / limit).toString());
