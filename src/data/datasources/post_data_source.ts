@@ -308,9 +308,6 @@ export class PostDataSourceImpl implements PostDataSource {
 			query['$text'] = {$search: searchText};
 		}
 		sort = [['created', -1]];
-		
-		console.log(userId);
-		console.log('%j', query);
 
 		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin()],undefined, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
 
@@ -473,7 +470,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		pipeline.push({$skip:skip});
 		pipeline.push({$limit:limit});
 
-		console.log(pipeline);
+
 
 		const result = await this.collection.db.collection(this.collection.collectionName).aggregate<PostModel>(pipeline).toArray();
 
