@@ -26,9 +26,9 @@ export class VoteRepositoryImpl implements VoteRepository {
 	async sendVote(orgaId: string, userId: string, flowId: string, stageId: string, postId: string, voteValue: number): Promise<Either<Failure, ModelContainer<VoteModel>>> {
 		try
 		{
-
 			//busca si el usuario ya ha votado antes por el post en el stage
-			const resultVote = await this.dataSource.getVote(userId, flowId, stageId, postId);
+			const resultVote = await this.dataSource.getVote(postId, userId, flowId, stageId);
+
 			//si no lo encuentra, entonces es primer voto del usuario al post
 			if (resultVote.currentItemCount < 1) {
 
