@@ -9,7 +9,7 @@ export default function VotesRouter(
 	const router = express.Router();
 
 
-	router.post('/vote/',[isAuth], async (req: Request, res: Response) => {
+	router.post('/',[isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();		
@@ -17,9 +17,9 @@ export default function VotesRouter(
 			//execution
 			const bodypost = req.body as {userId: string, flowId: string, stageId: string, postId: string, orgaId:string, voteValue: number};
 			//execution
-			const post = await sendVote.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.stageId, bodypost.postId,bodypost.voteValue);
+			const vote = await sendVote.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.stageId, bodypost.postId,bodypost.voteValue);
 			//evaluate
-			post.fold(error => {
+			vote.fold(error => {
 			//something wrong
 				code = 500;
 				toSend = new RouterResponse('1.0', error as object, 'post', {id: req.params.postId}, 'vote was not do it');	

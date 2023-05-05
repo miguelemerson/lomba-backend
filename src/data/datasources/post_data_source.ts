@@ -470,8 +470,6 @@ export class PostDataSourceImpl implements PostDataSource {
 		pipeline.push({$skip:skip});
 		pipeline.push({$limit:limit});
 
-
-
 		const result = await this.collection.db.collection(this.collection.collectionName).aggregate<PostModel>(pipeline).toArray();
 
 		const startIndex = ((pageIndex == undefined ? 1 : pageIndex - 1) * limit) + 1;
@@ -490,12 +488,22 @@ export class PostDataSourceImpl implements PostDataSource {
 	}
 	async getOneComplete(query: object, lookups:object[], projection: object | undefined): Promise<ModelContainer<PostModel>>{
 	
-		const result = await this.collection.db.collection(this.collection.collectionName).aggregate<PostModel>([
-			lookups
-			,{$match:query}, {$project:projection}]).toArray();
+		const pipeline:object[] = [];
 
+		for (let i = 0; i < lookups.length; i++) {
+			pipeline.push(lookups[i]);
+		}
+
+		pipeline.push({$match:query});
+		pipeline.push({$project:projection});
+
+		const result = await this.collection.db.collection(this.collection.collectionName).aggregate<PostModel>(pipeline).toArray();
+
+		if(result.length == 0)
+		{
+			return new ModelContainer<PostModel>([]);
+		}
 		const contains_one = ModelContainer.fromOneItem(result[0]);
-
 		return contains_one;
 	}
 	async add(post: PostModel) : Promise<ModelContainer<PostModel>>{
