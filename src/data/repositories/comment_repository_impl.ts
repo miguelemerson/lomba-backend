@@ -20,6 +20,7 @@ export class CommentRepositoryImpl implements CommentRepository {
 			const sort2:{ [x: string]: 1 | -1; } = {'created':1};
 
 			const result = await this.dataSource.getByPost(postId, sort2, pageIndex, itemsPerPage);
+
 			return Either.right(result);
 		}
 		catch(error)
