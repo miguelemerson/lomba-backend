@@ -13,7 +13,7 @@ export interface CommentDataSource {
     delete(commentId: string, userId:string): Promise<boolean>;
 	setId(obj: CommentModel): CommentModel;
 	getById(commentId:string): Promise<ModelContainer<CommentModel>>;
-	getByPost(postId: string, sort?: [string, 1 | -1][],
+	getByPost(postId: string, sort?: { [x: string]: 1 | -1; },
 		pageIndex?: number, itemsPerPage?: number): Promise<ModelContainer<CommentModel>>;
 }
 
@@ -23,7 +23,7 @@ export class CommentDataSourceImpl implements CommentDataSource {
 	constructor(dbMongo: MongoWrapper<CommentModel>){
 		this.collection = dbMongo;
 	}
-	async getByPost(postId: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<CommentModel>> {
+	async getByPost(postId: string, sort?: { [x: string]: 1 | -1; } | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<CommentModel>> {
 
 		const limit: number = (itemsPerPage == undefined ? 10 : itemsPerPage);
 		const skip: number = (pageIndex == undefined ? 1 : pageIndex - 1) * limit;
