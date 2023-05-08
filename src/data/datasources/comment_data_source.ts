@@ -29,7 +29,7 @@ export class CommentDataSourceImpl implements CommentDataSource {
 		const skip: number = (pageIndex == undefined ? 1 : pageIndex - 1) * limit;
 		
 		let totalItems:number | undefined=0;
-		totalItems = await this.collection.setTotalItems(pageIndex, totalItems, {_id:postId});
+		totalItems = await this.collection.setTotalItems(pageIndex, totalItems, {postId:postId});
 
 		const pipeline:object[] = [];
 
@@ -48,7 +48,7 @@ export class CommentDataSourceImpl implements CommentDataSource {
 			}
 		});
 
-		pipeline.push({$match:{_id:postId}});
+		pipeline.push({$match:{postId:postId}});
 		pipeline.push({$sort:sort});
 		pipeline.push({$skip:skip});
 		pipeline.push({$limit:limit});

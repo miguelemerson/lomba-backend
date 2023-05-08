@@ -90,7 +90,6 @@ export default function CommentsRouter(
 			{
 				params = JSON.parse(req.query.paramvars.toString()) as {[x: string]: string};
 			}
-
 			//execution
 			const orga = await getCommentsPost.execute(req.params.postId as string, params, sort, (req.query.pageindex)?parseInt(req.query.pageindex.toString()):undefined,
 				(req.query.pagesize)?parseInt(req.query.pagesize.toString()):undefined);
