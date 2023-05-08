@@ -1,3 +1,4 @@
+import { User } from '../../../domain/entities/user';
 import { Comment } from '../../../domain/entities/workflow/comment';
 
 export class CommentModel implements Comment {
@@ -7,6 +8,7 @@ export class CommentModel implements Comment {
 		this.userId = userId;
 		this.postId = postId;
 		this.text = text;
+		this.users = [];
 		this.enabled = enabled;
 		this.builtIn = builtIn;
 		this.created = new Date();
@@ -17,6 +19,7 @@ export class CommentModel implements Comment {
 	userId: string;
 	postId: string;
 	text: string;
+	users: (User[]);
 	builtIn: boolean;
 	enabled: boolean;
 	created: Date;
@@ -25,6 +28,6 @@ export class CommentModel implements Comment {
 	expires?: Date;
 
 	public toEntity(): Comment {
-		return {id: this.id, _id:this.id, userId:this.userId, postId:this.postId, text:this.text, enabled: this.enabled, builtIn: this.builtIn, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
+		return {id: this.id, _id:this.id, userId:this.userId, postId:this.postId, text:this.text, users:this.users, enabled: this.enabled, builtIn: this.builtIn, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
 	}
 }

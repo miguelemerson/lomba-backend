@@ -24,7 +24,43 @@ export class CommentDataSourceImpl implements CommentDataSource {
 		this.collection = dbMongo;
 	}
 	async getByPost(postId: string, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<CommentModel>> {
-		return await this.collection.getMany<CommentModel>({postId:postId}, sort, pageIndex, itemsPerPage);
+
+		const limit: number = (itemsPerPage == undefined ? 10 : itemsPerPage);
+		const skip: number = (pageIndex == undefined ? 1 : pageIndex - 1) * limit;
+		
+		let totalItems:number | undefined=0;
+		totalItems = await this.collection.setTotalItems(pageIndex, totalItems, {_id:postId});
+
+		const pipeline:object[] = [];
+
+		pipeline.push({
+			$lookup: {
+				from: 'users',
+				let: { comment_userId: '$userId' },
+				pipeline: [
+					{ $match: { $expr: {
+						$and: [{ $eq: [ '$$comment_userId', '$id' ] }]
+					}
+					}
+					},
+					{ $project: { _id: 1, id:1, name:1, username:1, email: 1, pictureUrl:1, pictureThumbnailUrl:1, enabled:1,builtIn:1, created:1 } }],
+				as: 'users'
+			}
+		});
+
+		pipeline.push({$match:{_id:postId}});
+		pipeline.push({$sort:sort});
+		pipeline.push({$skip:skip});
+		pipeline.push({$limit:limit});
+
+		const result = await this.collection.db.collection(this.collection.collectionName).aggregate<CommentModel>(pipeline).toArray();
+
+		const startIndex = ((pageIndex == undefined ? 1 : pageIndex - 1) * limit) + 1;
+		const totalPages = parseInt(Math.ceil((totalItems == undefined ? 1 : totalItems) / limit).toString());
+
+		const contains_many = this.collection.createModelContainer<CommentModel>(result, itemsPerPage, pageIndex, startIndex, totalItems, totalPages);
+
+		return contains_many;
 	}
 	async getMany(query: object, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<CommentModel>> {
 		return await this.collection.getMany<CommentModel>(query, sort, pageIndex, itemsPerPage);
