@@ -17,6 +17,11 @@ export class CommentRepositoryImpl implements CommentRepository {
 	async getComments(postId: string, params: { [x: string]: unknown; }, sort?: [string, 1 | -1][] | undefined, pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<Either<Failure, ModelContainer<CommentModel>>> {
 		try
 		{
+			if(!sort)
+			{
+				sort = [['created', 1]];
+			}
+
 			const result = await this.dataSource.getByPost(postId, sort, pageIndex, itemsPerPage);
 			return Either.right(result);
 		}

@@ -445,21 +445,33 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
-	async updatePost(postId: string, userId: string, title: string, textContent: TextContent): Promise<Either<Failure, ModelContainer<Post>>> {
+	async updatePost(postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			const resultPost = await this.dataSource.getById(postId);
 
 			if(resultPost.currentItemCount > 0) {
-				const listPostItem = resultPost.items[0].postitems;
+				const newPostItemList:PostItem[] = [];
+				let order = 1;
 
-				listPostItem[0].content = textContent;
+				if(textContent != undefined) {
+					newPostItemList.push({order:order, content: textContent, type:'text', format:'text', builtIn:false, created: new Date()} as PostItem);
+					order++;
+				}
+				if(imageContent != undefined) {
+					newPostItemList.push({order:order, content: imageContent, type:'image', format:imageContent.filetype, builtIn:false, created: new Date()} as PostItem);
+					order++;
+				}
+				if(videoContent != undefined) {
+					newPostItemList.push({order:order, content: videoContent, type:'video', format:videoContent.filetype, builtIn:false, created: new Date()} as PostItem);
+					order++;
+				}
 
-				const resultUpdate = await this.dataSource.update(resultPost.items[0].id, {title: title, postitems: listPostItem});
+				const resultUpdate = await this.dataSource.update(resultPost.items[0].id, {title: title, postitems: newPostItemList});
 
 				if(resultUpdate.currentItemCount > 0) {
 
-					await this.dataSource.addTrack('update', 'Modifica publicación', postId, userId, '','','',{title: title, postitems: listPostItem});
+					await this.dataSource.addTrack('update', 'Modifica publicación', postId, userId, '','','',{title: title, postitems: newPostItemList});
 
 					return Either.right(resultUpdate);
 				} else {

@@ -180,27 +180,29 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.put('/',[isAuth, hasRole(['user','admin'])], async (req: Request, res: Response) => {
+	router.put('/multi/:postId',[isAuth, hasRole(['user','admin'])], async (req: Request<{postId:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			const bodypost = req.body as {postId: string, userId: string, title: string, textContent: TextContent};
+			const bodypost = req.body as {postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined};
+
 			//execution
-			const post = await updatePost.execute(bodypost.postId, bodypost.userId, bodypost.title, bodypost.textContent);
+			const post = await updatePost.execute(bodypost.postId, bodypost.userId, bodypost.title, bodypost.textContent, bodypost.imageContent, bodypost.videoContent);
+
 			//evaluate
 			post.fold(error => {
 				//something wrong
 				code = 500;
-				toSend = new RouterResponse('1.0', error as object, 'post', undefined, 'post was not added');	
+				toSend = new RouterResponse('1.0', error as object, 'post', undefined, 'post was not edited');	
 			}, value => {
 				code = 200;
-				toSend = new RouterResponse('1.0', value, 'post', undefined, 'new post added');
+				toSend = new RouterResponse('1.0', value, 'post', undefined, 'new post edited');
 			});
 		} catch (err) {
 			//something wrong
 			code = 500;
-			toSend = new RouterResponse('1.0', err as object, 'post', undefined, 'post was not added');
+			toSend = new RouterResponse('1.0', err as object, 'post', undefined, 'post was not edited');
 		}
 		//respond cordially
 		res.status(code).send(toSend);
