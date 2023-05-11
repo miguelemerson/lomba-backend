@@ -315,7 +315,7 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
-	async addMultiPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
+	async addMultiPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, categoryNames:string[], draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			if(textContent == undefined && imageContent == undefined && videoContent == undefined)
@@ -424,7 +424,7 @@ export class PostRepositoryImpl implements PostRepository {
 						listVotes[0].postId = resultAddPost.items[0].id;
 						await this.voteDataSource.add(listVotes[0]);
 					}
-					const changes:object = {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes, totals: listTotals, tracks: listTracks};
+					const changes:object = {postitems:postItems, stageId:postStageId, stages:listStages, votes:listVotes, totals: listTotals, tracks: listTracks, categoryNames: categoryNames};
 
 					const resultUpdatePost = await this.dataSource.update(resultAddPost.items[0].id, changes);
 
@@ -445,7 +445,7 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
-	async updatePost(postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined): Promise<Either<Failure, ModelContainer<Post>>> {
+	async updatePost(postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, categoryNames:string[]): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			const resultPost = await this.dataSource.getById(postId);
@@ -467,7 +467,7 @@ export class PostRepositoryImpl implements PostRepository {
 					order++;
 				}
 
-				const resultUpdate = await this.dataSource.update(resultPost.items[0].id, {title: title, postitems: newPostItemList});
+				const resultUpdate = await this.dataSource.update(resultPost.items[0].id, {title: title, postitems: newPostItemList, categoryNames: categoryNames});
 
 				if(resultUpdate.currentItemCount > 0) {
 

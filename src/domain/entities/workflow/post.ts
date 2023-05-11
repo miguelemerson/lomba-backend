@@ -3,6 +3,7 @@ import { BuiltIn } from '../builtin';
 import { Entity } from '../entity';
 import { User } from '../user';
 import { Bookmark } from './bookmark';
+import { Category } from './category';
 import { PostItem } from './postitem';
 import { Stage } from './stage';
 import { Total } from './total';
@@ -20,6 +21,8 @@ export interface Post extends Entity, BuiltIn, Audit {
     totals:(Total[]);
     tracks:(Track[]);
     votes:(Vote[]);
+    categoryNames:(string[]);
+    categories:(Category[]);
     bookmarks:(Bookmark[]);
     users:(User[]);
     totalsaves: number;
