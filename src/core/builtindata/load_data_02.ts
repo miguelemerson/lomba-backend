@@ -2,6 +2,7 @@ import { FlowDataSource } from '../../data/datasources/flow_data_source';
 import { PostDataSource } from '../../data/datasources/post_data_source';
 import { StageDataSource } from '../../data/datasources/stage_data_source';
 import { VoteDataSource } from '../../data/datasources/vote_data_source';
+import { CategoryModel } from '../../data/models/workflow/category_model';
 import { FlowModel } from '../../data/models/workflow/flow_model';
 import { PostModel } from '../../data/models/workflow/post_model';
 import { StageModel } from '../../data/models/workflow/stage_model';
@@ -29,7 +30,7 @@ const post04Id = '00004AAA-0119-0111-0111-000000000000';
 const vote01Id = '00004CCC-0222-0222-0222-000000000222';
 
 
-export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, voteSource: VoteDataSource, postMongo: NoSQLDatabaseWrapper<PostModel>) => {
+export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, voteSource: VoteDataSource, postMongo: NoSQLDatabaseWrapper<PostModel>, categoryMongo: NoSQLDatabaseWrapper<CategoryModel>) => {
 
 	data_insert02.flows[0].stages = data_insert02.stages;
 
@@ -116,6 +117,19 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 					'postitems.content.text': 'text'
 				},{
 					name: 'title_text_postitems.content.text_text'
+				}
+			);
+		}
+		if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('name_longname_lowercase_description_text'))
+		{
+			categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+				{
+					'name': 'text',
+					'longname': 'text',
+					'lowercase': 'text',
+					'description': 'text'
+				},{
+					name: 'name_longname_lowercase_description_text'
 				}
 			);
 		}
