@@ -12,6 +12,6 @@ export interface ExternalUri extends Entity, Audit {
     shortUrl:string;
     description:string;
     type:string;
-    lastchecked:Date;
+    lastchecked:Date | undefined;
     httpstatus:number;
 }

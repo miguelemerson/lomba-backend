@@ -2,19 +2,19 @@ import { ExternalUri } from '../../../domain/entities/storage/externaluri';
 import { Host } from '../../../domain/entities/storage/host';
 
 export class ExternalUriModel implements ExternalUri {
-	constructor(id:string, userId:string, uri:string, host:string, hosts:(Host[]), sourceName:string, title:string, shortUrl:string, description:string, type:string, lastchecked:Date, httpstatus:number, enabled: boolean) {
+	constructor(id:string, userId:string, uri:string, host:string, sourceName:string, title:string, shortUrl:string, description:string, type:string, httpstatus:number, enabled: boolean) {
 		this.id = id;
 		this._id = id;
 		this.userId = userId;
 		this.uri = uri;
-		this.hosts = hosts;
+		this.hosts = [];
 		this.host = host;
 		this.sourceName = sourceName;
 		this.title = title;
 		this.shortUrl = shortUrl;
 		this.description = description;
 		this.type = type;
-		this.lastchecked = lastchecked;
+		this.lastchecked = undefined;
 		this.httpstatus = httpstatus;
 		this.enabled = enabled;
 		this.created = new Date();
@@ -31,7 +31,7 @@ export class ExternalUriModel implements ExternalUri {
 	shortUrl: string;
 	description: string;
 	type: string;
-	lastchecked: Date;
+	lastchecked: Date | undefined;
 	httpstatus: number;
 	enabled: boolean;
 	created: Date;
