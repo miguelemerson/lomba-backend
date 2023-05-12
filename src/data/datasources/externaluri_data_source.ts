@@ -8,7 +8,7 @@ export interface ExternalUriDataSource {
     add(externalUri: ExternalUriModel) : Promise<ModelContainer<ExternalUriModel>>;
 	getById(externalUriId:string): Promise<ModelContainer<ExternalUriModel>>;
 	getByUri(uri:string): Promise<ModelContainer<ExternalUriModel>>;
-
+	update(id: string, externalUri: object): Promise<ModelContainer<ExternalUriModel>>;
 }
 
 export class ExternalUriDataSourceImpl implements ExternalUriDataSource {
@@ -16,6 +16,9 @@ export class ExternalUriDataSourceImpl implements ExternalUriDataSource {
 
 	constructor(dbMongo: MongoWrapper<ExternalUriModel>){
 		this.collection = dbMongo;
+	}
+	async update(id: string, externalUri: object): Promise<ModelContainer<ExternalUriModel>> {
+		return await this.collection.update(id, externalUri).then(() => this.getOneComplete({'_id':id}));
 	}
 	setId(obj: ExternalUriModel): ExternalUriModel {
 		if(obj.id == '')

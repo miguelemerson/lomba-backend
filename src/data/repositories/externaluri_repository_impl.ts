@@ -7,6 +7,7 @@ import { ExternalUriDataSource } from '../datasources/externaluri_data_source';
 import { ExternalUriModel } from '../models/storage/externaluri_model';
 import { HostDataSource } from '../datasources/host_data_source';
 import { HostModel } from '../models/storage/host_model';
+import fetch from 'node-fetch';
 
 export class ExternalUriRepositoryImpl implements ExternalUriRepository {
 	dataSource: ExternalUriDataSource;
@@ -46,6 +47,7 @@ export class ExternalUriRepositoryImpl implements ExternalUriRepository {
 					await this.hostDataSource.add(hostModel);
 				}
 
+				await this.checkUri(resultAdd.items[0]);
 				return Either.right(resultAdd);
 			}
 
@@ -90,6 +92,34 @@ export class ExternalUriRepositoryImpl implements ExternalUriRepository {
 		}
 		catch(error)
 		{
+			if(error instanceof MongoError)
+			{
+				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
+			} else if(error instanceof Error)
+				return Either.left(new NetworkFailure(error.name, error.message, undefined, error));
+			else return Either.left(new GenericFailure('undetermined', error));
+			
+		}
+	}
+
+	async checkUri(externalUri:ExternalUriModel): Promise<Either<Failure, ModelContainer<ExternalUriModel>>> {
+		try{
+			const response = await fetch(externalUri.uri, {method: 'HEAD'});
+
+			const { fileTypeFromStream } = await (eval('import("file-type")') as Promise<typeof import('file-type')>);
+		
+			const { got } = await (eval('import("got")') as Promise<typeof import('got')>);
+			
+			const stream = got.stream(externalUri.uri);
+			const fileType = await fileTypeFromStream(stream);
+
+			const result = await this.dataSource.update(externalUri.id, {type: fileType?.mime?? '', httpstatus: response.status, lastchecked: new Date()});
+
+			return Either.right(result);
+		}
+		catch(error)
+		{
+			console.log(error);
 			if(error instanceof MongoError)
 			{
 				return Either.left(new DatabaseFailure(error.name, error.message, error.code, error));
