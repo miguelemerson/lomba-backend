@@ -13,4 +13,5 @@ export interface CloudFile extends Entity, BuiltIn, Audit {
     orgaId:string;
     userId:string;
     associated:boolean;
+    externalUriId:string | undefined;
 }

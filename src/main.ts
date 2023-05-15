@@ -140,6 +140,7 @@ import { GetExternalUriById } from './domain/usecases/storage/get_externaluri_by
 import { GetExternalUriByUri } from './domain/usecases/storage/get_externaluri_by_uri';
 import { HostDataSourceImpl } from './data/datasources/host_data_source';
 import { HostModel } from './data/models/storage/host_model';
+import { UploadCloudFileByExternalUri } from './domain/usecases/storage/upload_cloudfile_by_uri';
 
 dotenv.config();
 
@@ -223,7 +224,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const flowRepo = new FlowRepositoryImpl(flowDataSource);
 	const stageRepo = new StageRepositoryImpl(stageDataSource);
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
-	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
+	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource, externalUriDataSource);
 	const bookmarkRepo = new BookmarkRepositoryImpl(bookmarkDataSource, postDataSource);
 	const commentRepo = new CommentRepositoryImpl(commentDataSource, postDataSource);
 	const voteRepo = new VoteRepositoryImpl(voteDataSource, postDataSource, flowDataSource, stageDataSource);
@@ -261,7 +262,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo), new UpdateSettings(settingRepo));
 
-	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo));
+	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo), new UploadCloudFileByExternalUri(storageRepo));
 
 	const bookmarkMiddleWare = BookmarksRouter(new GiveMarkPost(bookmarkRepo));
 	const commentMiddleWare = CommentsRouter(new AddPostComment(commentRepo), new DeletePostComment(commentRepo), new GetPostComments(commentRepo));
