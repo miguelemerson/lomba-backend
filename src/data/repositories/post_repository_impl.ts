@@ -20,6 +20,7 @@ import { PostModel } from '../models/workflow/post_model';
 import { TotalModel } from '../models/workflow/total_model';
 import { VoteDataSource } from '../datasources/vote_data_source';
 import { VoteModel } from '../models/workflow/vote_model';
+import { SourceContent } from '../../domain/entities/workflow/sourcecontent';
 
 export class PostRepositoryImpl implements PostRepository {
 	dataSource: PostDataSource;
@@ -315,7 +316,7 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
-	async addMultiPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, categoryNames:string[], draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
+	async addMultiPost(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, sourcesContent: SourceContent[] | undefined, categoryNames:string[], draft: boolean): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			if(textContent == undefined && imageContent == undefined && videoContent == undefined)
@@ -348,6 +349,14 @@ export class PostRepositoryImpl implements PostRepository {
 					const postItem3 = {order:order, content: videoContent, type:'video', format:videoContent.filetype, builtIn:false, created: new Date()} as PostItem;
 					postItems.push(postItem3);
 					order++;
+				}
+				if(sourcesContent != undefined)
+				{
+					sourcesContent.forEach((source: SourceContent) => {
+						const postItem4 = {order:order, content: source, type:'source', format:'url', builtIn:false, created: new Date()} as PostItem;
+						postItems.push(postItem4);
+						order++;
+					});
 				}
 				
 				let postStageId = firstStage.id;
@@ -445,7 +454,7 @@ export class PostRepositoryImpl implements PostRepository {
 		}
 	}
 
-	async updatePost(postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, categoryNames:string[]): Promise<Either<Failure, ModelContainer<Post>>> {
+	async updatePost(postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, sourcesContent: SourceContent[] | undefined, categoryNames:string[]): Promise<Either<Failure, ModelContainer<Post>>> {
 		try
 		{
 			const resultPost = await this.dataSource.getById(postId);
@@ -465,6 +474,14 @@ export class PostRepositoryImpl implements PostRepository {
 				if(videoContent != undefined) {
 					newPostItemList.push({order:order, content: videoContent, type:'video', format:videoContent.filetype, builtIn:false, created: new Date()} as PostItem);
 					order++;
+				}
+				if(sourcesContent != undefined)
+				{
+					sourcesContent.forEach((source: SourceContent) => {
+						const postItem4 = {order:order, content: source, type:'source', format:'url', builtIn:false, created: new Date()} as PostItem;
+						newPostItemList.push(postItem4);
+						order++;
+					});
 				}
 
 				const resultUpdate = await this.dataSource.update(resultPost.items[0].id, {title: title, postitems: newPostItemList, categoryNames: categoryNames});

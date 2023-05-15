@@ -6,9 +6,10 @@ import { PostRepository } from '../../repositories/post_repository';
 import { TextContent } from '../../entities/workflow/textcontent';
 import { ImageContent } from '../../entities/workflow/imagecontent';
 import { VideoContent } from '../../entities/workflow/videocontent';
+import { SourceContent } from '../../entities/workflow/sourcecontent';
 
 export interface UpdatePostUseCase {
-    execute(postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, categoryNames:string[]): Promise<Either<Failure,ModelContainer<Post>>>;
+    execute(postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, sourcesContent: SourceContent[] | undefined, categoryNames:string[]): Promise<Either<Failure,ModelContainer<Post>>>;
 }
 
 export class UpdatePost implements UpdatePostUseCase {
@@ -17,7 +18,7 @@ export class UpdatePost implements UpdatePostUseCase {
 		this.repository = repository;
 	}
 
-	async execute(postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, categoryNames:string[]): Promise<Either<Failure,ModelContainer<Post>>> {
-		return await this.repository.updatePost(postId, userId, title, textContent, imageContent, videoContent, categoryNames);
+	async execute(postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, sourcesContent: SourceContent[] | undefined, categoryNames:string[]): Promise<Either<Failure,ModelContainer<Post>>> {
+		return await this.repository.updatePost(postId, userId, title, textContent, imageContent, videoContent, sourcesContent, categoryNames);
 	}
 }

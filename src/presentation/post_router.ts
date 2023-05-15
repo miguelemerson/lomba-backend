@@ -15,6 +15,7 @@ import { GetPostUseCase } from '../domain/usecases/posts/get_post';
 import { GetPostsUseCase } from '../domain/usecases/posts/get_posts';
 import { GetPostWithUserUseCase } from '../domain/usecases/posts/get_withuser_post';
 import { UpdatePostUseCase } from '../domain/usecases/posts/update_post';
+import { SourceContent } from '../domain/entities/workflow/sourcecontent';
 
 export default function PostsRouter(
 	getPosts: GetPostsUseCase,
@@ -159,9 +160,9 @@ export default function PostsRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			const bodypost = req.body as {orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, categoryNames:string[], isdraft: boolean};
+			const bodypost = req.body as {orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, sourcesContent: SourceContent[] | undefined, categoryNames:string[], isdraft: boolean};
 			//execution
-			const post = await addMultiPost.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.title, bodypost.textContent, bodypost.imageContent, bodypost.videoContent, bodypost.categoryNames, bodypost.isdraft);
+			const post = await addMultiPost.execute(bodypost.orgaId, bodypost.userId, bodypost.flowId, bodypost.title, bodypost.textContent, bodypost.imageContent, bodypost.videoContent, bodypost.sourcesContent, bodypost.categoryNames, bodypost.isdraft);
 			//evaluate
 			post.fold(error => {
 				//something wrong
@@ -185,10 +186,10 @@ export default function PostsRouter(
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();
 		try {
-			const bodypost = req.body as {postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, categoryNames:string[]};
+			const bodypost = req.body as {postId: string, userId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, sourcesContent: SourceContent[] | undefined, categoryNames:string[]};
 
 			//execution
-			const post = await updatePost.execute(bodypost.postId, bodypost.userId, bodypost.title, bodypost.textContent, bodypost.imageContent, bodypost.videoContent, bodypost.categoryNames);
+			const post = await updatePost.execute(bodypost.postId, bodypost.userId, bodypost.title, bodypost.textContent, bodypost.imageContent, bodypost.videoContent, bodypost.sourcesContent, bodypost.categoryNames);
 
 			//evaluate
 			post.fold(error => {

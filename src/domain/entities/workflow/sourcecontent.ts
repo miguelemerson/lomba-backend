@@ -1,7 +1,7 @@
 export interface SourceContent {
     externalUriId:string;
     url:string;
-    sourceName:string;
+    label:string;
     title:string;
     shortUrl:string;
     description:string;
