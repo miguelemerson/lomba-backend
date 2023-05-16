@@ -123,6 +123,24 @@ import { VoteModel } from './data/models/workflow/vote_model';
 import { VoteDataSourceImpl } from './data/datasources/vote_data_source';
 import { VoteRepositoryImpl } from './data/repositories/vote_repository_impl';
 import VotesRouter from './presentation/vote_router';
+import { CategoryModel } from './data/models/workflow/category_model';
+import { CategoryDataSourceImpl } from './data/datasources/category_data_source';
+import { CategoryRepositoryImpl } from './data/repositories/category_repository_impl';
+import CategoriesRouter from './presentation/category_router';
+import { AddCategory } from './domain/usecases/category/add_category';
+import { GetCategoryById } from './domain/usecases/category/get_category_by_id';
+import { GetCategoryByName } from './domain/usecases/category/get_category_by_name';
+import { SearchCategories } from './domain/usecases/category/search_categories';
+import { ExternalUriDataSourceImpl } from './data/datasources/externaluri_data_source';
+import { ExternalUriModel } from './data/models/storage/externaluri_model';
+import { ExternalUriRepositoryImpl } from './data/repositories/externaluri_repository_impl';
+import ExternalUrisRouter from './presentation/externaluri_router';
+import { AddExternalUri } from './domain/usecases/storage/add_externaluri';
+import { GetExternalUriById } from './domain/usecases/storage/get_externaluri_by_id';
+import { GetExternalUriByUri } from './domain/usecases/storage/get_externaluri_by_uri';
+import { HostDataSourceImpl } from './data/datasources/host_data_source';
+import { HostModel } from './data/models/storage/host_model';
+import { UploadCloudFileByExternalUri } from './domain/usecases/storage/upload_cloudfile_by_uri';
 
 dotenv.config();
 
@@ -159,6 +177,9 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const bookmarkMongo = new MongoWrapper<BookmarkModel>('bookmarks', db);
 	const commentMongo = new MongoWrapper<CommentModel>('comments', db);
 	const voteMongo = new MongoWrapper<VoteModel>('votes', db);
+	const categoryMongo = new MongoWrapper<CategoryModel>('categories', db);
+	const externalUriMongo = new MongoWrapper<ExternalUriModel>('externaluris', db);
+	const hostMongo = new MongoWrapper<HostModel>('hosts', db);
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
 	const userDataSource = new UserDataSourceImpl(userMongo);
@@ -173,6 +194,9 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const bookmarkDataSource = new BookmarkDataSourceImpl(bookmarkMongo);
 	const commentDataSource = new CommentDataSourceImpl(commentMongo);
 	const voteDataSource = new VoteDataSourceImpl(voteMongo);
+	const categoryDataSource = new CategoryDataSourceImpl(categoryMongo);
+	const externalUriDataSource = new ExternalUriDataSourceImpl(externalUriMongo);
+	const hostDataSource = new HostDataSourceImpl(hostMongo);
 
 	const account = configEnv().AZSTORAGEACCOUNT_NAME;
 	const accountKey = configEnv().AZSTORAGEACCOUNT_KEY;
@@ -200,14 +224,16 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const flowRepo = new FlowRepositoryImpl(flowDataSource);
 	const stageRepo = new StageRepositoryImpl(stageDataSource);
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
-	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
+	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource, externalUriDataSource);
 	const bookmarkRepo = new BookmarkRepositoryImpl(bookmarkDataSource, postDataSource);
 	const commentRepo = new CommentRepositoryImpl(commentDataSource, postDataSource);
 	const voteRepo = new VoteRepositoryImpl(voteDataSource, postDataSource, flowDataSource, stageDataSource);
+	const categoryRepo = new CategoryRepositoryImpl(categoryDataSource);
+	const externalUriRepo = new ExternalUriRepositoryImpl(externalUriDataSource, hostDataSource);
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);
-	await checkData02(stageDataSource, flowDataSource, postDataSource, voteDataSource, postMongo);
+	await checkData02(stageDataSource, flowDataSource, postDataSource, voteDataSource, postMongo, categoryMongo);
 	await checkData03(settingDataSource);
 
 	//routers
@@ -236,11 +262,15 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo), new UpdateSettings(settingRepo));
 
-	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo));
+	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo), new UploadCloudFileByExternalUri(storageRepo));
 
 	const bookmarkMiddleWare = BookmarksRouter(new GiveMarkPost(bookmarkRepo));
 	const commentMiddleWare = CommentsRouter(new AddPostComment(commentRepo), new DeletePostComment(commentRepo), new GetPostComments(commentRepo));
 	const voteMiddleWare = VotesRouter(new SendVote(voteRepo));
+
+	const categoryMiddleWare = CategoriesRouter(new AddCategory(categoryRepo), new GetCategoryById(categoryRepo), new GetCategoryByName(categoryRepo), new SearchCategories(categoryRepo));
+
+	const externalUriMiddleWare = ExternalUrisRouter(new AddExternalUri(externalUriRepo), new GetExternalUriById(externalUriRepo), new GetExternalUriByUri(externalUriRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
@@ -256,6 +286,8 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/bookmark', bookmarkMiddleWare);
 	app.use('/api/v1/comment', commentMiddleWare);
 	app.use('/api/v1/vote', voteMiddleWare);
+	app.use('/api/v1/category', categoryMiddleWare);
+	app.use('/api/v1/externaluri', externalUriMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));

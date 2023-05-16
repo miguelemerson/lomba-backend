@@ -2,7 +2,7 @@ import { CloudFile } from '../../../domain/entities/storage/cloudfile';
 
 export class CloudFileModel implements CloudFile {
 	constructor(id: string, name: string, path: string, host:string,
-		url: string, size: number, account: string, filetype: string, orgaId:string, userId:string, associated:boolean, enabled: boolean, builtIn: boolean){
+		url: string, size: number, account: string, filetype: string, orgaId:string, userId:string, associated:boolean, externalUriId:string | undefined, enabled: boolean, builtIn: boolean){
 		this.id = id;
 		this._id = id;
 		this.name = name;
@@ -15,6 +15,7 @@ export class CloudFileModel implements CloudFile {
 		this.orgaId = orgaId;
 		this.userId = userId;
 		this.associated = associated;
+		this.externalUriId = externalUriId;
 		this.enabled = enabled;
 		this.builtIn = builtIn;
 		this.created = new Date();
@@ -33,6 +34,7 @@ export class CloudFileModel implements CloudFile {
 	orgaId:string;
 	userId:string;
 	associated:boolean;
+	externalUriId:string | undefined;
 	created: Date;
 	updated?: Date;
 	deleted?: Date;
@@ -40,6 +42,6 @@ export class CloudFileModel implements CloudFile {
 
 	public toEntity(): CloudFile {
 		return {id: this.id, name: this.name, 
-			path: this.path, host:this.host, url: this.url, size: this.size, account: this.account, filetype:this.filetype, orgaId: this.orgaId, userId: this.userId, associated: this.associated, enabled: this.enabled, builtIn: this.builtIn, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
+			path: this.path, host:this.host, url: this.url, size: this.size, account: this.account, filetype:this.filetype, orgaId: this.orgaId, userId: this.userId, associated: this.associated, externalUriId:this.externalUriId, enabled: this.enabled, builtIn: this.builtIn, created: this.created, updated: this.updated, deleted: this.deleted, expires: this.expires};
 	}
 }

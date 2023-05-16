@@ -2,6 +2,7 @@ import { FlowDataSource } from '../../data/datasources/flow_data_source';
 import { PostDataSource } from '../../data/datasources/post_data_source';
 import { StageDataSource } from '../../data/datasources/stage_data_source';
 import { VoteDataSource } from '../../data/datasources/vote_data_source';
+import { CategoryModel } from '../../data/models/workflow/category_model';
 import { FlowModel } from '../../data/models/workflow/flow_model';
 import { PostModel } from '../../data/models/workflow/post_model';
 import { StageModel } from '../../data/models/workflow/stage_model';
@@ -29,7 +30,7 @@ const post04Id = '00004AAA-0119-0111-0111-000000000000';
 const vote01Id = '00004CCC-0222-0222-0222-000000000222';
 
 
-export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, voteSource: VoteDataSource, postMongo: NoSQLDatabaseWrapper<PostModel>) => {
+export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, voteSource: VoteDataSource, postMongo: NoSQLDatabaseWrapper<PostModel>, categoryMongo: NoSQLDatabaseWrapper<CategoryModel>) => {
 
 	data_insert02.flows[0].stages = data_insert02.stages;
 
@@ -91,6 +92,10 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 			post.totals.forEach(async total => {
 				await postSource.pushToArrayField(resultAdd.items[0].id,  {totals: total});
 			});	
+
+			post.categoryNames.forEach(async categoryName => {
+				await postSource.pushToArrayField(resultAdd.items[0].id,  {categoryNames: categoryName});
+			});				
 				
 		}
 	});
@@ -107,18 +112,33 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 	try{
 
 		const sleep = (ms: number | undefined) => new Promise(r => setTimeout(r, ms));
-		await sleep(1500);
-		if(!await postMongo.db.collection(postMongo.collectionName).indexExists('title_text_postitems.content.text_text'))
-		{
-			postMongo.db.collection(postMongo.collectionName).createIndex(
-				{
-					'title': 'text',
-					'postitems.content.text': 'text'
-				},{
-					name: 'title_text_postitems.content.text_text'
-				}
-			);
-		}
+		await sleep(1500).then(async () => {
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('title_text_postitems.content.text_text'))
+			{
+				postMongo.db.collection(postMongo.collectionName).createIndex(
+					{
+						'title': 'text',
+						'postitems.content.text': 'text'
+					},{
+						name: 'title_text_postitems.content.text_text'
+					}
+				);
+			}
+			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('name_longname_lowercase_description_text'))
+			{
+				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+					{
+						'name': 'text',
+						'longname': 'text',
+						'lowercase': 'text',
+						'description': 'text'
+					},{
+						name: 'name_longname_lowercase_description_text'
+					}
+				);
+			}
+		
+		});
 	}catch(e){
 		console.log('no index');
 	}
@@ -136,7 +156,7 @@ export const data_insert02 = {
 
 	postitems:[{order:1, content: {text:'texto de un post!'} as TextContent, type:'text', format:'', builtIn:true, created: new Date()} as PostItem, {order:1, content: {text:'esto es otro post'} as TextContent, type:'text', format:'', builtIn:true, created: new Date()} as PostItem, {order:1, content: {text:'se trata del tercer post'} as TextContent, type:'text', format:'', builtIn:true, created: new Date()} as PostItem, {order:1, content: {text:'un cuarto post'} as TextContent, type:'text', format:'', builtIn:true, created: new Date()} as PostItem],
     
-	posts:[{postitems:[], title:'primer post del sistema', orgaId: data_insert01.orgas[1].id, userId: data_insert01.users[4].id, flowId:flowId, stageId: stageId01Load, stages:[], totals:[], tracks:[], votes:[], bookmarks:[], users:[], _id:post01Id, id:post01Id, enabled:true, builtIn:true, created: new Date(), totalfavs:0, totalsaves:0, totalreports:0, totalcomments:0, totaldownloads:0} as Post, {postitems:[], title:'este es el segundo post', orgaId: data_insert01.orgas[1].id, userId: data_insert01.users[4].id, flowId:flowId, stageId: stageId01Load, stages:[], totals:[], tracks:[], votes:[], bookmarks:[], users:[], _id:post02Id, id:post02Id, enabled:true, builtIn:true, created: new Date(), totalfavs:0, totalsaves:0, totalreports:0, totalcomments:0, totaldownloads:0} as Post, {postitems:[], title:'tercer post en fila', orgaId: data_insert01.orgas[1].id, userId: data_insert01.users[5].id, flowId:flowId, stageId: stageId01Load, stages:[], totals:[], tracks:[], votes:[], bookmarks:[], users:[], _id:post03Id, id:post03Id, enabled:true, builtIn:true, created: new Date(), totalfavs:0, totalsaves:0, totalreports:0, totalcomments:0, totaldownloads:0} as Post, {postitems:[], title:'cuarto post nacido en etapa 2', orgaId: data_insert01.orgas[1].id, userId: data_insert01.users[5].id, flowId:flowId, stageId: stageId02Approval, stages:[], totals:[], tracks:[], votes:[], bookmarks:[], users:[], _id:post04Id, id:post04Id, enabled:true, builtIn:true, created: new Date(), totalfavs:0, totalsaves:0, totalreports:0, totalcomments:0, totaldownloads:0} as Post],
+	posts:[{postitems:[], title:'primer post del sistema', orgaId: data_insert01.orgas[1].id, userId: data_insert01.users[4].id, flowId:flowId, stageId: stageId01Load, stages:[], totals:[], tracks:[], votes:[], bookmarks:[], categoryNames:['humor'], categories:[], users:[], _id:post01Id, id:post01Id, enabled:true, builtIn:true, created: new Date(), totalfavs:0, totalsaves:0, totalreports:0, totalcomments:0, totaldownloads:0} as Post, {postitems:[], title:'este es el segundo post', orgaId: data_insert01.orgas[1].id, userId: data_insert01.users[4].id, flowId:flowId, stageId: stageId01Load, stages:[], totals:[], tracks:[], votes:[], bookmarks:[], categoryNames:[], categories:[], users:[], _id:post02Id, id:post02Id, enabled:true, builtIn:true, created: new Date(), totalfavs:0, totalsaves:0, totalreports:0, totalcomments:0, totaldownloads:0} as Post, {postitems:[], title:'tercer post en fila', orgaId: data_insert01.orgas[1].id, userId: data_insert01.users[5].id, flowId:flowId, stageId: stageId01Load, stages:[], totals:[], tracks:[], votes:[], bookmarks:[], categoryNames:[], categories:[], users:[], _id:post03Id, id:post03Id, enabled:true, builtIn:true, created: new Date(), totalfavs:0, totalsaves:0, totalreports:0, totalcomments:0, totaldownloads:0} as Post, {postitems:[], title:'cuarto post nacido en etapa 2', orgaId: data_insert01.orgas[1].id, userId: data_insert01.users[5].id, flowId:flowId, stageId: stageId02Approval, stages:[], totals:[], tracks:[], votes:[], bookmarks:[], categoryNames:[], categories:[], users:[], _id:post04Id, id:post04Id, enabled:true, builtIn:true, created: new Date(), totalfavs:0, totalsaves:0, totalreports:0, totalcomments:0, totaldownloads:0} as Post],
 
 	votes:[{  
 		id: vote01Id,

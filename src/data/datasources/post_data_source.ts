@@ -65,6 +65,21 @@ export class PostDataSourceImpl implements PostDataSource {
 		this.collection = dbMongo;
 	}
 
+	private getCategoriesLookupJoin():object
+	{
+		const lookup = {
+			$lookup: {
+				from: 'categories',
+				let: { category_Names: '$categoryNames' },
+				pipeline: [
+					{ $match: { $expr: { $and: [{ $in: ['$lowercase', '$$category_Names'] }] } } },
+					{ $project: { _id: 1, id:1, name:1, longname:1,description:1, enabled:1,builtIn:1, created:1 } }],
+				as: 'categories'
+			}
+		};
+		return lookup;
+	}
+
 	private getVotesLookupJoin(userId:string, flowId:string, stageId:string):object
 	{
 		const lookup = {
@@ -180,7 +195,7 @@ export class PostDataSourceImpl implements PostDataSource {
 			query['$text'] = {$search: searchText};
 		}
 
-		return await this.getManyComplete(query, [this.getUserLookupJoin()], undefined, this.getProjectionBasic(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getUserLookupJoin(), this.getCategoriesLookupJoin()], undefined, this.getProjectionBasic(), {'created':-1}, pageIndex, itemsPerPage);
 	}
 
 	async updateTotals(postId:string, flowId:string, stageId:string, voteValue: number, isfirst:boolean): Promise<ModelContainer<PostModel>> {
@@ -203,21 +218,21 @@ export class PostDataSourceImpl implements PostDataSource {
 
 	private getProjectionSpecial():object
 	{
-		const options = {votes: 1, _id:1, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, totalsave:1, totalfav:1, totalreport:1, users:1};
+		const options = {votes: 1, _id:1, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, totalsave:1, totalfav:1, totalreport:1, users:1, categories:1};
 
 		return options;
 	}
 
 	private getProjectionComplete():object
 	{
-		const options = {votes: 1, _id:1, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, totalsave:1, totalfav:1, totalreport:1, bookmarks:1, users:1};
+		const options = {votes: 1, _id:1, id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, totalsave:1, totalfav:1, totalreport:1, bookmarks:1, users:1, categories:1};
 
 		return options;
 	}
 
 	private getProjectionBasic():object
 	{
-		const options = {_id:1,id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, totalsave:1, totalfav:1, totalreport:1, users:1};
+		const options = {_id:1,id:1, postitems:1, title:1, orgaId:1, userId:1, flowId:1, stageId:1, enabled:1, builtIn:1, created:1, stages:1, totals:1, tracks:1, updated:1, deleted:1, expires:1, totalsave:1, totalfav:1, totalreport:1, users:1, categories:1};
 
 		return options;
 	}
@@ -242,7 +257,7 @@ export class PostDataSourceImpl implements PostDataSource {
 			query['stages'] = {$elemMatch: {id:stageId}};
 		}
 
-		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getUserLookupJoin()],undefined, this.getProjectionSpecial(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getUserLookupJoin(), this.getCategoriesLookupJoin()],undefined, this.getProjectionSpecial(), {'created':-1}, pageIndex, itemsPerPage);
 	}
 	async getForApprovePosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 
@@ -258,7 +273,7 @@ export class PostDataSourceImpl implements PostDataSource {
 			query['$text'] = {$search: searchText};
 		}
 
-		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getUserLookupJoin()],undefined, this.getProjectionSpecial(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getUserLookupJoin(), this.getCategoriesLookupJoin()],undefined, this.getProjectionSpecial(), {'created':-1}, pageIndex, itemsPerPage);
 	}
 	async getApprovedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 
@@ -275,7 +290,7 @@ export class PostDataSourceImpl implements PostDataSource {
 
 		const queryToCount = {query: {userId:userId, flowId:flowId, stageId:stageId, value:1, enabled:true}, collectionName: 'votes'};
 
-		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getUserLookupJoin()], queryToCount, this.getProjectionSpecial(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getUserLookupJoin(), this.getCategoriesLookupJoin()], queryToCount, this.getProjectionSpecial(), {'created':-1}, pageIndex, itemsPerPage);
 
 	}
 	async getRejectedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
@@ -295,7 +310,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		}
 		const queryToCount = {query: {userId:userId, flowId:flowId, stageId:stageId, value:-1, enabled:true}, collectionName: 'votes'};
 
-		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getUserLookupJoin()], queryToCount, this.getProjectionSpecial(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getUserLookupJoin(), this.getCategoriesLookupJoin()], queryToCount, this.getProjectionSpecial(), {'created':-1}, pageIndex, itemsPerPage);
 	}
 	async getLatestPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 		const query = {} as {[x: string]: unknown;};
@@ -309,7 +324,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		}
 		sort = [['created', -1]];
 
-		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin()],undefined, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin(), this.getCategoriesLookupJoin()],undefined, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
 
 	}
 	async getPopularPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
@@ -324,7 +339,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		}
 		sort = [['totals.totalpositive',-1]];
 		
-		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin()],undefined, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin(), this.getCategoriesLookupJoin()],undefined, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
 	}
 	async getVotedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, onlyWithVoteValue: number, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 		const query = {} as {[x: string]: unknown;};
@@ -355,7 +370,7 @@ export class PostDataSourceImpl implements PostDataSource {
 
 		const queryToCount = {query: {userId:userId, flowId:flowId, stageId:stageId, enabled:true}, collectionName: 'votes'};
 
-		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin()], queryToCount, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin(), this.getCategoriesLookupJoin()], queryToCount, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
 	}
 	async getFavedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
 		const query = {} as {[x: string]: unknown;};
@@ -377,7 +392,7 @@ export class PostDataSourceImpl implements PostDataSource {
 
 		const queryToCount = {query: {userId:userId, markType: 'fav', enabled: true}, collectionName: 'bookmarks'};
 
-		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin()], queryToCount, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin(), this.getCategoriesLookupJoin()], queryToCount, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
 	}
 
 	async getSavedPosts(orgaId: string, userId: string, flowId: string, stageId: string, searchText: string, sort: [string, 1 | -1][], pageIndex?: number | undefined, itemsPerPage?: number | undefined): Promise<ModelContainer<PostModel>> {
@@ -400,7 +415,7 @@ export class PostDataSourceImpl implements PostDataSource {
 
 		const queryToCount = {query: {userId:userId, markType: 'save', enabled: true}, collectionName: 'bookmarks'};
 
-		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin()], queryToCount, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
+		return await this.getManyComplete(query, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin(), this.getCategoriesLookupJoin(), this.getCategoriesLookupJoin()], queryToCount, this.getProjectionComplete(), {'created':-1}, pageIndex, itemsPerPage);
 	}
 
 	async getByIdBasic(postId: string): Promise<ModelContainer<PostModel>> {
@@ -410,11 +425,11 @@ export class PostDataSourceImpl implements PostDataSource {
 
 	async getById(postId: string): Promise<ModelContainer<PostModel>> {
 
-		return await this.getOneComplete({_id:postId}, [this.getUserLookupJoin()], this.getProjectionBasic());
+		return await this.getOneComplete({_id:postId}, [this.getUserLookupJoin(), this.getCategoriesLookupJoin()], this.getProjectionBasic());
 	}
 	async getByIdWithUser(postId: string, userId: string, flowId: string, stageId: string): Promise<ModelContainer<PostModel>> {
 
-		return await this.getOneComplete({_id:postId}, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin()], this.getProjectionComplete());
+		return await this.getOneComplete({_id:postId}, [this.getVotesLookupJoin(userId, flowId, stageId), this.getBookmarksLookupJoin(userId), this.getUserLookupJoin(), this.getCategoriesLookupJoin()], this.getProjectionComplete());
 
 	}
 	async getByQueryOut(postId: string, flowId: string, stageId: string, queryOut: { [x: string]: unknown; }): Promise<ModelContainer<PostModel>> {
@@ -422,7 +437,7 @@ export class PostDataSourceImpl implements PostDataSource {
 		queryOut['stageId'] = stageId;
 		queryOut['flowId'] = flowId;
 
-		return await this.getOneComplete(queryOut, [this.getUserLookupJoin()], this.getProjectionBasic());
+		return await this.getOneComplete(queryOut, [this.getUserLookupJoin(), this.getCategoriesLookupJoin()], this.getProjectionBasic());
 	}
 
 	public get dbcollection(): MongoWrapper<PostModel> {
