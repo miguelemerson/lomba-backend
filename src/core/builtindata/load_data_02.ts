@@ -113,18 +113,98 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 
 		const sleep = (ms: number | undefined) => new Promise(r => setTimeout(r, ms));
 		await sleep(1500).then(async () => {
-			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('title_text_postitems.content.text_text'))
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('ix_post_id'))
+			{
+				postMongo.db.collection(postMongo.collectionName).createIndex(
+					{
+						'id': 1,
+					},{
+						name: 'ix_post_id'
+					}
+				);
+			}
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('ix_post_title_postitem_content_text'))
 			{
 				postMongo.db.collection(postMongo.collectionName).createIndex(
 					{
 						'title': 'text',
 						'postitems.content.text': 'text'
 					},{
-						name: 'title_text_postitems.content.text_text'
+						name: 'ix_post_title_postitem_content_text'
 					}
 				);
 			}
-			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('name_longname_lowercase_description_text'))
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('ix_post_userId'))
+			{
+				postMongo.db.collection(postMongo.collectionName).createIndex(
+					{
+						'userId': 1,
+					},{
+						name: 'ix_post_userId'
+					}
+				);
+			}
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('ix_post_flowId_stageId'))
+			{
+				postMongo.db.collection(postMongo.collectionName).createIndex(
+					{
+						'flowId': 1,
+						'stageId': 1,
+					},{
+						name: 'ix_post_flowId_stageId'
+					}
+				);
+			}
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('ix_post_userId_orgaId_flowId_stageId'))
+			{
+				postMongo.db.collection(postMongo.collectionName).createIndex(
+					{
+						'userId': 1,
+						'orgaId': 1,
+						'flowId': 1,
+						'stageId': 1,
+					},{
+						name: 'ix_post_userId_orgaId_flowId_stageId'
+					}
+				);
+			}
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('ix_post_userId_postId_flowId_stageId'))
+			{
+				postMongo.db.collection(postMongo.collectionName).createIndex(
+					{
+						'userId': 1,
+						'postId': 1,
+						'flowId': 1,
+						'stageId': 1,
+					},{
+						name: 'ix_post_userId_postId_flowId_stageId'
+					}
+				);
+			}
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('ix_post_categoryNames_orgaId_flowId_stageId'))
+			{
+				postMongo.db.collection(postMongo.collectionName).createIndex(
+					{
+						'categoryNames': 1,
+						'orgaId': 1,
+						'flowId': 1,
+						'stageId': 1,
+					},{
+						name: 'ix_post_categoryNames_orgaId_flowId_stageId'
+					}
+				);
+			}
+			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_category_id'))
+			{
+				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+					{
+						'id': 1,
+					},{
+						name: 'ix_category_id'
+					}
+				);
+			}
+			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_category_name_longname_lowercase_description'))
 			{
 				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
 					{
@@ -133,7 +213,7 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 						'lowercase': 'text',
 						'description': 'text'
 					},{
-						name: 'name_longname_lowercase_description_text'
+						name: 'ix_category_name_longname_lowercase_description'
 					}
 				);
 			}

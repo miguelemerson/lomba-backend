@@ -11,7 +11,7 @@ import { UserModel } from '../../data/models/user_model';
 import { HashPassword } from '../password_hash';
 import { NoSQLDatabaseWrapper } from '../wrappers/mongo_wrapper';
 
-export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDataSource, passSource: PasswordDataSource, orgaSource: OrgaDataSource, orgaUserSource: OrgaUserDataSource, userMongo: NoSQLDatabaseWrapper<UserModel>) => {
+export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDataSource, passSource: PasswordDataSource, orgaSource: OrgaDataSource, orgaUserSource: OrgaUserDataSource, userMongo: NoSQLDatabaseWrapper<UserModel>, roleMongo: NoSQLDatabaseWrapper<RoleModel>, passMongo:NoSQLDatabaseWrapper<PasswordModel>, orgaMongo: NoSQLDatabaseWrapper<OrgaModel>, orgaUserMongo: NoSQLDatabaseWrapper<OrgaUserModel>) => {
 	
 	//roles
 	data_insert01.roles.forEach(async role => {
@@ -73,7 +73,7 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 
 		const sleep = (ms: number | undefined) => new Promise(r => setTimeout(r, ms));
 		await sleep(1500);
-		if(!await userMongo.db.collection(userMongo.collectionName).indexExists('name_username_email_text'))
+		if(!await userMongo.db.collection(userMongo.collectionName).indexExists('ix_user_name_username_email_text'))
 		{
 			userMongo.db.collection(userMongo.collectionName).createIndex(
 				{
@@ -81,12 +81,168 @@ export const checkData01 = async (roleSource: RoleDataSource, userSource: UserDa
 					'username': 'text',
 					'email': 'text'
 				},{
-					name: 'name_username_email_text'
+					name: 'ix_user_name_username_email_text'
 				}
 			);
 		}
+		if(!await userMongo.db.collection(userMongo.collectionName).indexExists('ix_user_id'))
+		{
+			userMongo.db.collection(userMongo.collectionName).createIndex(
+				{
+					'id': 1,
+				},{
+					name: 'ix_user_id'
+				}
+			);
+		}
+		if(!await userMongo.db.collection(userMongo.collectionName).indexExists('ix_user_username_email_enabled'))
+		{
+			userMongo.db.collection(userMongo.collectionName).createIndex(
+				{
+					'username': 1,
+					'email': 1,
+					'enabled': 1,
+				},{
+					name: 'ix_user_username_email_enabled'
+				}
+			);
+		}
+		if(!await userMongo.db.collection(userMongo.collectionName).indexExists('ix_user_orga_id'))
+		{
+			userMongo.db.collection(userMongo.collectionName).createIndex(
+				{
+					'orgas.id': 1,
+				},{
+					name: 'ix_user_orga_id'
+				}
+			);
+		}
+		if(!await userMongo.db.collection(userMongo.collectionName).indexExists('ix_user_created'))
+		{
+			userMongo.db.collection(userMongo.collectionName).createIndex(
+				{
+					'created': -1,
+				},{
+					name: 'ix_user_created'
+				}
+			);
+		}
+		if(!await roleMongo.db.collection(roleMongo.collectionName).indexExists('ix_role_id'))
+		{
+			roleMongo.db.collection(roleMongo.collectionName).createIndex(
+				{
+					'id': 1,
+				},{
+					name: 'ix_role_id'
+				}
+			);
+		}
+		if(!await roleMongo.db.collection(roleMongo.collectionName).indexExists('ix_role_name'))
+		{
+			roleMongo.db.collection(roleMongo.collectionName).createIndex(
+				{
+					'name': 1,
+				},{
+					name: 'ix_role_name'
+				}
+			);
+		}
+		if(!await passMongo.db.collection(passMongo.collectionName).indexExists('ix_pass_id'))
+		{
+			passMongo.db.collection(passMongo.collectionName).createIndex(
+				{
+					'id': 1,
+				},{
+					name: 'ix_pass_id'
+				}
+			);
+		}
+		if(!await passMongo.db.collection(passMongo.collectionName).indexExists('ix_pass_userId'))
+		{
+			passMongo.db.collection(passMongo.collectionName).createIndex(
+				{
+					'userId': 1,
+				},{
+					name: 'ix_pass_userId'
+				}
+			);
+		}
+		if(!await passMongo.db.collection(passMongo.collectionName).indexExists('ix_pass_userId_enabled'))
+		{
+			passMongo.db.collection(passMongo.collectionName).createIndex(
+				{
+					'userId': 1,
+					'enabled': 1,
+				},{
+					name: 'ix_pass_userId_enabled'
+				}
+			);
+		}
+		if(!await orgaMongo.db.collection(orgaMongo.collectionName).indexExists('ix_orga_id'))
+		{
+			orgaMongo.db.collection(orgaMongo.collectionName).createIndex(
+				{
+					'id': 1,
+				},{
+					name: 'ix_orga_id'
+				}
+			);
+		}
+		if(!await orgaMongo.db.collection(orgaMongo.collectionName).indexExists('ix_orga_code'))
+		{
+			orgaMongo.db.collection(orgaMongo.collectionName).createIndex(
+				{
+					'code': 1,
+				},{
+					name: 'ix_orga_code'
+				}
+			);
+		}
+		if(!await orgaUserMongo.db.collection(orgaUserMongo.collectionName).indexExists('ix_orgauser_id'))
+		{
+			orgaUserMongo.db.collection(orgaUserMongo.collectionName).createIndex(
+				{
+					'id': 1,
+				},{
+					name: 'ix_orgauser_id'
+				}
+			);
+		}
+		if(!await orgaUserMongo.db.collection(orgaUserMongo.collectionName).indexExists('ix_orgauser_orgaId'))
+		{
+			orgaUserMongo.db.collection(orgaUserMongo.collectionName).createIndex(
+				{
+					'orgaId': 1,
+				},{
+					name: 'ix_orgauser_orgaId'
+				}
+			);
+		}
+		if(!await orgaUserMongo.db.collection(orgaUserMongo.collectionName).indexExists('ix_orgauser_userId'))
+		{
+			orgaUserMongo.db.collection(orgaUserMongo.collectionName).createIndex(
+				{
+					'userId': 1,
+				},{
+					name: 'ix_orgauser_userId'
+				}
+			);
+		}
+		if(!await orgaUserMongo.db.collection(orgaUserMongo.collectionName).indexExists('ix_orgauser_userId_orgaId'))
+		{
+			orgaUserMongo.db.collection(orgaUserMongo.collectionName).createIndex(
+				{
+					'userId': 1,
+					'orgaId': 1,
+					'enabled': 1,
+				},{
+					name: 'ix_orgauser_userId_orgaId'
+				}
+			);
+		}
+
 	}catch(e){
-		console.log('no index');
+		console.log('no user index');
 	}
 
 };

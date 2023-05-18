@@ -232,7 +232,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const externalUriRepo = new ExternalUriRepositoryImpl(externalUriDataSource, hostDataSource);
 
 	//revisa que los datos estén cargados.
-	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);
+	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo, roleMongo, passMongo, orgaMongo, orgaUserMongo);
 	await checkData02(stageDataSource, flowDataSource, postDataSource, voteDataSource, postMongo, categoryMongo);
 	await checkData03(settingDataSource);
 
