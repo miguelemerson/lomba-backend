@@ -11,6 +11,8 @@ import { CloudFileModel } from '../models/storage/cloudfile_model';
 import crypto from 'crypto';
 import fetch from 'node-fetch';
 import { ExternalUriDataSource } from '../datasources/externaluri_data_source';
+import sharp from 'sharp';
+
 
 export class StorageRepositoryImpl implements StorageRepository {
 	dataSource: CloudFileDataSource;
@@ -198,16 +200,21 @@ export class StorageRepositoryImpl implements StorageRepository {
 					{
 						cloudFields.push(resultUpdate.items[0]);
 
+						//miniatura
+						const resizedBuffer: Buffer = await sharp(dataBytes)
+							.resize({ width: 500, height: 500 })
+							.toBuffer();
+
 						const idThumbnail = crypto.randomUUID();
 						const extThumbnail = (fileType?.ext ?? 'bin');
-						const newfilenameThumbnail = idThumbnail + '.' + extThumbnail;
+						const newfilenameThumbnail = 't_' + idThumbnail + '.' + extThumbnail;
 
 						const secondPathThumbnail = `profile/${userId}`;
-						const uploadDataThumbnail = await this.blobStorage.uploadBlob(dataBytes, newfilenameThumbnail, secondPathThumbnail);
+						const uploadDataThumbnail = await this.blobStorage.uploadBlob(resizedBuffer, newfilenameThumbnail, secondPathThumbnail);
 
 						if(uploadDataThumbnail != undefined)
 						{
-							const cloudFileThumbnail = new CloudFileModel(idThumbnail, newfilenameThumbnail, uploadDataThumbnail.path,uploadDataThumbnail.host,uploadDataThumbnail.url,dataBytes.length,uploadDataThumbnail.account,fileType?.mime?? '','', userId, false, undefined, true, false);
+							const cloudFileThumbnail = new CloudFileModel(idThumbnail, newfilenameThumbnail, uploadDataThumbnail.path,uploadDataThumbnail.host,uploadDataThumbnail.url,resizedBuffer.length,uploadDataThumbnail.account,fileType?.mime?? '','', userId, false, undefined, true, false);
 
 							const resultAddThumbnail = await this.dataSource.add(cloudFileThumbnail);
 
