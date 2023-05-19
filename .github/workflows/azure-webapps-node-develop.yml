@@ -31,7 +31,24 @@ permissions:
   contents: read
 
 jobs:
+  slackNotification1:
+    name: Notification start build
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: deploy
+    steps:
+    - uses: actions/checkout@v2
+    - name: Slack Notification start build
+      uses: rtCamp/action-slack-notify@v2.2.0
+      env:
+        SLACK_COLOR: '#0040FF'
+        SLACK_ICON: https://github.com/rtCamp.png?size=48
+        SLACK_MESSAGE: 'Build Backend Starting DEVELOP :rocket:'
+        SLACK_TITLE: Pub Backend DEVELOP
+        SLACK_USERNAME: github      
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
   build:
+    name: Build backend
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -89,8 +106,8 @@ jobs:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.DEVELOP_AZURE_WEBAPP_PUBLISH_PROFILE }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-  slackNotification:
-    name: Slack Notification
+  slackNotification2:
+    name: Notification finish process
     runs-on: ubuntu-latest
     if: ${{ always() }}
     needs: deploy
@@ -101,7 +118,7 @@ jobs:
       env:
         SLACK_COLOR: ${{ job.status }}
         SLACK_ICON: https://github.com/rtCamp.png?size=48
-        SLACK_MESSAGE: '...build and deploy DEVELOP :rocket:'
+        SLACK_MESSAGE: 'Build backend finish DEVELOP :rocket:'
         SLACK_TITLE: Pub Backend DEVELOP
         SLACK_USERNAME: github      
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
