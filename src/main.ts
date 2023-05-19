@@ -85,7 +85,7 @@ import { EnablePost } from './domain/usecases/posts/enable_post';
 import { GetAdminViewPosts } from './domain/usecases/posts/get_adminview_post';
 import { GetPost } from './domain/usecases/posts/get_post';
 import { GetPosts } from './domain/usecases/posts/get_posts';
-import { SendVote } from './domain/usecases/posts/send_vote';
+import { SendVote } from './domain/usecases/votes/send_vote';
 import { UpdatePost } from './domain/usecases/posts/update_post';
 import { GetOrgaSettings } from './domain/usecases/settings/get_orga_settings';
 import { GetSuperSettings } from './domain/usecases/settings/get_super_settings';
@@ -106,6 +106,41 @@ import { GetCloudFile } from './domain/usecases/storage/get_cloudfile';
 import { AddMultiPost } from './domain/usecases/posts/add_multi_post';
 import { RegisterUserPicture } from './domain/usecases/users/register_userpicture';
 import { UploadUserPicture } from './domain/usecases/users/upload_userpicture';
+import { GetPostWithUser } from './domain/usecases/posts/get_withuser_post';
+import BookmarksRouter from './presentation/bookmark_router';
+import { GiveMarkPost } from './domain/usecases/posts/give_mark_post';
+import { BookmarkRepositoryImpl } from './data/repositories/bookmark_repository_impl';
+import { BookmarkDataSourceImpl } from './data/datasources/bookmark_data_source';
+import { BookmarkModel } from './data/models/workflow/bookmark_model';
+import { CommentModel } from './data/models/workflow/comment_model';
+import { CommentDataSourceImpl } from './data/datasources/comment_data_source';
+import { CommentRepositoryImpl } from './data/repositories/comment_repository_impl';
+import { AddPostComment } from './domain/usecases/comments/add_post_comment';
+import { DeletePostComment } from './domain/usecases/comments/delete_post_comment';
+import { GetPostComments } from './domain/usecases/comments/get_post_comments';
+import CommentsRouter from './presentation/comment_router';
+import { VoteModel } from './data/models/workflow/vote_model';
+import { VoteDataSourceImpl } from './data/datasources/vote_data_source';
+import { VoteRepositoryImpl } from './data/repositories/vote_repository_impl';
+import VotesRouter from './presentation/vote_router';
+import { CategoryModel } from './data/models/workflow/category_model';
+import { CategoryDataSourceImpl } from './data/datasources/category_data_source';
+import { CategoryRepositoryImpl } from './data/repositories/category_repository_impl';
+import CategoriesRouter from './presentation/category_router';
+import { AddCategory } from './domain/usecases/category/add_category';
+import { GetCategoryById } from './domain/usecases/category/get_category_by_id';
+import { GetCategoryByName } from './domain/usecases/category/get_category_by_name';
+import { SearchCategories } from './domain/usecases/category/search_categories';
+import { ExternalUriDataSourceImpl } from './data/datasources/externaluri_data_source';
+import { ExternalUriModel } from './data/models/storage/externaluri_model';
+import { ExternalUriRepositoryImpl } from './data/repositories/externaluri_repository_impl';
+import ExternalUrisRouter from './presentation/externaluri_router';
+import { AddExternalUri } from './domain/usecases/storage/add_externaluri';
+import { GetExternalUriById } from './domain/usecases/storage/get_externaluri_by_id';
+import { GetExternalUriByUri } from './domain/usecases/storage/get_externaluri_by_uri';
+import { HostDataSourceImpl } from './data/datasources/host_data_source';
+import { HostModel } from './data/models/storage/host_model';
+import { UploadCloudFileByExternalUri } from './domain/usecases/storage/upload_cloudfile_by_uri';
 
 dotenv.config();
 
@@ -139,7 +174,12 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const postMongo = new MongoWrapper<PostModel>('posts', db);
 	const settingMongo = new MongoWrapper<SettingModel>('settings', db);
 	const cloudFileMongo = new MongoWrapper<SettingModel>('cloudfiles', db);
-
+	const bookmarkMongo = new MongoWrapper<BookmarkModel>('bookmarks', db);
+	const commentMongo = new MongoWrapper<CommentModel>('comments', db);
+	const voteMongo = new MongoWrapper<VoteModel>('votes', db);
+	const categoryMongo = new MongoWrapper<CategoryModel>('categories', db);
+	const externalUriMongo = new MongoWrapper<ExternalUriModel>('externaluris', db);
+	const hostMongo = new MongoWrapper<HostModel>('hosts', db);
 	//datasources
 	const roleDataSource = new RoleDataSourceImpl(roleMongo);
 	const userDataSource = new UserDataSourceImpl(userMongo);
@@ -151,7 +191,12 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const postDataSource = new PostDataSourceImpl(postMongo);
 	const settingDataSource = new SettingDataSourceImpl(settingMongo);
 	const cloudFileDataSource = new CloudFileDataSourceImpl(cloudFileMongo);
-
+	const bookmarkDataSource = new BookmarkDataSourceImpl(bookmarkMongo);
+	const commentDataSource = new CommentDataSourceImpl(commentMongo);
+	const voteDataSource = new VoteDataSourceImpl(voteMongo);
+	const categoryDataSource = new CategoryDataSourceImpl(categoryMongo);
+	const externalUriDataSource = new ExternalUriDataSourceImpl(externalUriMongo);
+	const hostDataSource = new HostDataSourceImpl(hostMongo);
 
 	const account = configEnv().AZSTORAGEACCOUNT_NAME;
 	const accountKey = configEnv().AZSTORAGEACCOUNT_KEY;
@@ -175,15 +220,20 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	const googleAuth = new GoogleAuth(googleApp);
 
 	const authRepo = new AuthRepositoryImpl(userDataSource, orgaDataSource, passDataSource, orgaUserDataSource, googleAuth);
-	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource);
+	const postRepo = new PostRepositoryImpl(postDataSource, stageDataSource, flowDataSource, voteDataSource);
 	const flowRepo = new FlowRepositoryImpl(flowDataSource);
 	const stageRepo = new StageRepositoryImpl(stageDataSource);
 	const settingRepo = new SettingRepositoryImpl(settingDataSource);
-	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource);
+	const storageRepo = new StorageRepositoryImpl(cloudFileDataSource, blobStorageSource, externalUriDataSource);
+	const bookmarkRepo = new BookmarkRepositoryImpl(bookmarkDataSource, postDataSource);
+	const commentRepo = new CommentRepositoryImpl(commentDataSource, postDataSource);
+	const voteRepo = new VoteRepositoryImpl(voteDataSource, postDataSource, flowDataSource, stageDataSource);
+	const categoryRepo = new CategoryRepositoryImpl(categoryDataSource);
+	const externalUriRepo = new ExternalUriRepositoryImpl(externalUriDataSource, hostDataSource);
 
 	//revisa que los datos estén cargados.
-	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo);
-	await checkData02(stageDataSource, flowDataSource, postDataSource, postMongo);
+	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo, roleMongo, passMongo, orgaMongo, orgaUserMongo);
+	await checkData02(stageDataSource, flowDataSource, postDataSource, voteDataSource, postMongo, categoryMongo, voteMongo);
 	await checkData03(settingDataSource);
 
 	//routers
@@ -204,7 +254,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const passMiddleWare = PasswordsRouter(new AddPassword(passRepo), new UpdatePassword(passRepo) );
 
-	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new SendVote(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo), new GetPost(postRepo), new AddMultiPost(postRepo));
+	const postMiddleWare = PostsRouter(new GetPosts(postRepo), new AddTextPost(postRepo), new UpdatePost(postRepo), new DeletePost(postRepo), new EnablePost(postRepo), new ChangeStagePost(postRepo), new GetAdminViewPosts(postRepo), new GetPost(postRepo), new AddMultiPost(postRepo), new GetPostWithUser(postRepo));
 
 	const flowMiddleWare = FlowsRouter(new GetFlow(flowRepo), new GetFlows(flowRepo));
 
@@ -212,7 +262,15 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	const settingMiddleWare = SettingsRouter(new GetSuperSettings(settingRepo), new GetOrgaSettings(settingRepo), new UpdateSettings(settingRepo));
 
-	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo));
+	const storageMiddleWare = StorageRouter(new UploadCloudFile(storageRepo), new GetCloudFile(storageRepo), new RegisterCloudFile(storageRepo), new RegisterUserPicture(storageRepo), new UploadUserPicture(storageRepo), new UploadCloudFileByExternalUri(storageRepo));
+
+	const bookmarkMiddleWare = BookmarksRouter(new GiveMarkPost(bookmarkRepo));
+	const commentMiddleWare = CommentsRouter(new AddPostComment(commentRepo), new DeletePostComment(commentRepo), new GetPostComments(commentRepo));
+	const voteMiddleWare = VotesRouter(new SendVote(voteRepo));
+
+	const categoryMiddleWare = CategoriesRouter(new AddCategory(categoryRepo), new GetCategoryById(categoryRepo), new GetCategoryByName(categoryRepo), new SearchCategories(categoryRepo));
+
+	const externalUriMiddleWare = ExternalUrisRouter(new AddExternalUri(externalUriRepo), new GetExternalUriById(externalUriRepo), new GetExternalUriByUri(externalUriRepo));
 
 	app.use('/api/v1/user', userMiddleWare);
 	app.use('/api/v1/role', roleMiddleWare);
@@ -225,6 +283,11 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 	app.use('/api/v1/stage', stageMiddleWare);
 	app.use('/api/v1/setting', settingMiddleWare);
 	app.use('/api/v1/storage', storageMiddleWare);
+	app.use('/api/v1/bookmark', bookmarkMiddleWare);
+	app.use('/api/v1/comment', commentMiddleWare);
+	app.use('/api/v1/vote', voteMiddleWare);
+	app.use('/api/v1/category', categoryMiddleWare);
+	app.use('/api/v1/externaluri', externalUriMiddleWare);
 
 	///Fin usuarios
 	app.listen(configEnv().PORT, async () => console.log('Running on http://localhost:' + configEnv().PORT));

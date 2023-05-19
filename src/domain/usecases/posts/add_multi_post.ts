@@ -6,9 +6,10 @@ import { PostRepository } from '../../repositories/post_repository';
 import { TextContent } from '../../entities/workflow/textcontent';
 import { ImageContent } from '../../entities/workflow/imagecontent';
 import { VideoContent } from '../../entities/workflow/videocontent';
+import { SourceContent } from '../../entities/workflow/sourcecontent';
 
 export interface AddMultiPostUseCase {
-    execute(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, draft: boolean): Promise<Either<Failure,ModelContainer<Post>>>;
+    execute(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, sourcesContent: SourceContent[] | undefined, categoryNames:string[], draft: boolean): Promise<Either<Failure,ModelContainer<Post>>>;
 }
 
 export class AddMultiPost implements AddMultiPostUseCase {
@@ -17,7 +18,7 @@ export class AddMultiPost implements AddMultiPostUseCase {
 		this.repository = repository;
 	}
 
-	async execute(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, draft: boolean): Promise<Either<Failure,ModelContainer<Post>>> {
-		return await this.repository.addMultiPost(orgaId, userId, flowId, title, textContent, imageContent, videoContent, draft);
+	async execute(orgaId: string, userId: string, flowId: string, title: string, textContent: TextContent | undefined, imageContent: ImageContent | undefined, videoContent: VideoContent | undefined, sourcesContent: SourceContent[] | undefined, categoryNames:string[], draft: boolean): Promise<Either<Failure,ModelContainer<Post>>> {
+		return await this.repository.addMultiPost(orgaId, userId, flowId, title, textContent, imageContent, videoContent, sourcesContent, categoryNames, draft);
 	}
 }

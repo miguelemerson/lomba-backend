@@ -15,6 +15,7 @@ export interface NoSQLDatabaseWrapper<T>{
     updateDirect(id: string, obj: object): Promise<boolean>;	
 	updateArray(id: string, obj: object, arrayFilters:object): Promise<boolean>;
 	updateDirectByQuery(query: object, obj: object): Promise<boolean>;	
+	upsert(query: object, obj: object): Promise<boolean>;
 	collectionName:string;
 	db:Db;
 }
@@ -25,6 +26,12 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 	constructor(collectionName: string, dbMongo: Db){
 		this.collectionName = collectionName;
 		this.db = dbMongo;
+	}
+	
+	async upsert(query: object, obj: object): Promise<boolean> {
+		const options = { upsert: true };
+		const result = await this.db.collection<Document>(this.collectionName).updateOne(query, obj, options);
+		return (result?.upsertedCount > 0 ? true : false);
 	}
     
 	private async runQuery(pageIndex: number | undefined, totalItems: number | undefined, query: object, options: object | undefined,
@@ -49,8 +56,12 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 	}
 
 	private async runFullQuery(result: unknown, query: object, options: object | undefined, sort: [string, 1 | -1][], skip: number, limit: number) {
-		result = await this.db.collection<Document>(this.collectionName)
-			.find(query, options).sort(sort).skip(skip).limit(limit).toArray();
+
+		result = await this.db.collection<Document>(this.collectionName).aggregate([{$match:query}, {$sort:{'created':-1}}, {$skip:skip}, {$limit:limit}], options).toArray();
+
+		//result = await this.db.collection<Document>(this.collectionName)
+		//	.find(query, options).sort(sort).skip(skip).limit(limit).toArray();
+
 		return result;
 	}
 
@@ -66,13 +77,13 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		return result;
 	}
 
-	private async setTotalItems(pageIndex: number | undefined, totalItems: number | undefined, query: object) {
+	public async setTotalItems(pageIndex: number | undefined, totalItems: number | undefined, query: object) {
 		if (pageIndex != null) {
 			totalItems = (await this.db.collection<Document>(this.collectionName).count(query));
 		}
 		return totalItems;
 	}
-	private createModelContainer<T>(result: unknown, itemsPerPage: number | undefined, pageIndex: number | undefined, startIndex: number, totalItems: number | undefined, totalPages: number) {
+	public createModelContainer<T>(result: unknown, itemsPerPage: number | undefined, pageIndex: number | undefined, startIndex: number, totalItems: number | undefined, totalPages: number) {
 		const contains_many = new ModelContainer<T>(result as T[]);
 		contains_many.itemsPerPage = itemsPerPage;
 		contains_many.pageIndex = pageIndex;
@@ -187,4 +198,5 @@ export class MongoWrapper<T> implements NoSQLDatabaseWrapper<T>{
 		}
 		return false;
 	}    
+	
 }

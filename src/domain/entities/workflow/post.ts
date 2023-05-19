@@ -1,6 +1,9 @@
 import { Audit } from '../audit';
 import { BuiltIn } from '../builtin';
 import { Entity } from '../entity';
+import { User } from '../user';
+import { Bookmark } from './bookmark';
+import { Category } from './category';
 import { PostItem } from './postitem';
 import { Stage } from './stage';
 import { Total } from './total';
@@ -18,7 +21,13 @@ export interface Post extends Entity, BuiltIn, Audit {
     totals:(Total[]);
     tracks:(Track[]);
     votes:(Vote[]);
-    totalsave: number;
-    totalfav: number;
-    totalreport: number;
+    categoryNames:(string[]);
+    categories:(Category[]);
+    bookmarks:(Bookmark[]);
+    users:(User[]);
+    totalsaves: number;
+    totalfavs: number;
+    totalreports: number;
+    totalcomments: number;
+    totaldownloads: number;
 }

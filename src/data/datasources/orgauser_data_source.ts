@@ -30,7 +30,7 @@ export class OrgaUserDataSourceImpl implements OrgaUserDataSource {
 		return await this.collection.getMany<OrgaUserModel>({'userId': userId});
 	}
 	async getOneBy(orgaId: string, userId: string): Promise<ModelContainer<OrgaUserModel>> {
-		return await this.collection.getOne({'orgaId': orgaId, 'userId': userId});
+		return await this.collection.getOne({'orgaId': orgaId, 'userId': userId, 'enabled':true});
 	}
 
 	async getMany(query: object, sort?: [string, 1 | -1][],

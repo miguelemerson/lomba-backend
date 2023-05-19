@@ -5,7 +5,7 @@ import { Bookmark } from '../../entities/workflow/bookmark';
 import { BookmarkRepository } from '../../repositories/bookmark_repository';
 
 export interface GiveMarkPostUseCase {
-    execute(userId: string, postId: string, markType: 'save' | 'fav' | 'report', giveOrTakeAway: boolean): Promise<Either<Failure,ModelContainer<Bookmark>>>;
+    execute(userId: string, postId: string, markType: 'save' | 'fav' | 'report' | 'comment' | 'download', giveOrTakeAway: boolean): Promise<Either<Failure,ModelContainer<Bookmark>>>;
 }
 
 export class GiveMarkPost implements GiveMarkPostUseCase {
@@ -14,7 +14,7 @@ export class GiveMarkPost implements GiveMarkPostUseCase {
 		this.repository = repository;
 	}
 
-	async execute(userId: string, postId: string, markType: 'save' | 'fav' | 'report', giveOrTakeAway: boolean): Promise<Either<Failure,ModelContainer<Bookmark>>> {
+	async execute(userId: string, postId: string, markType: 'save' | 'fav' | 'report' | 'comment' | 'download', giveOrTakeAway: boolean): Promise<Either<Failure,ModelContainer<Bookmark>>> {
 		return await this.repository.giveMark(userId, postId, markType, giveOrTakeAway);
 	}
 }

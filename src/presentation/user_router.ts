@@ -121,7 +121,6 @@ export default function UsersRouter(
 			const users = await getUsersNotInOrga.execute((req.query.searchtext!=undefined)?req.query.searchtext.toString():'', req.params.orgaId, valid_sort, pageIndex, pageSize);
 			//evaluate
 			users.fold(error => {
-				console.log(error);
 				//something wrong
 				code = 500;
 				toSend = new RouterResponse('1.0', error as object, 'get', {orgaId: req.params.orgaId} as object, 'not obtained not in orga');

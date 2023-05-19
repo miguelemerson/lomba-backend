@@ -33,7 +33,7 @@ export class OrgaDataSourceImpl implements OrgaDataSource {
 		return await this.collection.getOne({code:orgaCode, '_id':{$ne:discardOrgaId}});
 	}
 	async getByOrgasIdArray(orgasId: string[]): Promise<ModelContainer<OrgaModel>> {
-		return await this.collection.getMany<OrgaModel>({'_id': {$in: orgasId}});
+		return await this.collection.getMany<OrgaModel>({'_id': {$in: orgasId}, 'enabled':true});
 	}
 
 	async getMany(query: object, sort?: [string, 1 | -1][],

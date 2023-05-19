@@ -7,13 +7,15 @@ import { GetCloudFileUseCase } from '../domain/usecases/storage/get_cloudfile';
 import { RegisterCloudFileUseCase } from '../domain/usecases/storage/register_cloudfile';
 import { hasRole } from '../core/presentation/check_role_router';
 import { RegisterUserPictureUseCase } from '../domain/usecases/users/register_userpicture';
+import { UploadCloudFileByExternalUriUseCase } from '../domain/usecases/storage/upload_cloudfile_by_uri';
 
 export default function StorageRouter(
 	uploadCloudFile: UploadCloudFileUseCase,
 	getCloudFile: GetCloudFileUseCase,
 	registerCloudFile: RegisterCloudFileUseCase,
 	registerUserPicture: RegisterUserPictureUseCase,
-	uploadUserPicture: UploadCloudFileUseCase
+	uploadUserPicture: UploadCloudFileUseCase,
+	uploadCloudFileByExternalUri: UploadCloudFileByExternalUriUseCase,
 ) {
 	const router = express.Router();
 	const upload = multer();
@@ -98,6 +100,33 @@ export default function StorageRouter(
 		res.status(code).send(toSend);
 	});
 
+	router.put('/byuri/', [isAuth, hasRole(['user'])], async (req: Request, res: Response) => {
+		//definitions
+		let code = 500;
+		let toSend = RouterResponse.emptyResponse();
+		try {
+			const data = req.body as {cloudFileId:string, userId:string, externalUriId:string};
+			//execution
+			const uploaded = await uploadCloudFileByExternalUri.execute(data.cloudFileId, data.externalUriId);
+			//evaluate
+			uploaded.fold(error => {
+				//something wrong
+				code = 500;
+				toSend = new RouterResponse('1.0', error, 'put' + ' not uploaded by uri');	
+			}, value => {
+				//isOK
+				code = 200;
+				toSend = new RouterResponse('1.0', value, 'put' + ' uploaded by uri');
+			});
+		} catch (err) {
+			//something wrong
+			code = 500;
+			toSend = new RouterResponse('1.0', err as object, 'put' + ' not uploaded by uri');
+		}
+		//respond cordially
+		res.status(code).send(toSend);
+	});
+
 	router.post('/userpicture/:userId', [isAuth], async (req: Request, res: Response) => {
 		//definitions
 		let code = 500;
@@ -106,7 +135,7 @@ export default function StorageRouter(
 			if(req.params.userId !== req.params.r_userId)
 			{
 				code = 401;
-				toSend = new RouterResponse('1.0', new Error('user not allowed'), 'put', {id: req.params.id}, 'user was not edited');
+				toSend = new RouterResponse('1.0', new Error('user not allowed'), 'put', {id: req.params.userId}, 'picture not registered');
 				res.status(code).send(toSend);
 				return;
 			}
@@ -118,16 +147,16 @@ export default function StorageRouter(
 			registered.fold(error => {
 				//something wrong
 				code = 500;
-				toSend = new RouterResponse('1.0', error, 'post' + ' not registered');	
+				toSend = new RouterResponse('1.0', error, 'post', {}, 'picture not registered');	
 			}, value => {
 				//isOK
 				code = 200;
-				toSend = new RouterResponse('1.0', value, 'post' + ' registered');
+				toSend = new RouterResponse('1.0', value, 'post', {}, 'picture registered');
 			});
 		} catch (err) {
 			//something wrong
 			code = 500;
-			toSend = new RouterResponse('1.0', err as object, 'post' + ' not registered');
+			toSend = new RouterResponse('1.0', err as object, 'post', {}, 'picture not registered');
 		}
 		//respond cordially
 		res.status(code).send(toSend);
@@ -141,7 +170,7 @@ export default function StorageRouter(
 			if(req.params.userId !== req.params.r_userId)
 			{
 				code = 401;
-				toSend = new RouterResponse('1.0', new Error('user not allowed'), 'put', {id: req.params.id}, 'user was not edited');
+				toSend = new RouterResponse('1.0', new Error('user not allowed'), 'put', {id: req.params.userId}, 'user was not uploaded');
 				res.status(code).send(toSend);
 				return;
 			}
@@ -152,16 +181,16 @@ export default function StorageRouter(
 			uploaded.fold(error => {
 				//something wrong
 				code = 500;
-				toSend = new RouterResponse('1.0', error, 'put' + ' not uploaded');	
+				toSend = new RouterResponse('1.0', error, 'put', {}, 'picture not uploaded');	
 			}, value => {
 				//isOK
 				code = 200;
-				toSend = new RouterResponse('1.0', value, 'put' + ' uploaded');
+				toSend = new RouterResponse('1.0', value, 'put', {}, 'picture uploaded');
 			});
 		} catch (err) {
 			//something wrong
 			code = 500;
-			toSend = new RouterResponse('1.0', err as object, 'put' + ' not uploaded');
+			toSend = new RouterResponse('1.0', err as object, 'put', {}, 'picture not uploaded');
 		}
 		//respond cordially
 		res.status(code).send(toSend);

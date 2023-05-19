@@ -23,7 +23,7 @@ export class PasswordDataSourceImpl implements PasswordDataSource {
 	}
 
 	async getByUserId(userId: string): Promise<ModelContainer<PasswordModel>> {
-		return await this.collection.getOne({'userId':userId});
+		return await this.collection.getOne({'userId':userId, 'enabled':true});
 	}
 
 	async getMany(query: object, sort?: [string, 1 | -1][],
