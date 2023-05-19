@@ -233,7 +233,7 @@ export const googleApp = firebase.initializeApp({credential:firebase.credential.
 
 	//revisa que los datos estén cargados.
 	await checkData01(roleDataSource, userDataSource, passDataSource, orgaDataSource, orgaUserDataSource, userMongo, roleMongo, passMongo, orgaMongo, orgaUserMongo);
-	await checkData02(stageDataSource, flowDataSource, postDataSource, voteDataSource, postMongo, categoryMongo);
+	await checkData02(stageDataSource, flowDataSource, postDataSource, voteDataSource, postMongo, categoryMongo, voteMongo);
 	await checkData03(settingDataSource);
 
 	//routers

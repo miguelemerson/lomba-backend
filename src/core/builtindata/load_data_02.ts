@@ -30,7 +30,7 @@ const post04Id = '00004AAA-0119-0111-0111-000000000000';
 const vote01Id = '00004CCC-0222-0222-0222-000000000222';
 
 
-export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, voteSource: VoteDataSource, postMongo: NoSQLDatabaseWrapper<PostModel>, categoryMongo: NoSQLDatabaseWrapper<CategoryModel>) => {
+export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, voteSource: VoteDataSource, postMongo: NoSQLDatabaseWrapper<PostModel>, categoryMongo: NoSQLDatabaseWrapper<CategoryModel>, voteMongo: NoSQLDatabaseWrapper<VoteModel>) => {
 
 	data_insert02.flows[0].stages = data_insert02.stages;
 
@@ -194,6 +194,28 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 					}
 				);
 			}
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('ix_post_totals_totalcount_flowId_stageId'))
+			{
+				postMongo.db.collection(postMongo.collectionName).createIndex(
+					{
+						'totals.totalcount': 1,
+						'totals.flowId': 1,
+						'totals.stageId': 1,
+					},{
+						name: 'ix_post_totals_totalcount_flowId_stageId'
+					}
+				);
+			}
+			if(!await postMongo.db.collection(postMongo.collectionName).indexExists('ix_post_enabled'))
+			{
+				postMongo.db.collection(postMongo.collectionName).createIndex(
+					{
+						'enabled': 1
+					},{
+						name: 'ix_post_enabled'
+					}
+				);
+			}
 			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_category_id'))
 			{
 				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
@@ -214,6 +236,52 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 						'description': 'text'
 					},{
 						name: 'ix_category_name_longname_lowercase_description'
+					}
+				);
+			}
+			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_vote_userId'))
+			{
+				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+					{
+						'userId': 1,
+					},{
+						name: 'ix_vote_userId'
+					}
+				);
+			}
+			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_vote_userId_postId'))
+			{
+				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+					{
+						'userId': 1,
+						'postId': 1,
+					},{
+						name: 'ix_vote_userId_postId'
+					}
+				);
+			}
+			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_vote_userId_postId_flowId_stageId'))
+			{
+				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+					{
+						'userId': 1,
+						'postId': 1,
+						'flowId': 1,
+						'stageId': 1,
+					},{
+						name: 'ix_vote_userId_postId_flowId_stageId'
+					}
+				);
+			}
+			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_vote_postId_flowId_stageId'))
+			{
+				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+					{
+						'postId': 1,
+						'flowId': 1,
+						'stageId': 1,
+					},{
+						name: 'ix_vote_postId_flowId_stageId'
 					}
 				);
 			}
