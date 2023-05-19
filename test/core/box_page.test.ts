@@ -14,7 +14,7 @@ describe('Test de Box Page', () => {
 		
 
 		//assert
-		expect(BoxPages.List.length).toEqual(7);
+		expect(BoxPages.List.length).toEqual(10);
 	});
 
 });

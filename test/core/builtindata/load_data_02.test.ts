@@ -8,6 +8,9 @@ import { StageDataSource } from '../../../src/data/datasources/stage_data_source
 import { FlowModel } from '../../../src/data/models/workflow/flow_model';
 import { PostModel } from '../../../src/data/models/workflow/post_model';
 import { StageModel } from '../../../src/data/models/workflow/stage_model';
+import { CategoryModel } from '../../../src/data/models/workflow/category_model';
+import { VoteModel } from '../../../src/data/models/workflow/vote_model';
+import { VoteDataSource } from '../../../src/data/datasources/vote_data_source';
 
 class MockStageDataSource implements StageDataSource {
 	getMany(): Promise<ModelContainer<StageModel>> {
@@ -71,6 +74,27 @@ class MockFlowDataSource implements FlowDataSource {
 	}
 }
 class MockPostDataSource implements PostDataSource {
+	getManyComplete(): Promise<ModelContainer<PostModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getOneComplete(): Promise<ModelContainer<PostModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByIdBasic(): Promise<ModelContainer<PostModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByIdWithUser(): Promise<ModelContainer<PostModel>> {
+		throw new Error('Method not implemented.');
+	}
+	updateBookmarksTotals(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	getFavedPosts(): Promise<ModelContainer<PostModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getSavedPosts(): Promise<ModelContainer<PostModel>> {
+		throw new Error('Method not implemented.');
+	}
 	addTrack(): Promise<boolean> {
 		throw new Error('Method not implemented.');
 	}
@@ -153,17 +177,51 @@ class MockPostDataSource implements PostDataSource {
 		throw new Error('Method not implemented.');
 	}
 }
-class MockWrapper implements NoSQLDatabaseWrapper<PostModel> {
-	getMany(): Promise<ModelContainer<PostModel>> {
+
+class MockVoteDataSource implements VoteDataSource {
+	getMany(): Promise<ModelContainer<VoteModel>> {
 		throw new Error('Method not implemented.');
 	}
-	getManyWithOptions(): Promise<ModelContainer<PostModel>> {
+	getOne(): Promise<ModelContainer<VoteModel>> {
 		throw new Error('Method not implemented.');
 	}
-	getOne(): Promise<ModelContainer<PostModel>> {
+	add(): Promise<ModelContainer<VoteModel>> {
 		throw new Error('Method not implemented.');
 	}
-	getOneWithOptions(): Promise<ModelContainer<PostModel>> {
+	update(): Promise<ModelContainer<VoteModel>> {
+		throw new Error('Method not implemented.');
+	}
+	enable(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	delete(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	setId(): VoteModel {
+		throw new Error('Method not implemented.');
+	}
+	getById(): Promise<ModelContainer<VoteModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getByPost(): Promise<ModelContainer<VoteModel>> {
+		throw new Error('Method not implemented.');
+	}
+	getVote(): Promise<ModelContainer<VoteModel>> {
+		throw new Error('Method not implemented.');
+	}
+}
+
+class MockWrapper<T> implements NoSQLDatabaseWrapper<T> {
+	getMany(): Promise<ModelContainer<T>> {
+		throw new Error('Method not implemented.');
+	}
+	getManyWithOptions(): Promise<ModelContainer<T>> {
+		throw new Error('Method not implemented.');
+	}
+	getOne(): Promise<ModelContainer<T>> {
+		throw new Error('Method not implemented.');
+	}
+	getOneWithOptions(): Promise<ModelContainer<T>> {
 		throw new Error('Method not implemented.');
 	}
 	add(): Promise<boolean> {
@@ -193,6 +251,9 @@ class MockWrapper implements NoSQLDatabaseWrapper<PostModel> {
 		this.collectionName = collectionName;
 		this.db = dbMongo;
 	}
+	upsert(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
 }
 
 
@@ -201,14 +262,20 @@ describe('Test del load data 01', () => {
 	let mockStageDataSource: MockStageDataSource;
 	let mockFlowDataSource: MockFlowDataSource;
 	let mockPostDataSource: MockPostDataSource;
-	let mockWrapper: MockWrapper;
+	let mockVoteDataSource:MockVoteDataSource;
+	let mockWrapperPost: MockWrapper<PostModel>;
+	let mockWrapperCategory: MockWrapper<CategoryModel>;
+	let mockWrapperVote: MockWrapper<VoteModel>;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockStageDataSource = new MockStageDataSource();
 		mockFlowDataSource = new MockFlowDataSource();
 		mockPostDataSource = new MockPostDataSource();
-		mockWrapper = new MockWrapper('posts', (jest.fn() as unknown) as Db);
+		mockVoteDataSource = new MockVoteDataSource();
+		mockWrapperPost = new MockWrapper('posts', (jest.fn() as unknown) as Db);
+		mockWrapperCategory = new MockWrapper('categories', (jest.fn() as unknown) as Db);
+		mockWrapperVote = new MockWrapper('votes', (jest.fn() as unknown) as Db);
 	});
 
 	const testRoleName = 'admin';
@@ -294,6 +361,9 @@ describe('Test del load data 01', () => {
 		const model_con_stage = ModelContainer.fromOneItem(new StageModel(testStages[0].id, testStages[0].name, testStages[0].order, testStages[0].queryOut, testStages[0].enabled, testStages[0].builtIn));
 		const model_void_stage = new ModelContainer<StageModel>([]);
 
+		const model_con_vote = ModelContainer.fromOneItem(new VoteModel(testVotes[0].id, testVotes[0].userId, testVotes[0].postId, testVotes[0].flowId, testVotes[0].stageId, testVotes[0].key, testVotes[0].value, testVotes[0].enabled, testVotes[0].builtIn));
+		const model_void_vote = new ModelContainer<VoteModel>([]);
+
 		const model_con_flow = ModelContainer.fromOneItem(new FlowModel(testFlows[0].id, testFlows[0].name, [], testFlows[0].enabled, testFlows[0].builtIn));
 
 		const model_void_flow = new ModelContainer<FlowModel>([]);
@@ -315,15 +385,19 @@ describe('Test del load data 01', () => {
 
 		jest.spyOn(mockFlowDataSource, 'updateDirect').mockImplementation(() => Promise.resolve(model_con_flow));        
 
-		jest.spyOn(mockPostDataSource, 'getById').mockImplementation(() => Promise.resolve(model_void_post));			
+		jest.spyOn(mockPostDataSource, 'getByIdBasic').mockImplementation(() => Promise.resolve(model_void_post));			
 
 		jest.spyOn(mockPostDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_post));
 
 		jest.spyOn(mockPostDataSource, 'pushToArrayField').mockImplementation(() => Promise.resolve(model_con_post));
 		
+		jest.spyOn(mockVoteDataSource, 'getOne').mockImplementation(() => Promise.resolve(model_void_vote));
+
+		jest.spyOn(mockVoteDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_vote));
+
 		//jest.spyOn(mockWrapper.db.collection, 'createIndex');
 
-		await checkData02(mockStageDataSource, mockFlowDataSource, mockPostDataSource, mockWrapper);
+		await checkData02(mockStageDataSource, mockFlowDataSource, mockPostDataSource, mockVoteDataSource, mockWrapperPost, mockWrapperCategory, mockWrapperVote);
 
 		expect(mockStageDataSource.getOne).toBeCalledTimes(3);
 		expect(mockStageDataSource.add).toBeCalledTimes(3);
@@ -333,7 +407,7 @@ describe('Test del load data 01', () => {
 		expect(mockFlowDataSource.add).toBeCalledTimes(1);
 		expect(mockFlowDataSource.updateDirect).toBeCalledTimes(3);
 
-		expect(mockPostDataSource.getById).toBeCalledTimes(4);
+		expect(mockPostDataSource.getByIdBasic).toBeCalledTimes(4);
 		expect(mockPostDataSource.add).toBeCalledTimes(4);
 		expect(mockPostDataSource.pushToArrayField).toBeCalledTimes(11);
 

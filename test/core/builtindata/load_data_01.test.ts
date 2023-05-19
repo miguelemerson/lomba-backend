@@ -174,17 +174,17 @@ class MockPasswordDataSource implements PasswordDataSource {
 	setId():PasswordModel{throw new Error('Method not implemented.');}
 }
 
-class MockWrapper implements NoSQLDatabaseWrapper<UserModel> {
-	getMany(): Promise<ModelContainer<UserModel>> {
+class MockWrapper<T> implements NoSQLDatabaseWrapper<T> {
+	getMany(): Promise<ModelContainer<T>> {
 		throw new Error('Method not implemented.');
 	}
-	getManyWithOptions(): Promise<ModelContainer<UserModel>> {
+	getManyWithOptions(): Promise<ModelContainer<T>> {
 		throw new Error('Method not implemented.');
 	}
-	getOne(): Promise<ModelContainer<UserModel>> {
+	getOne(): Promise<ModelContainer<T>> {
 		throw new Error('Method not implemented.');
 	}
-	getOneWithOptions(): Promise<ModelContainer<UserModel>> {
+	getOneWithOptions(): Promise<ModelContainer<T>> {
 		throw new Error('Method not implemented.');
 	}
 	add(): Promise<boolean> {
@@ -214,6 +214,9 @@ class MockWrapper implements NoSQLDatabaseWrapper<UserModel> {
 		this.collectionName = collectionName;
 		this.db = dbMongo;
 	}
+	upsert(): Promise<boolean> {
+		throw new Error('Method not implemented.');
+	}
 }
 
 describe('Test del load data 01', () => {
@@ -223,7 +226,11 @@ describe('Test del load data 01', () => {
 	let mockOrgaDataSource: OrgaDataSource;
 	let mockOrgaUserDataSource: OrgaUserDataSource;
 	let mockPasswordDataSource: PasswordDataSource;
-	let mockWrapper: MockWrapper;
+	let mockWrapperUser: MockWrapper<UserModel>;
+	let mockWrapperRole: MockWrapper<RoleModel>;
+	let mockWrapperPass: MockWrapper<PasswordModel>;
+	let mockWrapperOrga: MockWrapper<OrgaModel>;
+	let mockWrapperOrgaUser: MockWrapper<OrgaUserModel>;
 
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -233,7 +240,11 @@ describe('Test del load data 01', () => {
 		mockOrgaDataSource = new MockOrgaDataSource();
 		mockOrgaUserDataSource = new MockOrgaUserDataSource();
 		mockPasswordDataSource = new MockPasswordDataSource();
-		mockWrapper = new MockWrapper('users', (jest.fn() as unknown) as Db);
+		mockWrapperUser = new MockWrapper('users', (jest.fn() as unknown) as Db);
+		mockWrapperRole = new MockWrapper('roles', (jest.fn() as unknown) as Db);
+		mockWrapperPass = new MockWrapper('passes', (jest.fn() as unknown) as Db);
+		mockWrapperOrga = new MockWrapper('orgas', (jest.fn() as unknown) as Db);
+		mockWrapperOrgaUser = new MockWrapper('orgausers', (jest.fn() as unknown) as Db);
 
 	});
 
@@ -334,7 +345,7 @@ describe('Test del load data 01', () => {
 		jest.spyOn(mockOrgaUserDataSource, 'add').mockImplementation(() => Promise.resolve(model_con_orus));
 
 		
-		await checkData01(mockRoleDataSource, mockUserDataSource, mockPasswordDataSource, mockOrgaDataSource, mockOrgaUserDataSource, mockWrapper);
+		await checkData01(mockRoleDataSource, mockUserDataSource, mockPasswordDataSource, mockOrgaDataSource, mockOrgaUserDataSource, mockWrapperUser, mockWrapperRole, mockWrapperPass, mockWrapperOrga, mockWrapperOrgaUser);
 
 		expect(mockRoleDataSource.getOne).toBeCalledTimes(5);
 		expect(mockRoleDataSource.add).toBeCalledTimes(5);

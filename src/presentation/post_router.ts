@@ -297,7 +297,7 @@ export default function PostsRouter(
 		res.status(code).send(toSend);
 	});
 
-	router.get('/:id',[isAuth], async (req: Request<{id:string, userId:string, flowId:string, stageId:string}>, res: Response) => {
+	router.get('/:id/:userId',[isAuth], async (req: Request<{id:string, userId:string, flowId:string, stageId:string}>, res: Response) => {
 		//definitions
 		let code = 500;
 		let toSend = RouterResponse.emptyResponse();

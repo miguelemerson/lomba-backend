@@ -15,7 +15,7 @@ describe('Test de post model', () => {
 	test('convertir a entidad', () => {
 		//arrange
 		const model = listPosts[0];
-		const entity = { _id:model.id,id: model.id, postitems: [], title: model.title, orgaId: model.orgaId, userId: model.userId, flowId: model.flowId, stageId: model.stageId, enabled: true, builtIn: false, deleted: undefined, expires: undefined, stages:[], totals:[], tracks:[], updated: undefined, votes:[] } as unknown as Post;
+		const entity = { _id:model.id,id: model.id, postitems: [], title: model.title, orgaId: model.orgaId, userId: model.userId, flowId: model.flowId, stageId: model.stageId, enabled: true, builtIn: false, deleted: undefined, expires: undefined, stages:[], totals:[], tracks:[], updated: undefined, votes:[], bookmarks:[], categories:[], categoryNames:[], totalcomments:0, totaldownloads:0, totalfavs:0, totalreports:0, totalsaves:0, users:[] } as unknown as Post;
 
 		entity.created = model.created;
 

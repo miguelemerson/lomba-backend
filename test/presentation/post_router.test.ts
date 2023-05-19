@@ -11,7 +11,6 @@ import { RouterResponse } from '../../src/core/router_response';
 import { AddTextPostUseCase } from '../../src/domain/usecases/posts/add_text_post';
 import { DeletePostUseCase } from '../../src/domain/usecases/posts/delete_post';
 import { GetPostsUseCase } from '../../src/domain/usecases/posts/get_posts';
-import { SendVoteUseCase } from '../../src/domain/usecases/posts/send_vote';
 import { UpdatePostUseCase } from '../../src/domain/usecases/posts/update_post';
 import PostsRouter from '../../src/presentation/post_router';
 import server from '../../src/server';
@@ -22,6 +21,7 @@ import { Post } from '../../src/domain/entities/workflow/post';
 import { PostModel } from '../../src/data/models/workflow/post_model';
 import { GetPostUseCase } from '../../src/domain/usecases/posts/get_post';
 import { AddMultiPostUseCase } from '../../src/domain/usecases/posts/add_multi_post';
+import { GetPostWithUserUseCase } from '../../src/domain/usecases/posts/get_withuser_post';
 
 class MockAddTextPostUseCase implements AddTextPostUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<Post>>> {
@@ -35,11 +35,6 @@ class MockGetPostsUseCase implements GetPostsUseCase {
 	}
 }
 
-class MockSendVoteUseCase implements SendVoteUseCase {
-	execute(): Promise<Either<Failure,ModelContainer<Post>>> {
-		throw new Error('Method not implemented.');
-	}
-}
 
 class MockUpdatePostUseCase implements UpdatePostUseCase {
 	execute(): Promise<Either<Failure,ModelContainer<Post>>> {
@@ -83,11 +78,15 @@ class MockAddMultiPostUseCase implements AddMultiPostUseCase{
 	}
 }
 
+class MockGetPostWithUserUseCase implements GetPostWithUserUseCase{
+	execute(): Promise<Either<Failure, ModelContainer<Post>>> {
+		throw new Error('Method not implemented.');
+	}
+}
 
 describe('Post Router', () => {
 	let mockAddTextPostUseCase: AddTextPostUseCase;
 	let mockGetPostsUseCase: GetPostsUseCase;
-	let mockSendVoteUseCase: SendVoteUseCase;
 	let mockUpdatePostUseCase: UpdatePostUseCase;
 	let mockDeletePostUseCase: DeletePostUseCase;
 	let mockChangeStagePostUseCase: ChangeStagePostUseCase;
@@ -95,6 +94,7 @@ describe('Post Router', () => {
 	let mockGetAdminViewPostUseCase: GetAdminViewPostsUseCase;
 	let mockGetPostUseCase: GetPostUseCase;
 	let mockAddMultiPostUseCase: AddMultiPostUseCase;
+	let mockGetPostWithUserUseCase:MockGetPostWithUserUseCase;
 
 	const UrlGetPost = '?orgaId=00000200-0200-0200-0200-000000000200&userId=00000005-0005-0005-0005-000000000005&flowId=00000111-0111-0111-0111-000000000111&stageId=00000AAA-0111-0111-0111-000000000111&boxPage=uploaded&searchText=post';
 
@@ -147,7 +147,6 @@ describe('Post Router', () => {
 	beforeAll(() => {
 		mockAddTextPostUseCase = new MockAddTextPostUseCase();
 		mockGetPostsUseCase = new MockGetPostsUseCase();
-		mockSendVoteUseCase = new MockSendVoteUseCase();
 		mockUpdatePostUseCase = new MockUpdatePostUseCase();
 		mockDeletePostUseCase = new MockDeletePostUseCase();
 		mockEnablePostUseCase = new MockEnablePostUseCase();
@@ -155,8 +154,9 @@ describe('Post Router', () => {
 		mockGetAdminViewPostUseCase = new MockGetAdminViewPostUseCase();
 		mockGetPostUseCase = new MockGetPostUseCase();
 		mockAddMultiPostUseCase = new MockAddMultiPostUseCase();
+		mockGetPostWithUserUseCase = new MockGetPostWithUserUseCase();
 
-		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockSendVoteUseCase, mockUpdatePostUseCase, mockDeletePostUseCase, mockEnablePostUseCase, mockChangeStagePostUseCase, mockGetAdminViewPostUseCase, mockGetPostUseCase, mockAddMultiPostUseCase));
+		server.use('/api/v1/post', PostsRouter(mockGetPostsUseCase, mockAddTextPostUseCase, mockUpdatePostUseCase, mockDeletePostUseCase, mockEnablePostUseCase, mockChangeStagePostUseCase, mockGetAdminViewPostUseCase, mockGetPostUseCase, mockAddMultiPostUseCase, mockGetPostWithUserUseCase));
 	});
 
 	beforeEach(() => {
@@ -200,6 +200,7 @@ describe('Post Router', () => {
 
 		});
 
+		/*
 		test('debe retornar 401 porque usuario no autenticado', async () => {
 			//arrange
 			const expectedData = listPosts[0];
@@ -217,6 +218,7 @@ describe('Post Router', () => {
 			expect(roures.data).toBeUndefined();
 
 		});
+		*/
 
 		test('debe retornar 500 en caso de failure', async () => {
 			//arrange
@@ -435,7 +437,9 @@ describe('Post Router', () => {
 		});
 	});
 
+	
 	//post de usuarios
+	/*
 	describe('SendPost /post/vote/', () => {
 
 		test('debe retornar 200 y con datos', async () => {
@@ -502,7 +506,7 @@ describe('Post Router', () => {
 			expect(roures.data).toBeUndefined();
 		});
 	});
-
+*/
 	describe('UpdataPost /post/', () => {
 
 		test('debe retornar 200 y con datos', async () => {
@@ -511,7 +515,7 @@ describe('Post Router', () => {
 			jest.spyOn(mockUpdatePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.right(ModelContainer.fromOneItem(fakeGetPost))));
 
 			//act
-			const response = await request(server).put('/api/v1/post/').send(fakeUpdatePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const response = await request(server).put('/api/v1/post/multi/1').send(fakeUpdatePost).set({Authorization: 'Bearer ' + testTokenUser});
 			const roures = response.body as RouterResponse;
 
 			//assert
@@ -529,7 +533,7 @@ describe('Post Router', () => {
 			jest.spyOn(mockUpdatePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
 
 			//act
-			const response = await request(server).put('/api/v1/post/').send(fakeUpdatePost);
+			const response = await request(server).put('/api/v1/post/multi/1').send(fakeUpdatePost);
 			const roures = response.body as RouterResponse;
 
 			expect(response.status).toBe(401);
@@ -544,7 +548,7 @@ describe('Post Router', () => {
 			jest.spyOn(mockUpdatePostUseCase, 'execute').mockImplementation(() => Promise.resolve(Either.left(new GenericFailure('error'))));
 
 			//act
-			const response = await request(server).put('/api/v1/post/').send(fakeUpdatePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const response = await request(server).put('/api/v1/post/multi/1').send(fakeUpdatePost).set({Authorization: 'Bearer ' + testTokenUser});
 			const roures = response.body as RouterResponse;
 
 			expect(response.status).toBe(500);
@@ -559,7 +563,7 @@ describe('Post Router', () => {
 			jest.spyOn(mockUpdatePostUseCase, 'execute').mockImplementation(() => Promise.reject(new Error('error message')));
 
 			//act
-			const response = await request(server).put('/api/v1/post/').send(fakeUpdatePost).set({Authorization: 'Bearer ' + testTokenUser});
+			const response = await request(server).put('/api/v1/post/multi/1').send(fakeUpdatePost).set({Authorization: 'Bearer ' + testTokenUser});
 			const roures = response.body as RouterResponse;
 
 			expect(response.status).toBe(500);

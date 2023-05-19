@@ -79,6 +79,7 @@ jobs:
         path: .
 
   deploy:
+    name: Deploy backend    
     permissions:
       contents: none
     runs-on: ubuntu-latest
