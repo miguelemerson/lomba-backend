@@ -1,3 +1,4 @@
+import { CategoryDataSource } from '../../data/datasources/category_data_source';
 import { FlowDataSource } from '../../data/datasources/flow_data_source';
 import { PostDataSource } from '../../data/datasources/post_data_source';
 import { StageDataSource } from '../../data/datasources/stage_data_source';
@@ -7,6 +8,7 @@ import { FlowModel } from '../../data/models/workflow/flow_model';
 import { PostModel } from '../../data/models/workflow/post_model';
 import { StageModel } from '../../data/models/workflow/stage_model';
 import { VoteModel } from '../../data/models/workflow/vote_model';
+import { Category } from '../../domain/entities/workflow/category';
 import { Flow } from '../../domain/entities/workflow/flow';
 import { Post } from '../../domain/entities/workflow/post';
 import { PostItem } from '../../domain/entities/workflow/postitem';
@@ -30,7 +32,7 @@ const post04Id = '00004AAA-0119-0111-0111-000000000000';
 const vote01Id = '00004CCC-0222-0222-0222-000000000222';
 
 
-export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, voteSource: VoteDataSource, postMongo: NoSQLDatabaseWrapper<PostModel>, categoryMongo: NoSQLDatabaseWrapper<CategoryModel>, voteMongo: NoSQLDatabaseWrapper<VoteModel>) => {
+export const checkData02 = async (stageSource: StageDataSource, flowSource: FlowDataSource, postSource: PostDataSource, voteSource: VoteDataSource, categorySource: CategoryDataSource, postMongo: NoSQLDatabaseWrapper<PostModel>, categoryMongo: NoSQLDatabaseWrapper<CategoryModel>, voteMongo: NoSQLDatabaseWrapper<VoteModel>) => {
 
 	data_insert02.flows[0].stages = data_insert02.stages;
 
@@ -71,6 +73,16 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 			flow.stages.forEach(async stage => {
 				await flowSource.updateDirect(resultAdd.items[0].id, {$push : {stages: stage}});
 			});
+		}
+	});
+
+	///buscar si existe flow cada uno	
+	//flows
+	data_insert02.categories.forEach(async category => {
+		const result = await categorySource.getByName(category.name);
+		if(result.currentItemCount < 1)
+		{
+			await categorySource.add(new CategoryModel('', category.name, category.longname, category.lowercase, '', category.description, [], category.enabled, category.builtIn));
 		}
 	});
 
@@ -239,9 +251,9 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 					}
 				);
 			}
-			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_vote_userId'))
+			if(!await voteMongo.db.collection(voteMongo.collectionName).indexExists('ix_vote_userId'))
 			{
-				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+				voteMongo.db.collection(voteMongo.collectionName).createIndex(
 					{
 						'userId': 1,
 					},{
@@ -249,9 +261,9 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 					}
 				);
 			}
-			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_vote_userId_postId'))
+			if(!await voteMongo.db.collection(voteMongo.collectionName).indexExists('ix_vote_userId_postId'))
 			{
-				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+				voteMongo.db.collection(voteMongo.collectionName).createIndex(
 					{
 						'userId': 1,
 						'postId': 1,
@@ -260,9 +272,9 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 					}
 				);
 			}
-			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_vote_userId_postId_flowId_stageId'))
+			if(!await voteMongo.db.collection(voteMongo.collectionName).indexExists('ix_vote_userId_postId_flowId_stageId'))
 			{
-				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+				voteMongo.db.collection(voteMongo.collectionName).createIndex(
 					{
 						'userId': 1,
 						'postId': 1,
@@ -273,9 +285,9 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 					}
 				);
 			}
-			if(!await categoryMongo.db.collection(categoryMongo.collectionName).indexExists('ix_vote_postId_flowId_stageId'))
+			if(!await voteMongo.db.collection(voteMongo.collectionName).indexExists('ix_vote_postId_flowId_stageId'))
 			{
-				categoryMongo.db.collection(categoryMongo.collectionName).createIndex(
+				voteMongo.db.collection(voteMongo.collectionName).createIndex(
 					{
 						'postId': 1,
 						'flowId': 1,
@@ -289,6 +301,7 @@ export const checkData02 = async (stageSource: StageDataSource, flowSource: Flow
 		});
 	}catch(e){
 		console.log('no index');
+		console.log(e);
 	}
 	
 
@@ -319,6 +332,10 @@ export const data_insert02 = {
 		totalnegative: 0,
 		totalcount: 1,  
 		flowId:flowId,
-		stageId:stageId01Load} as Total]
+		stageId:stageId01Load} as Total],
+
+	categories:[{
+		name: 'humor',longname:'humor',lowercase:'humor',description:'humor', created: new Date()} as Category
+	],
 
 };
